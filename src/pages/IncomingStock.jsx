@@ -3,7 +3,7 @@ import { Form, Button, Card, Row, Col, Alert } from 'react-bootstrap';
 import { db } from '../firebase';
 import { ref, push, set } from 'firebase/database';
 import { encryptData } from '../utils/encryption';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { FaSave } from 'react-icons/fa';
 
 export default function IncomingStock() {
@@ -18,9 +18,24 @@ export default function IncomingStock() {
         department: '',
         serialNumber: '',
         assetId: '',
-        brandModel: '',
+        category: '',
+        brand: '',
+        model: '',
         remarks: ''
     });
+
+    const CATEGORY_OPTIONS = {
+        "คอม PC": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "Notebook-Tablet-TV": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "Printer": [
+            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
+            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
+            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
+            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
+            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+        ],
+        "UPS": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"]
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -45,7 +60,8 @@ export default function IncomingStock() {
                 department: encryptData(formData.department),
                 serialNumber: encryptData(formData.serialNumber),
                 assetId: encryptData(formData.assetId),
-                brandModel: encryptData(formData.brandModel),
+                category: encryptData(formData.category), // New field
+                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim()),
                 remarks: encryptData(formData.remarks),
 
                 qt_received: 1, // Default 1
@@ -68,7 +84,9 @@ export default function IncomingStock() {
                 department: '',
                 serialNumber: '',
                 assetId: '',
-                brandModel: '',
+                category: '',
+                brand: '',
+                model: '',
                 remarks: ''
             });
         } catch (err) {
@@ -80,9 +98,9 @@ export default function IncomingStock() {
     };
 
     return (
-        <Card className="shadow-sm">
-            <Card.Header as="h5" className="bg-white py-3 text-primary border-bottom-0 fw-bold">
-                <i className="bi bi-plus-circle me-2"></i> รับเข้า Stock (Incoming)
+        <Card className="shadow-sm border-0">
+            <Card.Header as="h5" className="bg-white py-4 text-dark border-0 fw-bold px-4">
+                รับเข้า Stock (Incoming)
             </Card.Header>
             <Card.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
@@ -118,20 +136,73 @@ export default function IncomingStock() {
                     </Row>
 
                     <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group controlId="brandModel">
-                                <Form.Label>ยี่ห้อ / รุ่น</Form.Label>
+                        <Col md={4}>
+                            <Form.Group controlId="category">
+                                <Form.Label>หมวดหมู่ (Category)</Form.Label>
+                                <Form.Select
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={(e) => {
+                                        setFormData({
+                                            ...formData,
+                                            category: e.target.value,
+                                            brand: '', // Reset brand on category change
+                                            model: ''
+                                        });
+                                    }}
+                                    required
+                                >
+                                    <option value="">เลือกหมวดหมู่</option>
+                                    {Object.keys(CATEGORY_OPTIONS).map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                    <option value="อื่นๆ">อื่นๆ</option>
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group controlId="brand">
+                                <Form.Label>ยี่ห้อ / ประเภท</Form.Label>
+                                {formData.category && CATEGORY_OPTIONS[formData.category] ? (
+                                    <Form.Select
+                                        name="brand"
+                                        value={formData.brand}
+                                        onChange={handleChange}
+                                        required
+                                    >
+                                        <option value="">เลือกยี่ห้อ/ประเภท</option>
+                                        {CATEGORY_OPTIONS[formData.category].map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </Form.Select>
+                                ) : (
+                                    <Form.Control
+                                        type="text"
+                                        name="brand"
+                                        value={formData.brand}
+                                        onChange={handleChange}
+                                        placeholder="ระบุยี่ห้อ/ประเภท"
+                                        required
+                                    />
+                                )}
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group controlId="model">
+                                <Form.Label>รุ่น (Model)</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    name="brandModel"
-                                    value={formData.brandModel}
+                                    name="model"
+                                    value={formData.model}
                                     onChange={handleChange}
-                                    placeholder="ระบุยี่ห้อ/รุ่น"
-                                    required
+                                    placeholder="ระบุรุ่น (ถ้ามี)"
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
+                    </Row>
+
+                    <Row className="mb-3">
+                        <Col md={4}>
                             <Form.Group controlId="serialNumber">
                                 <Form.Label>S/N (Serial Number)</Form.Label>
                                 <Form.Control
@@ -143,10 +214,7 @@ export default function IncomingStock() {
                                 />
                             </Form.Group>
                         </Col>
-                    </Row>
-
-                    <Row className="mb-3">
-                        <Col md={6}>
+                        <Col md={4}>
                             <Form.Group controlId="department">
                                 <Form.Label>หน่วยงาน</Form.Label>
                                 <Form.Control
@@ -159,7 +227,7 @@ export default function IncomingStock() {
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={6}>
+                        <Col md={4}>
                             <Form.Group controlId="building">
                                 <Form.Label>อาคาร</Form.Label>
                                 <Form.Control
@@ -190,7 +258,7 @@ export default function IncomingStock() {
                     </Row>
 
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <Button variant="primary" type="submit" disabled={loading} size="lg" className="w-100 w-md-auto">
+                        <Button variant="primary" type="submit" disabled={loading} size="lg">
                             <FaSave className="me-2" /> บันทึกรับเข้า (Incoming)
                         </Button>
                     </div>

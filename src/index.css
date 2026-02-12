@@ -19,7 +19,12 @@ body {
   background-color: #f8f9fa;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
 }
 
@@ -27,9 +32,11 @@ h1, h2, h3, h4, h5, h6 {
   h2 {
     font-size: 1.5rem !important;
   }
+
   .card-header h5 {
     font-size: 1.1rem !important;
   }
+
   .px-lg-5 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
@@ -63,4 +70,35 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   border-radius: 0.75rem;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.quick-menu-card {
+  cursor: pointer;
+  background-color: #ffffff;
+}
+
+.quick-menu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.quick-menu-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.quick-menu-card:hover .quick-menu-icon-wrapper {
+  background-color: #e9ecef;
+}
+
+.quick-menu-card h5 {
+  font-size: 1rem;
+  transition: color 0.3s ease;
 }
