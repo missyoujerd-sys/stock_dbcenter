@@ -40,3 +40,26 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Custom Orange Buttons */
+.btn-orange {
+  background-color: #ff9800 !important;
+  border-color: #ff9800 !important;
+  color: white !important;
+}
+.btn-orange:hover {
+  background-color: #fb8c00 !important;
+  border-color: #fb8c00 !important;
+  color: white !important;
+}
+
+.btn-outline-orange {
+  color: #ef6c00 !important;
+  border-color: #ff9800 !important;
+  background-color: transparent !important;
+}
+.btn-outline-orange:hover {
+  background-color: #fff3e0 !important;
+  color: #e65100 !important;
+  border-color: #ef6c00 !important;
+}

@@ -4,10 +4,12 @@ import { db } from '../firebase';
 import { ref, push, set } from 'firebase/database';
 import { encryptData } from '../utils/encryption';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { FaSave } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaSave, FaHome } from 'react-icons/fa';
 
 export default function IncomingStock() {
     const { currentUser } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
@@ -258,6 +260,13 @@ export default function IncomingStock() {
                     </Row>
 
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <Button
+                            className="btn-outline-orange me-md-2"
+                            size="lg"
+                            onClick={() => navigate('/')}
+                        >
+                            <FaHome className="me-2" /> กลับเมนูหลัก
+                        </Button>
                         <Button variant="primary" type="submit" disabled={loading} size="lg">
                             <FaSave className="me-2" /> บันทึกรับเข้า (Incoming)
                         </Button>

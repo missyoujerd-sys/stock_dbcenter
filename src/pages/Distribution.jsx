@@ -6,9 +6,11 @@ import { decryptData, encryptData } from '../utils/encryption'; // encryptData n
 import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { FaFileExcel, FaTruck, FaSearch } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaFileExcel, FaTruck, FaSearch, FaHome } from 'react-icons/fa';
 
 export default function Distribution() {
+    const navigate = useNavigate();
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -234,6 +236,13 @@ export default function Distribution() {
         <Card className="shadow-sm">
             <Card.Header className="bg-white py-3 d-md-flex justify-content-between align-items-center">
                 <div className="d-flex flex-wrap align-items-center gap-2">
+                    <Button
+                        className="btn-outline-orange me-2"
+                        size="sm"
+                        onClick={() => navigate('/')}
+                    >
+                        <FaHome className="me-1" /> กลับเมนูหลัก
+                    </Button>
                     <h5 className="mb-0 text-primary fw-bold me-3"><FaTruck className="me-2" /> รายการพัสดุรอจำหน่าย</h5>
                     {selectedIds.length > 0 && (
                         <Button variant="primary" size="sm" onClick={handleShowBulkDistribute}>

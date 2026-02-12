@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
-import { Table, Card, Row, Col, Badge } from 'react-bootstrap';
+import { Table, Card, Row, Col, Badge, Button } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList } from 'react-icons/fa';
+import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList, FaHome } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -124,10 +124,7 @@ export default function Dashboard() {
                     </Link>
                 </Col>
                 <Col xs={12} md={4} className="mb-3">
-                    <Link to="/" className="text-decoration-none" onClick={(e) => {
-                        e.preventDefault();
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                    }}>
+                    <Link to="/inventory" className="text-decoration-none">
                         <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
                                 <div className="quick-menu-icon-wrapper mb-3">

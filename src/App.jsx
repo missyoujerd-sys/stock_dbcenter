@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import IncomingStock from './pages/IncomingStock';
 import Distribution from './pages/Distribution';
+import Inventory from './pages/Inventory';
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
@@ -33,6 +34,11 @@ function App() {
           <Route path="/distribution" element={
             <PrivateRoute>
               <Distribution />
+            </PrivateRoute>
+          } />
+          <Route path="/inventory" element={
+            <PrivateRoute>
+              <Inventory />
             </PrivateRoute>
           } />
         </Routes>
