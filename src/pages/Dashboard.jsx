@@ -57,7 +57,7 @@ export default function Dashboard() {
 
     return (
         <div>
-            <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบ (Dashboard)</h2>
+            <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบครับ (Dashboard)</h2>
 
             <Row className="mb-2">
                 <Col xs={12} md={6} lg={4} className="mb-3">
@@ -97,7 +97,7 @@ export default function Dashboard() {
                 </Col>
             </Row>
 
-            <h4 className="mb-3 mt-4 text-dark fw-bold">เมนูด่วน (Quick Menu)</h4>
+            <h4 className="mb-3 mt-4 text-dark fw-bold">เมนูด่วนกดเลยครับ (Quick Menu)</h4>
             <Row className="mb-4">
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/incoming" className="text-decoration-none">

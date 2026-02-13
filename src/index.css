@@ -20,7 +20,7 @@ body {
 }
 
 .auth-background {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
+  background-image: linear-gradient(rgba(99, 102, 99, 0.925), rgba(31, 30, 30, 0.4)), url('https://images.unsplash.com/photo-1581142452278-9c883ea42f75?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

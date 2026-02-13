@@ -36,13 +36,13 @@ export default function Login() {
                         <Card.Body>
                             <div className="text-center mb-4">
                                 <h2 className="mb-3 text-primary fw-bold">เข้าสู่ระบบ</h2>
-                                <p className="text-muted">ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
+                                <p className="text-muted"><h4>ระบบจัดการ Stock พัสดุครุภัณฑ์จำหน่าย</h4></p>
                             </div>
                             {error && <Alert variant="danger">{error}</Alert>}
                             <Form onSubmit={handleSubmit}>
                                 <Form.Group id="email" className="mb-3">
                                     <Form.Label>Email</Form.Label>
-                                    <Form.Control type="email" ref={emailRef} required placeholder="name@example.com" />
+                                    <Form.Control type="email" ref={emailRef} required placeholder="Nkp@nkp.com" />
                                 </Form.Group>
                                 <Form.Group id="password" className="mb-4">
                                     <Form.Label>Password</Form.Label>
