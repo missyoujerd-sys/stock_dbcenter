@@ -19,6 +19,23 @@ body {
   background-color: #f8f9fa;
 }
 
+.auth-background {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.auth-card {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+}
+
 h1,
 h2,
 h3,

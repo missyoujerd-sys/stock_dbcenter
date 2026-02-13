@@ -116,113 +116,228 @@ export default function Distribution() {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('ใบเบิกหรือใบส่งคืน');
 
-        // Set column widths
-        worksheet.columns = [
-            { width: 5 },  // ลำดับ
-            { width: 30 }, // หมายเลขครุภัณฑ์ / SN
-            { width: 30 }, // รายการ
-            { width: 10 }, // รหัส
-            { width: 10 }, // หน่วยนับ
-            { width: 10 }, // จำนวน
-            { width: 15 }, // จ่ายหรือคืน ค้างจ่าย
-            { width: 15 }, // ราคา หน่วยละ
-            { width: 15 }, // ราคารวม
-            { width: 15 }  // ลงชื่อผู้จำหน่าย
-        ];
-
-        // Helper for borders and centering
-        const addBorders = (rowNumber, cols) => {
-            const row = worksheet.getRow(rowNumber);
-            cols.forEach(col => {
-                const cell = row.getCell(col);
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-            });
+        // Page Setup for A4 Printing
+        worksheet.pageSetup = {
+            paperSize: 9, // A4
+            orientation: 'landscape',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 0, // Auto
+            margins: {
+                left: 0.3, right: 0.3,
+                top: 0.3, bottom: 0.3,
+                header: 0, footer: 0
+            }
         };
 
-        // Header Rows
-        worksheet.mergeCells('D1:I2');
-        const titleCell = worksheet.getCell('D1');
+        // Set column widths
+        worksheet.columns = [
+            { width: 8.5 },   // A: ลำดับ
+            { width: 25 },    // B: หมายเลขครุภัณฑ์ / SN
+            { width: 25 },    // C: รายการ
+            { width: 8.5 },   // D: รหัส
+            { width: 10 },    // E: หน่วยนับ
+            { width: 10 },    // F: จำนวน
+            { width: 10 },    // G: จ่าย
+            { width: 10 },    // H: ค้างจ่าย
+            { width: 12 },    // I: ราคา หน่วยละ
+            { width: 12 },    // J: ราคารวม
+            { width: 15 }     // K: ลงชื่อผู้จำหน่าย (extra col for layout)
+        ];
+
+        // Helper for borders
+        const borderStyle = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+        };
+
+        const applyBorders = (rowStart, colStart, rowEnd, colEnd) => {
+            for (let r = rowStart; r <= rowEnd; r++) {
+                for (let c = colStart; c <= colEnd; c++) {
+                    worksheet.getRow(r).getCell(c).border = borderStyle;
+                }
+            }
+        };
+
+        // Unicode Checkboxes
+        const CHECKED = '\u2611';
+        const UNCHECKED = '\u2610';
+
+        // 1-2: Title
+        worksheet.mergeCells('A1:I2');
+        const titleCell = worksheet.getCell('A1');
         titleCell.value = 'ใบเบิกหรือใบส่งคืน';
-        titleCell.font = { size: 16, bold: true };
+        titleCell.font = { size: 18, bold: true };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
         worksheet.getCell('J1').value = 'แบบ พ.3101';
         worksheet.getCell('J2').value = 'รพ.นครพิงค์';
+        worksheet.getCell('J1').alignment = { horizontal: 'right' };
+        worksheet.getCell('J2').alignment = { horizontal: 'right' };
 
-        worksheet.mergeCells('A3:B3');
-        worksheet.getCell('A3').value = 'แผ่นที่ ...............';
-        worksheet.getCell('C3').value = 'ของจำนวน ............... แผ่น';
-        worksheet.mergeCells('F3:J3');
-        worksheet.getCell('F3').value = 'เลขที่ใบเบิกหรือใบส่งคืน ..............................';
+        // 3: Sheet info
+        worksheet.getCell('A3').value = 'แผ่นที่ ............... ของจำนวน ............... แผ่น';
+        worksheet.mergeCells('E3:J3');
+        worksheet.getCell('E3').value = 'เลขที่ใบเบิกหรือใบส่งคืน ..............................';
 
+        // 4: From / Requisition
         worksheet.mergeCells('A4:D4');
         worksheet.getCell('A4').value = 'จาก ....................................................................';
-        worksheet.getCell('E4').value = 'FALSE';
+        worksheet.getCell('E4').value = UNCHECKED;
         worksheet.getCell('F4').value = 'เบิก';
         worksheet.mergeCells('G4:J4');
         worksheet.getCell('G4').value = 'ทะเบียนเอกสาร ..............................';
+        worksheet.getCell('E4').alignment = { horizontal: 'center' };
 
+        // 5: Dept / Return
         worksheet.mergeCells('A5:D5');
         worksheet.getCell('A5').value = 'ศูนย์คอมพิวเตอร์';
-        worksheet.getCell('E5').value = 'TRUE';
+        worksheet.getCell('E5').value = CHECKED; // Distribution page is usually for return/dispatch
         worksheet.getCell('F5').value = 'ส่งคืน';
+        worksheet.getCell('E5').alignment = { horizontal: 'center' };
 
+        // 6: To / Date / Fund type
         worksheet.mergeCells('A6:D6');
         worksheet.getCell('A6').value = 'ถึง ....................................................................';
-        worksheet.getCell('F6').value = 'วันที่ต้องการ .........................';
-        worksheet.getCell('G6').value = date;
+        worksheet.mergeCells('E6:G6');
+        worksheet.getCell('E6').value = `วันที่ต้องการ   ${date}`;
         worksheet.mergeCells('H6:J6');
         worksheet.getCell('H6').value = 'ประเภทเงิน .........................';
 
+        // 7: Store
         worksheet.mergeCells('A7:D7');
         worksheet.getCell('A7').value = 'คลังพัสดุ';
 
-        worksheet.mergeCells('A8:G8');
+        // 8-9: Type of asset
+        worksheet.mergeCells('A8:F8');
         worksheet.getCell('A8').value = 'ประเภทพัสดุและ/หรือครุภัณฑ์ที่เกี่ยวข้อง';
-        worksheet.getCell('H8').value = 'ขั้นต้น';
-        worksheet.getCell('I8').value = 'ทดแทน';
-        worksheet.getCell('J8').value = 'ยืม';
+        worksheet.getCell('A8').font = { bold: true };
 
-        worksheet.mergeCells('A9:G9');
-        worksheet.getCell('A9').value = selectedStocks.map(s => s.brandModel).join(", ").substring(0, 100);
-        worksheet.getCell('H9').value = 'หมายเหตุ';
+        worksheet.getCell('G8').value = 'ขั้นต้น';
+        worksheet.getCell('H8').value = 'ทดแทน';
+        worksheet.getCell('I8').value = 'ยืม';
+        worksheet.getCell('J8').value = 'หมายเหตุ';
+
+        worksheet.mergeCells('A9:F9');
+        worksheet.getCell('A9').value = 'คอมพิวเตอร์และอุปกรณ์ต่อพ่วง';
+
+        worksheet.getCell('G9').value = CHECKED;
+        worksheet.getCell('H9').value = UNCHECKED;
+        worksheet.getCell('I9').value = UNCHECKED;
+        worksheet.getCell('G9').alignment = { horizontal: 'center' };
+        worksheet.getCell('H9').alignment = { horizontal: 'center' };
+        worksheet.getCell('I9').alignment = { horizontal: 'center' };
+
+        // Apply borders for header area boxes if needed, but per image only table and some boxes
+        applyBorders(4, 5, 5, 5); // Box for เบิก/ส่งคืน
+        applyBorders(8, 7, 9, 9); // Boxes for ขั้นต้น/ทดแทน/ยืม
+        applyBorders(8, 10, 9, 10); // Box for หมายเหตุ
 
         // Table Header
-        const headerRow = [
-            "ลำดับ", "หมายเลขครุภัณฑ์ / SN", "รายการ", "รหัส", "หน่วยนับ", "จำนวน", "จ่ายหรือคืน ค้างจ่าย", "ราคา หน่วยละ", "ราคารวม", "ลงชื่อผู้จำหน่าย"
-        ];
-        worksheet.addRow(headerRow);
         const headerIndex = 10;
-        addBorders(headerIndex, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-        worksheet.getRow(headerIndex).font = { bold: true };
-        worksheet.getRow(headerIndex).alignment = { horizontal: 'center' };
+        const headers = [
+            "ลำดับ", "หมายเลขครุภัณฑ์ / SN", "รายการ", "รหัส", "หน่วยนับ", "จำนวน", "จ่ายหรือคืน", "ค้างจ่าย", "ราคา หน่วยละ", "ราคารวม", "ลงชื่อผู้จำหน่าย"
+        ];
+        const hRow = worksheet.getRow(headerIndex);
+        headers.forEach((h, i) => {
+            const cell = hRow.getCell(i + 1);
+            cell.value = h;
+            cell.font = { bold: true };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.border = borderStyle;
+
+            // Set orange background for the last header as in the image
+            if (i === 10) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFFFA500' } // Orange
+                };
+            }
+        });
+        hRow.height = 30;
 
         // Data Rows
         selectedStocks.forEach((stock, index) => {
-            const rowData = [
-                index + 1,
-                `${stock.assetId}${stock.serialNumber ? ' / ' + stock.serialNumber : ''}`,
-                stock.brandModel,
-                "ชม",
-                "เครื่อง",
-                1,
-                "",
-                "",
-                "",
-                "บรรเจิด"
-            ];
-            const newRow = worksheet.addRow(rowData);
-            addBorders(newRow.number, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+            const rowNumber = headerIndex + 1 + index;
+            const row = worksheet.getRow(rowNumber);
+            row.getCell(1).value = index + 1;
+            row.getCell(2).value = `${stock.assetId}${stock.serialNumber ? '\n' + stock.serialNumber : ''}`;
+            row.getCell(3).value = stock.brandModel;
+            row.getCell(4).value = "ชม.";
+            row.getCell(5).value = "เครื่อง";
+            row.getCell(6).value = 1;
+            row.getCell(7).value = 1; // จ่ายหรือคืน
+            row.getCell(8).value = ""; // ค้างจ่าย
+            row.getCell(9).value = "";
+            row.getCell(10).value = "";
+            row.getCell(11).value = "บรรเจิด";
+
+            row.eachCell((cell) => {
+                cell.border = borderStyle;
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            });
         });
+
+        // Footer Sections
+        let currentFooterRow = headerIndex + selectedStocks.length + 1;
+
+        // Sum rows
+        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow}`);
+        worksheet.getCell(`A${currentFooterRow}`).value = 'หลักฐานที่ใช้ในการเบิก/ส่งคืน';
+        worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
+        worksheet.getCell(`H${currentFooterRow}`).value = 'รวมแผ่นนี้';
+        applyBorders(currentFooterRow, 1, currentFooterRow, 11);
+
+        currentFooterRow++;
+        worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
+        worksheet.getCell(`H${currentFooterRow}`).value = 'รวมทั้งสิ้น';
+        applyBorders(currentFooterRow, 8, currentFooterRow, 11);
+
+        currentFooterRow++;
+        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
+        worksheet.getCell(`A${currentFooterRow}`).value = 'ให้บุคคลต่อไปนี้เป็นผู้รับพัสดุแทนได้';
+        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
+        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้ตรวจสอบ ..............................................................';
+        currentFooterRow++;
+        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
+        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้อนุมัติจ่าย/รับคืน .....................................................';
+
+        currentFooterRow++;
+        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
+        worksheet.getCell(`A${currentFooterRow}`).value = `ผู้มีสิทธิเบิก/ส่งคืน   นาย ณรงค์ รวมสุข`;
+        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow + 1}`);
+        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้จ่าย .....................................................................';
+        worksheet.getCell(`H${currentFooterRow}`).alignment = { vertical: 'top' };
+
+        currentFooterRow += 2;
+        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 2}`);
+        worksheet.getCell(`A${currentFooterRow}`).value = 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว';
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top' };
+
+        // Codes legend
+        worksheet.getCell(`H${currentFooterRow}`).value = 'รหัสจ่าย';
+        worksheet.getCell(`J${currentFooterRow}`).value = 'ค.  ครั้งคราว';
+        currentFooterRow++;
+        worksheet.getCell(`J${currentFooterRow}`).value = 'ป.  ประจำ';
+        currentFooterRow++;
+        worksheet.getCell(`H${currentFooterRow}`).value = 'รหัสคืน';
+        worksheet.getCell(`J${currentFooterRow}`).value = 'ช.  ใช้การได้';
+        currentFooterRow++;
+        worksheet.getCell(`J${currentFooterRow}`).value = 'ชม.  ใช้การไม่ได้';
+
+        currentFooterRow++;
+        worksheet.mergeCells(`A${currentFooterRow}:A${currentFooterRow + 1}`);
+        worksheet.getCell(`A${currentFooterRow}`).value = 'ผู้รับพัสดุ';
+
+        // Apply outer borders for footer area if needed
+        applyBorders(headerIndex + selectedStocks.length + 1, 1, currentFooterRow + 1, 11);
 
         // Generate and Save
         const buffer = await workbook.xlsx.writeBuffer();
-        const fileName = `Export_${date}.xlsx`;
+        const fileName = `ใบเบิกหรือใบส่งคืน_${date}.xlsx`;
         saveAs(new Blob([buffer]), fileName);
     };
 

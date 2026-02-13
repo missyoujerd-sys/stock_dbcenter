@@ -29,31 +29,33 @@ export default function Login() {
     }
 
     return (
-        <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
-            <div className="w-100" style={{ maxWidth: "400px" }}>
-                <Card className="shadow-sm border-0">
-                    <Card.Body>
-                        <div className="text-center mb-4">
-                            <h2 className="mb-3 text-primary fw-bold">เข้าสู่ระบบ</h2>
-                            <p className="text-muted">ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
-                        </div>
-                        {error && <Alert variant="danger">{error}</Alert>}
-                        <Form onSubmit={handleSubmit}>
-                            <Form.Group id="email" className="mb-3">
-                                <Form.Label>Email</Form.Label>
-                                <Form.Control type="email" ref={emailRef} required placeholder="name@example.com" />
-                            </Form.Group>
-                            <Form.Group id="password" className="mb-4">
-                                <Form.Label>Password</Form.Label>
-                                <Form.Control type="password" ref={passwordRef} required placeholder="*******" />
-                            </Form.Group>
-                            <Button disabled={loading} className="w-100" type="submit" size="lg">
-                                <FaSignInAlt className="me-2" /> เข้าสู่ระบบ
-                            </Button>
-                        </Form>
-                    </Card.Body>
-                </Card>
-            </div>
-        </Container>
+        <div className="auth-background d-flex align-items-center justify-content-center">
+            <Container>
+                <div className="mx-auto" style={{ maxWidth: "400px" }}>
+                    <Card className="auth-card border-0 p-3">
+                        <Card.Body>
+                            <div className="text-center mb-4">
+                                <h2 className="mb-3 text-primary fw-bold">เข้าสู่ระบบ</h2>
+                                <p className="text-muted">ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
+                            </div>
+                            {error && <Alert variant="danger">{error}</Alert>}
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group id="email" className="mb-3">
+                                    <Form.Label>Email</Form.Label>
+                                    <Form.Control type="email" ref={emailRef} required placeholder="name@example.com" />
+                                </Form.Group>
+                                <Form.Group id="password" className="mb-4">
+                                    <Form.Label>Password</Form.Label>
+                                    <Form.Control type="password" ref={passwordRef} required placeholder="*******" />
+                                </Form.Group>
+                                <Button disabled={loading} className="w-100" type="submit" size="lg">
+                                    <FaSignInAlt className="me-2" /> เข้าสู่ระบบ
+                                </Button>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+                </div>
+            </Container>
+        </div>
     );
 }
