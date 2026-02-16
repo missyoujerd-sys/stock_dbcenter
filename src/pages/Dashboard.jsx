@@ -57,7 +57,7 @@ export default function Dashboard() {
 
     return (
         <div>
-            <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบครับ (Dashboard)</h2>
+            <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบ (Dashboard)</h2>
 
             <Row className="mb-2">
                 <Col xs={12} md={6} lg={4} className="mb-3">
@@ -84,20 +84,20 @@ export default function Dashboard() {
                     </Card>
                 </Col>
                 <Col xs={12} md={12} lg={4} className="mb-3">
-                    <Card className="text-white bg-warning shadow h-100 border-0">
+                    <Card className="text-white bg-danger shadow h-100 border-0">
                         <Card.Body className="d-flex align-items-center justify-content-between">
                             <div>
                                 <h6 className="opacity-75">จำหน่ายแล้ว (Distributed)</h6>
-                                <h2 className="mb-0 fw-bold text-dark">{summary.distributed}</h2>
-                                <small className="text-dark">สถานะ "จำหน่าย"</small>
+                                <h2 className="mb-0 fw-bold">{summary.distributed}</h2>
+                                <small>สถานะ "จำหน่าย"</small>
                             </div>
-                            <FaTruck size={40} className="opacity-50 text-dark" />
+                            <FaTruck size={40} className="opacity-50" />
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
 
-            <h4 className="mb-3 mt-4 text-dark fw-bold">เมนูด่วนกดเลยครับ (Quick Menu)</h4>
+            <h4 className="mb-3 mt-4 text-dark fw-bold">เมนูด่วนกดเลย (Quick Menu)</h4>
             <Row className="mb-4">
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/incoming" className="text-decoration-none">
@@ -147,7 +147,7 @@ export default function Dashboard() {
                             <thead className="bg-light">
                                 <tr>
                                     <th>วันที่</th>
-                                    <th>Asset ID</th>
+                                    <th>หมายเลขครุภัณฑ์</th>
                                     <th>ยี่ห้อ/รุ่น</th>
                                     <th>หน่วยงาน</th>
                                     <th>สถานะ</th>
@@ -163,7 +163,7 @@ export default function Dashboard() {
                                         <td>{stock.brandModel}</td>
                                         <td>{stock.department}</td>
                                         <td>
-                                            <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'warning'} className={stock.status === 'จำหน่าย' ? 'text-dark' : ''}>
+                                            <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'danger'}>
                                                 {stock.status}
                                             </Badge>
                                         </td>

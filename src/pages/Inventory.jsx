@@ -55,7 +55,8 @@ export default function Inventory() {
                 <Card.Header className="bg-white py-3 d-flex flex-wrap justify-content-between align-items-center">
                     <div className="d-flex align-items-center mb-2 mb-md-0">
                         <Button
-                            className="btn-outline-orange me-3"
+                            variant="warning"
+                            className="me-3"
                             size="sm"
                             onClick={() => navigate('/')}
                         >
@@ -87,7 +88,7 @@ export default function Inventory() {
                             <thead className="bg-light">
                                 <tr>
                                     <th>วันที่</th>
-                                    <th>Asset ID</th>
+                                    <th>หมายเลขครุภัณฑ์</th>
                                     <th>ยี่ห้อ/รุ่น</th>
                                     <th>S/N</th>
                                     <th>หน่วยงาน/อาคาร</th>
@@ -111,7 +112,7 @@ export default function Inventory() {
                                                 <small className="text-muted">{stock.building}</small>
                                             </td>
                                             <td>
-                                                <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'warning'} className={stock.status === 'จำหน่าย' ? 'text-dark' : ''}>
+                                                <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'danger'}>
                                                     {stock.status === 'รับเข้า' ? 'รับเข้า (Available)' : stock.status}
                                                 </Badge>
                                             </td>

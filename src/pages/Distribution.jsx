@@ -352,7 +352,8 @@ export default function Distribution() {
             <Card.Header className="bg-white py-3 d-md-flex justify-content-between align-items-center">
                 <div className="d-flex flex-wrap align-items-center gap-2">
                     <Button
-                        className="btn-outline-orange me-2"
+                        variant="warning"
+                        className="me-2"
                         size="sm"
                         onClick={() => navigate('/')}
                     >
@@ -391,7 +392,7 @@ export default function Distribution() {
                                     />
                                 </th>
                                 <th>วันที่สำรวจ</th>
-                                <th>Asset ID</th>
+                                <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ/รุ่น</th>
                                 <th>S/N</th>
                                 <th>หน่วยงาน</th>
