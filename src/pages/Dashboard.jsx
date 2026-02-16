@@ -7,10 +7,13 @@ import { Link } from 'react-router-dom';
 import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList, FaHome, FaFileExcel } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Dashboard() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const [summary, setSummary] = useState({
         total: 0,
@@ -41,7 +44,9 @@ export default function Dashboard() {
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
+                        category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
+                        computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
@@ -293,6 +298,11 @@ export default function Dashboard() {
         saveAs(blob, `Stock_Summary_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
     return (
         <div>
             <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบครับ (Dashboard)</h2>
@@ -404,7 +414,12 @@ export default function Dashboard() {
                                 {loading ? (
                                     <tr><td colSpan="5" className="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
                                 ) : stocks.slice(0, 10).map((stock) => (
-                                    <tr key={stock.id}>
+                                    <tr
+                                        key={stock.id}
+                                        onClick={() => handleRowClick(stock)}
+                                        style={{ cursor: 'pointer' }}
+                                        title="คลิกเพื่อดูรายละเอียด"
+                                    >
                                         <td>{stock.importDate}</td>
                                         <td>{stock.assetId}</td>
                                         <td>{stock.brandModel}</td>
@@ -422,6 +437,12 @@ export default function Dashboard() {
                     </div>
                 </Card.Body>
             </Card>
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
         </div>
     );
 }

@@ -7,11 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { FaWarehouse, FaSearch, FaHome, FaFileExcel } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +33,9 @@ export default function Inventory() {
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
+                        category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
+                        computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
@@ -291,6 +296,11 @@ export default function Inventory() {
         saveAs(blob, `Inventory_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
     return (
         <div className="container-fluid py-4">
             <Card className="shadow-sm border-0">
@@ -353,7 +363,12 @@ export default function Inventory() {
                                     <tr><td colSpan="7" className="text-center py-5 text-muted">ไม่พบข้อมูลพัสดุ</td></tr>
                                 ) : (
                                     filteredStocks.map((stock) => (
-                                        <tr key={stock.id}>
+                                        <tr
+                                            key={stock.id}
+                                            onClick={() => handleRowClick(stock)}
+                                            style={{ cursor: 'pointer' }}
+                                            title="คลิกเพื่อดูรายละเอียด"
+                                        >
                                             <td>{stock.importDate}</td>
                                             <td className="fw-bold">{stock.assetId}</td>
                                             <td>{stock.brandModel}</td>
@@ -379,6 +394,12 @@ export default function Inventory() {
                     <small>แสดงทั้งหมด {filteredStocks.length} รายการ</small>
                 </Card.Footer>
             </Card>
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
         </div>
     );
 }
