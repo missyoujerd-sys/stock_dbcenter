@@ -27,8 +27,10 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอม PC": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
-        "Notebook-Tablet-TV": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "คอมพิวเตอร์ PC - Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "จอคอมพิวเตอร์": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "TV": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
+        "Tablet": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "Apple"],
         "Printer": [
             "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
             "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
@@ -36,7 +38,21 @@ export default function IncomingStock() {
             "เครื่องพิมพ์ความร้อน (Thermal Printer)",
             "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
         ],
-        "UPS": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"]
+        "Scanner": [
+            "สแกนเนอร์ Canon PIXMA รุ่น E4570",
+            "สแกนเนอร์ Epson Scaner Perfection V39II",
+            "สแกนเนอร์ Epson WorkForce DS-410",
+            "สแกนเนอร์ FUJITSU Scanner ScanSnap iX1600",
+            "สแกนเนอร์ Brother DS-740D",
+            "สแกนเนอร์ Aibecy BK50 Portable 10 Mega-pixel",
+            "สแกนเนอร์ Canon LIDE 300",
+            "สแกนเนอร์ HP Deskjet 2775/2777 Wifi",
+            "สแกนเนอร์ Brother Scanner ADS-1800W",
+            "สแกนเนอร์ CANON PRINTER PIXMA E3370"
+        ],
+
+
+        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"]
     };
 
     const handleChange = (e) => {
