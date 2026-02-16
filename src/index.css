@@ -119,3 +119,131 @@ h6 {
   font-size: 1rem;
   transition: color 0.3s ease;
 }
+
+/* DatePicker Custom Styles */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family: 'Inter', sans-serif !important;
+  border: none !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.react-datepicker__header {
+  background-color: #fff !important;
+  border-bottom: none !important;
+  padding-top: 0 !important;
+}
+
+.react-datepicker__day-name {
+  color: #6c757d !important;
+  font-weight: 600 !important;
+  width: 2.5rem !important;
+  line-height: 2.5rem !important;
+  margin: 0.2rem !important;
+}
+
+.react-datepicker__day {
+  width: 2.5rem !important;
+  line-height: 2.5rem !important;
+  margin: 0.2rem !important;
+  border-radius: 50% !important;
+  font-weight: 500;
+  color: #333;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #0d6efd !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.react-datepicker__day--today {
+  font-weight: bold;
+  color: #0d6efd;
+  background-color: transparent;
+  border: 1px solid #0d6efd;
+}
+
+.react-datepicker__day:hover {
+  background-color: #e9ecef !important;
+  color: #333 !important;
+}
+
+.react-datepicker__day--disabled {
+  color: #ccc !important;
+}
+
+
+
+.text-purple {
+  color: #8e44ad !important;
+}
+
+.text-yellow-dark {
+  color: #d4ac0d !important;
+}
+
+/* Quick Menu Custom Colors */
+.quick-menu-incoming {
+  background-color: #e9f7ef !important;
+  /* Light Green */
+  border: 1px solid #2ecc71 !important;
+  transition: all 0.3s ease;
+}
+
+.quick-menu-incoming:hover {
+  background-color: #d4efdf !important;
+  transform: translateY(-5px);
+}
+
+.quick-menu-distribution {
+  background-color: #fef9e7 !important;
+  /* Light Yellow */
+  border: 1px solid #f1c40f !important;
+  transition: all 0.3s ease;
+}
+
+.quick-menu-distribution:hover {
+  background-color: #fcf3cf !important;
+  transform: translateY(-5px);
+}
+
+.quick-menu-inventory {
+  background-color: #f5eef8 !important;
+  /* Light Purple */
+  border: 1px solid #9b59b6 !important;
+  transition: all 0.3s ease;
+}
+
+.quick-menu-inventory:hover {
+  background-color: #ebdef0 !important;
+  transform: translateY(-5px);
+}
+
+/* Custom Light Red - updating to be consistent if needed, but keeping existing */
+.bg-light-red {
+  background-color: #ff6b6b !important;
+  color: white !important;
+}
+
+.btn-light-red {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+}
+
+.btn-light-red:hover {
+  background-color: #fa5252;
+  border-color: #fa5252;
+  color: white;
+}

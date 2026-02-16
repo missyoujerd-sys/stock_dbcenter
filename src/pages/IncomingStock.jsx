@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { Form, Button, Card, Row, Col, Alert } from 'react-bootstrap';
+import React, { useState, useRef } from 'react';
+import { Form, Button, Card, Row, Col, Alert, InputGroup } from 'react-bootstrap';
 import { db } from '../firebase';
 import { ref, push, set } from 'firebase/database';
 import { encryptData } from '../utils/encryption';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
-import { FaSave, FaHome } from 'react-icons/fa';
+import { FaSave, FaHome, FaChevronLeft, FaChevronRight, FaBarcode } from 'react-icons/fa';
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { th, enUS } from 'date-fns/locale';
+import { format } from 'date-fns';
+
+registerLocale('th', th);
 
 export default function IncomingStock() {
     const { currentUser } = useAuth();
@@ -13,6 +19,7 @@ export default function IncomingStock() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const serialInputRef = useRef(null);
 
     const [formData, setFormData] = useState({
         surveyDate: new Date().toISOString().split('T')[0],
@@ -39,18 +46,15 @@ export default function IncomingStock() {
             "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
         ],
         "Scanner": [
-            "สแกนเนอร์ Canon PIXMA รุ่น E4570",
-            "สแกนเนอร์ Epson Scaner Perfection V39II",
-            "สแกนเนอร์ Epson WorkForce DS-410",
-            "สแกนเนอร์ FUJITSU Scanner ScanSnap iX1600",
-            "สแกนเนอร์ Brother DS-740D",
-            "สแกนเนอร์ Aibecy BK50 Portable 10 Mega-pixel",
-            "สแกนเนอร์ Canon LIDE 300",
-            "สแกนเนอร์ HP Deskjet 2775/2777 Wifi",
-            "สแกนเนอร์ Brother Scanner ADS-1800W",
-            "สแกนเนอร์ CANON PRINTER PIXMA E3370"
-        ],
+            "สแกนเนอร์ Canon PIXMA ",
+            "สแกนเนอร์ Epson Scaner ",
+            "สแกนเนอร์ FUJITSU Scanner ",
+            "สแกนเนอร์ Brother ",
+            "สแกนเนอร์ Aibecy ",
+            "สแกนเนอร์ HP Deskjet ",
+            "สแกนเนอร์ Brother Scanner ",
 
+        ],
 
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"]
     };
@@ -129,32 +133,65 @@ export default function IncomingStock() {
                         <Col md={6}>
                             <Form.Group controlId="surveyDate">
                                 <Form.Label>ว/ด/ป สำรวจ</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    name="surveyDate"
-                                    value={formData.surveyDate}
-                                    onChange={handleChange}
-                                    required
+                                <DatePicker
+                                    selected={formData.surveyDate ? new Date(formData.surveyDate) : null}
+                                    onChange={(date) => {
+                                        if (date) {
+                                            const offsetDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                                            setFormData({ ...formData, surveyDate: offsetDate.toISOString().split('T')[0] });
+                                        } else {
+                                            setFormData({ ...formData, surveyDate: '' });
+                                        }
+                                    }}
+                                    dateFormat="dd/MM/yyyy"
+                                    locale="th"
+                                    className="form-control"
+                                    renderCustomHeader={({
+                                        date,
+                                        changeYear,
+                                        changeMonth,
+                                        decreaseMonth,
+                                        increaseMonth,
+                                        prevMonthButtonDisabled,
+                                        nextMonthButtonDisabled,
+                                    }) => (
+                                        <div
+                                            style={{
+                                                margin: 10,
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                backgroundColor: "#f8f9fa",
+                                                padding: "10px",
+                                                borderRadius: "8px 8px 0 0"
+                                            }}
+                                        >
+                                            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                                                <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled} type="button" className="btn btn-sm btn-light border-0">
+                                                    <FaChevronLeft />
+                                                </button>
+                                                <div style={{ textAlign: "center" }}>
+                                                    <div style={{ fontSize: "24px", fontWeight: "bold", color: "#333", lineHeight: "1.2" }}>
+                                                        {format(date, 'MMMM', { locale: th })}
+                                                    </div>
+                                                    <div style={{ fontSize: "16px", fontWeight: "bold", color: "#0d6efd", textTransform: "uppercase", letterSpacing: "1px" }}>
+                                                        {format(date, 'MMMM', { locale: enUS })}
+                                                    </div>
+                                                    <div style={{ fontSize: "14px", color: "#666", marginTop: "4px" }}>
+                                                        {date.getFullYear() + 543}
+                                                    </div>
+                                                </div>
+                                                <button onClick={increaseMonth} disabled={nextMonthButtonDisabled} type="button" className="btn btn-sm btn-light border-0">
+                                                    <FaChevronRight />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 />
                             </Form.Group>
                         </Col>
                         <Col md={6}>
-                            <Form.Group controlId="assetId">
-                                <Form.Label>หมายเลขครุภัณฑ์ (Asset ID)</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="assetId"
-                                    value={formData.assetId}
-                                    onChange={handleChange}
-                                    placeholder="ระบุหมายเลขครุภัณฑ์"
-                                    required
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-
-                    <Row className="mb-3">
-                        <Col md={4}>
                             <Form.Group controlId="category">
                                 <Form.Label>หมวดหมู่ (Category)</Form.Label>
                                 <Form.Select
@@ -176,6 +213,22 @@ export default function IncomingStock() {
                                     ))}
                                     <option value="อื่นๆ">อื่นๆ</option>
                                 </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+
+                    <Row className="mb-3">
+                        <Col md={4}>
+                            <Form.Group controlId="assetId">
+                                <Form.Label>หมายเลขครุภัณฑ์ (เลขครุภัณฑ์)</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="assetId"
+                                    value={formData.assetId}
+                                    onChange={handleChange}
+                                    placeholder="ระบุหมายเลขครุภัณฑ์"
+                                    required
+                                />
                             </Form.Group>
                         </Col>
                         <Col md={4}>
@@ -223,13 +276,23 @@ export default function IncomingStock() {
                         <Col md={4}>
                             <Form.Group controlId="serialNumber">
                                 <Form.Label>S/N (Serial Number)</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="serialNumber"
-                                    value={formData.serialNumber}
-                                    onChange={handleChange}
-                                    placeholder="ระบุ Serial Number"
-                                />
+                                <InputGroup>
+                                    <InputGroup.Text
+                                        onClick={() => serialInputRef.current.focus()}
+                                        style={{ cursor: 'pointer', backgroundColor: '#f8f9fa' }}
+                                        title="คลิกเพื่อสแกนบาร์โค้ด"
+                                    >
+                                        <FaBarcode />
+                                    </InputGroup.Text>
+                                    <Form.Control
+                                        type="text"
+                                        name="serialNumber"
+                                        ref={serialInputRef}
+                                        value={formData.serialNumber}
+                                        onChange={handleChange}
+                                        placeholder="ระบุ หรือ ยิงบาร์โค้ด"
+                                    />
+                                </InputGroup>
                             </Form.Group>
                         </Col>
                         <Col md={4}>
@@ -277,7 +340,8 @@ export default function IncomingStock() {
 
                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                         <Button
-                            className="btn-outline-orange me-md-2"
+                            variant="warning"
+                            className="me-md-2"
                             size="lg"
                             onClick={() => navigate('/')}
                         >
