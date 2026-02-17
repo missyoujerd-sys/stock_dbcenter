@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap');
+
+#root {
+  width: 100%;
+}
+
+body {
+  font-family: 'Prompt', sans-serif;
+  background-color: #f8f9fa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  transition: transform 0.2s;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.btn-lg {
+  border-radius: 10px;
+}
+
+.table th {
+  background-color: #f1f3f5;
+  font-weight: 500;
+}
