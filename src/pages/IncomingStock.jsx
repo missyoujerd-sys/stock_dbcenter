@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { ref, push, set, onValue } from 'firebase/database';
 import { encryptData, decryptData } from '../utils/encryption';
@@ -8,7 +9,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { th, enUS } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { Table, Badge } from 'react-bootstrap';
+import { Table, Badge, Card, Form, Row, Col, InputGroup, Button, Alert } from 'react-bootstrap';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 registerLocale('th', th);
@@ -126,7 +127,7 @@ export default function IncomingStock() {
         setLoading(false);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();
