@@ -112,36 +112,36 @@ export default function Dashboard() {
             <Row className="mb-4">
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/incoming" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card quick-menu-incoming">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
                                 <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaPlusSquare size={48} className="text-primary" />
+                                    <FaPlusSquare size={48} className="text-success" />
                                 </div>
-                                <h5 className="text-primary fw-bold mb-0">รับอุปกรณ์รอจำหน่ายเข้า</h5>
+                                <h5 className="text-success fw-bold mb-0">รับอุปกรณ์รอจำหน่ายเข้า</h5>
                             </Card.Body>
                         </Card>
                     </Link>
                 </Col>
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/distribution" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card quick-menu-distribution">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
                                 <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaTruck size={48} className="text-dark" />
+                                    <FaTruck size={48} className="text-yellow-dark" />
                                 </div>
-                                <h5 className="text-dark fw-bold mb-0">รอจำหน่ายออก</h5>
+                                <h5 className="text-yellow-dark fw-bold mb-0">รอจำหน่ายออก</h5>
                             </Card.Body>
                         </Card>
                     </Link>
                 </Col>
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/inventory" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card quick-menu-inventory">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
                                 <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaClipboardList size={48} className="text-dark" />
+                                    <FaClipboardList size={48} className="text-purple" />
                                 </div>
-                                <h5 className="text-dark fw-bold mb-0">ดูรายการทั้งหมด</h5>
+                                <h5 className="text-purple fw-bold mb-0">ดูรายการทั้งหมด</h5>
                             </Card.Body>
                         </Card>
                     </Link>
@@ -149,8 +149,16 @@ export default function Dashboard() {
             </Row>
 
             <Card className="shadow-sm border-0">
-                <Card.Header className="bg-white py-3">
+                <Card.Header className="bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 className="mb-0 text-primary fw-bold">รายการพัสดุล่าสุด</h5>
+                    <Button
+                        variant="success"
+                        size="sm"
+                        className="rounded-pill px-3 shadow-sm"
+                        onClick={handleExportExcel}
+                    >
+                        <FaFileExcel className="me-1" /> Export Excel
+                    </Button>
                 </Card.Header>
                 <Card.Body className="p-0">
                     <div className="table-responsive">
@@ -162,6 +170,7 @@ export default function Dashboard() {
                                     <th>ยี่ห้อ/รุ่น</th>
                                     <th>หน่วยงาน</th>
                                     <th>สถานะ</th>
+                                    <th>หมายเหตุ</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -183,6 +192,7 @@ export default function Dashboard() {
                                                 {stock.status}
                                             </Badge>
                                         </td>
+                                        <td><small className="text-muted">{stock.remarks || '-'}</small></td>
                                     </tr>
                                 ))}
                             </tbody>

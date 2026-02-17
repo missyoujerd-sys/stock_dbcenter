@@ -249,7 +249,7 @@ export default function Distribution() {
         // Table Header
         const headerIndex = 10;
         const headers = [
-            "ลำดับ", "หมายเลขครุภัณฑ์ / SN", "รายการ", "รหัส", "หน่วยนับ", "จำนวน", "จ่ายหรือคืน", "ค้างจ่าย", "ราคา หน่วยละ", "ราคารวม", "ลงชื่อผู้จำหน่าย"
+            "ลำดับ", "หมายเลขครุภัณฑ์ / SN", "รายการ", "รหัส", "หน่วยนับ", "จำนวน", "จ่ายหรือคืน", "ค้างจ่าย", "ราคา หน่วยละ", "ราคารวม/หมายเหตุ", "ลงชื่อผู้จ่าย"
         ];
         const hRow = worksheet.getRow(headerIndex);
         headers.forEach((h, i) => {
@@ -271,29 +271,40 @@ export default function Distribution() {
         hRow.height = 30;
 
         // Data Rows
-        selectedStocks.forEach((stock, index) => {
-            const rowNumber = headerIndex + 1 + index;
-            const row = worksheet.getRow(rowNumber);
-            row.getCell(1).value = index + 1;
-            row.getCell(2).value = `${stock.assetId}${stock.serialNumber ? '\n' + stock.serialNumber : ''}`;
-            row.getCell(3).value = stock.brandModel;
-            row.getCell(4).value = "ชม.";
-            row.getCell(5).value = "เครื่อง";
-            row.getCell(6).value = 1;
-            row.getCell(7).value = 1; // จ่ายหรือคืน
-            row.getCell(8).value = ""; // ค้างจ่าย
-            row.getCell(9).value = "";
-            row.getCell(10).value = "";
-            row.getCell(11).value = "บรรเจิด";
+        const dataCount = selectedStocks.length;
+        const targetRows = Math.max(dataCount, 15);
 
-            row.eachCell((cell) => {
+        for (let i = 0; i < targetRows; i++) {
+            const stock = i < dataCount ? selectedStocks[i] : null;
+            const rowNumber = headerIndex + 1 + i;
+            const row = worksheet.getRow(rowNumber);
+
+            if (stock) {
+                row.getCell(1).value = i + 1;
+                row.getCell(2).value = `${stock.assetId}\n${stock.serialNumber || ''}`;
+                row.getCell(3).value = stock.brandModel;
+                row.getCell(4).value = "ชม.";
+                row.getCell(5).value = "เครื่อง";
+                row.getCell(6).value = 1;
+                row.getCell(7).value = 1; // จ่ายหรือคืน
+                row.getCell(8).value = ""; // ค้างจ่าย
+                row.getCell(9).value = "";
+                row.getCell(10).value = stock.remarks || '-';
+                row.getCell(11).value = "";
+            } else {
+                row.getCell(1).value = i + 1;
+            }
+
+            // Apply borders to all columns (1-11)
+            for (let c = 1; c <= 11; c++) {
+                const cell = row.getCell(c);
                 cell.border = borderStyle;
                 cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-            });
-        });
+            }
+        }
 
         // Footer Sections
-        let currentFooterRow = headerIndex + selectedStocks.length + 1;
+        let currentFooterRow = headerIndex + targetRows + 1;
 
         // Sum rows
         worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow}`);
@@ -433,7 +444,7 @@ export default function Distribution() {
                                         <td>{stock.department}</td>
                                         <td><Badge bg="success">รับเข้า (Available)</Badge></td>
                                         <td className="text-center">
-                                            <Button variant="outline-warning" size="sm" onClick={() => handleShowDistribute(stock)}>
+                                            <Button className="btn-light-red" size="sm" onClick={() => handleShowDistribute(stock)}>
                                                 <FaTruck className="me-1" /> จำหน่าย
                                             </Button>
                                         </td>

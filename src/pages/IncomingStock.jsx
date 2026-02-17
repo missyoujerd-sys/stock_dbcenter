@@ -18,8 +18,13 @@ export default function IncomingStock() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [stocksLoading, setStocksLoading] = useState(true);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const serialInputRef = useRef(null);
+    const [stocks, setStocks] = useState([]);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const [stocksLoading, setStocksLoading] = useState(true);
     const [stocks, setStocks] = useState([]);
