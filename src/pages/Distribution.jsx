@@ -7,7 +7,8 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { FaFileExcel, FaTruck, FaSearch, FaHome } from 'react-icons/fa';
+import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle } from 'react-icons/fa';
+import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
     const navigate = useNavigate();
@@ -19,6 +20,8 @@ export default function Distribution() {
     const [showModal, setShowModal] = useState(false);
     const [distributeDate, setDistributeDate] = useState(new Date().toISOString().split('T')[0]);
     const [distributeError, setDistributeError] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const { currentUser } = useAuth();
 
     useEffect(() => {
@@ -39,8 +42,10 @@ export default function Distribution() {
                             department: decryptData(item.department),
                             serialNumber: decryptData(item.serialNumber),
                             assetId: decryptData(item.assetId),
+                            category: decryptData(item.category || ''),
                             brandModel: decryptData(item.brandModel),
-                            remarks: decryptData(item.remarks),
+                            computerName: decryptData(item.computerName || ''),
+                            remarks: decryptData(item.remarks || '-'),
                             // Dates are plain text
                         });
                     }
@@ -52,6 +57,12 @@ export default function Distribution() {
 
         return unsubscribe;
     }, []);
+
+    const handleInfoClick = (e, item) => {
+        e.stopPropagation();
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
 
     const toggleSelect = (id) => {
         setSelectedIds(prev =>
@@ -403,7 +414,7 @@ export default function Distribution() {
                                     />
                                 </th>
                                 <th>วันที่สำรวจ</th>
-                                <th>หมายเลขพัสดุ</th>
+                                <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ/รุ่น</th>
                                 <th>S/N</th>
                                 <th>หน่วยงาน</th>
@@ -437,6 +448,16 @@ export default function Distribution() {
                                                 <FaTruck className="me-1" /> จำหน่าย
                                             </Button>
                                         </td>
+                                        <td className="text-center">
+                                            <Button
+                                                variant="outline-info"
+                                                size="sm"
+                                                onClick={(e) => handleInfoClick(e, stock)}
+                                                title="ดูรายละเอียด"
+                                            >
+                                                <FaInfoCircle />
+                                            </Button>
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -444,6 +465,12 @@ export default function Distribution() {
                     </Table>
                 </div>
             </Card.Body>
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
 
             {/* Modal for Distribution */}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>

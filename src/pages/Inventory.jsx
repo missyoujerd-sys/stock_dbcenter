@@ -4,17 +4,14 @@ import { ref, onValue } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
 import { useNavigate } from 'react-router-dom';
-import { FaWarehouse, FaSearch, FaHome, FaFileExcel } from 'react-icons/fa';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -49,6 +46,11 @@ export default function Inventory() {
 
         return unsubscribe;
     }, []);
+
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
 
     const filteredStocks = stocks.filter(stock =>
         stock.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -348,7 +350,7 @@ export default function Inventory() {
                             <thead className="bg-light">
                                 <tr>
                                     <th>วันที่</th>
-                                    <th>หมายเลขพัสดุ</th>
+                                    <th>หมายเลขครุภัณฑ์</th>
                                     <th>ยี่ห้อ/รุ่น</th>
                                     <th>S/N</th>
                                     <th>หน่วยงาน/อาคาร</th>
@@ -375,11 +377,11 @@ export default function Inventory() {
                                             <td><small className="text-muted">{stock.serialNumber}</small></td>
                                             <td>
                                                 <div>{stock.department}</div>
-                                                <small className="text-muted">{stock.building}</small>
+                                                <small className="text-secondary">{stock.building}</small>
                                             </td>
                                             <td>
                                                 <Badge bg={stock.status === 'รับเข้า' ? 'success' : (stock.status === 'จำหน่าย' ? 'danger' : 'warning')}>
-                                                    {stock.status === 'รับเข้า' ? 'รับเข้า (Available)' : stock.status}
+                                                    {stock.status}
                                                 </Badge>
                                             </td>
                                             <td><small>{stock.remarks || '-'}</small></td>

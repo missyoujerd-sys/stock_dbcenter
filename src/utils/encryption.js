@@ -13,13 +13,24 @@ export const encryptData = (data) => {
 };
 
 export const decryptData = (ciphertext) => {
-    if (!ciphertext) return '';
+    if (!ciphertext || typeof ciphertext !== 'string') return ciphertext || '';
     try {
         const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
-        const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        return decryptedData;
+        const utf8String = bytes.toString(CryptoJS.enc.Utf8);
+
+        // If decryption results in an empty string, it's likely not encrypted
+        // or encrypted with a different key.
+        if (!utf8String) return ciphertext;
+
+        try {
+            return JSON.parse(utf8String);
+        } catch (jsonError) {
+            // If it's not valid JSON, it might just be a regular string that was partially 
+            // matched by AES decryption (unlikely but possible) or just raw data.
+            return utf8String;
+        }
     } catch (error) {
-        console.error("Decryption Error:", error);
-        return ciphertext; // Return original if fail (e.g. not encrypted)
+        // Silently return original if it's not a valid AES string format
+        return ciphertext;
     }
 };
