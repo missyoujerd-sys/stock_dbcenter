@@ -3,12 +3,15 @@ import { db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList, FaHome } from 'react-icons/fa';
+import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList, FaHome, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Dashboard() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     const [summary, setSummary] = useState({
         total: 0,
@@ -39,7 +42,10 @@ export default function Dashboard() {
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
+                        category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
+                        computerName: decryptData(item.computerName || ''),
+                        remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
                 }
@@ -54,6 +60,11 @@ export default function Dashboard() {
 
         return unsubscribe;
     }, []);
+
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
 
     return (
         <div>
@@ -157,13 +168,18 @@ export default function Dashboard() {
                                 {loading ? (
                                     <tr><td colSpan="5" className="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
                                 ) : stocks.slice(0, 10).map((stock) => (
-                                    <tr key={stock.id}>
+                                    <tr
+                                        key={stock.id}
+                                        onClick={() => handleRowClick(stock)}
+                                        style={{ cursor: 'pointer' }}
+                                        title="คลิกเพื่อดูรายละเอียด"
+                                    >
                                         <td>{stock.importDate}</td>
-                                        <td>{stock.assetId}</td>
+                                        <td className="fw-bold">{stock.assetId}</td>
                                         <td>{stock.brandModel}</td>
                                         <td>{stock.department}</td>
                                         <td>
-                                            <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'danger'}>
+                                            <Badge bg={stock.status === 'รับเข้า' ? 'success' : (stock.status === 'จำหน่าย' ? 'danger' : 'warning')}>
                                                 {stock.status}
                                             </Badge>
                                         </td>
@@ -174,6 +190,12 @@ export default function Dashboard() {
                     </div>
                 </Card.Body>
             </Card>
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
         </div>
     );
 }

@@ -10,6 +10,8 @@ import IncomingStock from './pages/IncomingStock';
 import Distribution from './pages/Distribution';
 import Inventory from './pages/Inventory';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
   return currentUser ? <Layout>{children}</Layout> : <Navigate to="/login" />;
@@ -28,7 +30,9 @@ function App() {
           } />
           <Route path="/incoming" element={
             <PrivateRoute>
-              <IncomingStock />
+              <ErrorBoundary>
+                <IncomingStock />
+              </ErrorBoundary>
             </PrivateRoute>
           } />
           <Route path="/distribution" element={

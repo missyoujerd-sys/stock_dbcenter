@@ -5,11 +5,14 @@ import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
 import { FaWarehouse, FaSearch, FaHome } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,7 +31,10 @@ export default function Inventory() {
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
+                        category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
+                        computerName: decryptData(item.computerName || ''),
+                        remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
                 }
@@ -41,6 +47,11 @@ export default function Inventory() {
 
         return unsubscribe;
     }, []);
+
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
 
     const filteredStocks = stocks.filter(stock =>
         stock.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,18 +113,23 @@ export default function Inventory() {
                                     <tr><td colSpan="6" className="text-center py-5 text-muted">ไม่พบข้อมูลพัสดุ</td></tr>
                                 ) : (
                                     filteredStocks.map((stock) => (
-                                        <tr key={stock.id}>
+                                        <tr
+                                            key={stock.id}
+                                            onClick={() => handleRowClick(stock)}
+                                            style={{ cursor: 'pointer' }}
+                                            title="คลิกเพื่อดูรายละเอียด"
+                                        >
                                             <td>{stock.importDate}</td>
                                             <td className="fw-bold">{stock.assetId}</td>
                                             <td>{stock.brandModel}</td>
                                             <td><small className="text-muted">{stock.serialNumber}</small></td>
                                             <td>
                                                 <div>{stock.department}</div>
-                                                <small className="text-muted">{stock.building}</small>
+                                                <small className="text-secondary">{stock.building}</small>
                                             </td>
                                             <td>
-                                                <Badge bg={stock.status === 'รับเข้า' ? 'success' : 'danger'}>
-                                                    {stock.status === 'รับเข้า' ? 'รับเข้า (Available)' : stock.status}
+                                                <Badge bg={stock.status === 'รับเข้า' ? 'success' : (stock.status === 'จำหน่าย' ? 'danger' : 'warning')}>
+                                                    {stock.status}
                                                 </Badge>
                                             </td>
                                         </tr>
@@ -127,6 +143,12 @@ export default function Inventory() {
                     <small>แสดงทั้งหมด {filteredStocks.length} รายการ</small>
                 </Card.Footer>
             </Card>
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
         </div>
     );
 }
