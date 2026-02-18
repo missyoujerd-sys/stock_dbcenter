@@ -217,31 +217,88 @@ h6 {
 .quick-menu-card {
   cursor: pointer;
   background-color: #ffffff;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 1.25rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
 .quick-menu-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
 }
 
-.quick-menu-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  background-color: #f8f9fa;
-  border-radius: 50%;
+/* Specific Card Themes - Quick Menu */
+.card-incoming {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.card-distribution {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+}
+
+.card-inventory {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+
+/* Summary Card Themes */
+.card-summary-total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.card-summary-available {
+  background: linear-gradient(135deg, #2af598 0%, #009efd 100%) !important;
+}
+
+.card-summary-distributed {
+  background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important;
+}
+
+.summary-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
 }
 
+.summary-card h6 {
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem !important;
+}
+
+.summary-card h2 {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+}
+
+.quick-menu-icon-wrapper {
+  width: 90px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem !important;
+}
+
 .quick-menu-card:hover .quick-menu-icon-wrapper {
-  background-color: #e9ecef;
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(5deg);
 }
 
 .quick-menu-card h5 {
-  font-size: 1rem;
-  transition: color 0.3s ease;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: white !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Custom DatePicker Styles */
@@ -288,4 +345,167 @@ h6 {
   color: #0d6efd !important;
 
 
+}
+
+/* Premium Navbar Styles */
+.premium-navbar {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+  padding: 0.8rem 0 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.navbar-brand-custom {
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px;
+  color: white !important;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand-icon {
+  font-size: 1.8rem;
+  margin-right: 0.75rem;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+}
+
+.nav-link-custom {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1.2rem !important;
+  margin: 0 0.2rem;
+  border-radius: 10px;
+  transition: all 0.3s ease !important;
+  display: flex;
+  align-items: center;
+}
+
+.nav-link-custom:hover {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-link-custom.active {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  font-weight: 700 !important;
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.logout-btn-custom {
+  border-radius: 12px !important;
+  padding: 0.6rem 1.2rem !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  transition: all 0.3s ease !important;
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn-custom:hover {
+  background: white !important;
+  color: #1e3c72 !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2) !important;
+}
+
+.user-email-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-right: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Premium Page Header Styles */
+.page-header-container {
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.page-title-badge {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 1.8rem 0.5rem 0.6rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  /* Slightly deeper shadow */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.page-icon-box {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.2rem;
+  box-shadow: 0 4px 10px rgba(30, 60, 114, 0.3);
+  font-size: 1.4rem;
+}
+
+.page-title-text {
+  font-size: 1.6rem !important;
+  font-weight: 800 !important;
+  color: #1a2a44 !important;
+  margin-bottom: 0 !important;
+  letter-spacing: -0.5px;
+}
+
+.page-title-text small {
+  font-weight: 500 !important;
+  color: #6c757d !important;
+  margin-left: 0.5rem;
+  font-size: 1.1rem !important;
+}
+
+/* --- Section Headers --- */
+.section-header-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-left: 1.2rem;
+}
+
+.section-accent {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(to bottom, #1e3c72, #2a5298);
+  border-radius: 10px;
+}
+
+.section-title-text {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 0 !important;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.section-title-badge {
+  background: rgba(30, 60, 114, 0.05);
+  color: #1e3c72;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 0.75rem;
+  border: 1px solid rgba(30, 60, 114, 0.1);
 }

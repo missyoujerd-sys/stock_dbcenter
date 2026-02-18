@@ -275,8 +275,7 @@ export default function Distribution() {
             const rowNumber = headerIndex + 1 + index;
             const row = worksheet.getRow(rowNumber);
             row.getCell(1).value = index + 1;
-            const snValue = stock.serialNumber && stock.serialNumber.trim() !== '-' ? stock.serialNumber.trim() : '';
-            row.getCell(2).value = snValue ? `${stock.assetId}\n${snValue}` : stock.assetId;
+            row.getCell(2).value = `${stock.assetId}${stock.serialNumber ? '\n' + stock.serialNumber : ''}`;
             row.getCell(3).value = stock.brandModel ? stock.brandModel.trim().replace(/-$/, '').trim() : '';
             row.getCell(4).value = "ชม.";
             row.getCell(5).value = "เครื่อง";
@@ -360,143 +359,166 @@ export default function Distribution() {
     );
 
     return (
-        <Card className="shadow-sm">
-            <Card.Header className="bg-white py-3 d-md-flex justify-content-between align-items-center">
-                <div className="d-flex flex-wrap align-items-center gap-2">
+        <>
+            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div className="page-title-badge">
+                    <div className="page-icon-box">
+                        <FaTruck />
+                    </div>
+                    <h2 className="page-title-text">
+                        จำหน่ายพัสดุ <small>(Distribution)</small>
+                    </h2>
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
                     <Button
                         variant="warning"
-                        className="me-2"
+                        className="logout-btn-custom border-warning text-dark px-4"
                         size="sm"
                         onClick={() => navigate('/')}
                     >
-                        <FaHome className="me-1" /> กลับเมนูหลัก
+                        <FaHome className="me-2" /> กลับเมนูหลัก
                     </Button>
-                    <h5 className="mb-0 text-primary fw-bold me-3"><FaTruck className="me-2" /> รายการพัสดุรอจำหน่าย</h5>
                     {selectedIds.length > 0 && (
-                        <Button variant="primary" size="sm" onClick={handleShowBulkDistribute}>
+                        <Button variant="primary" className="logout-btn-custom px-4" size="sm" onClick={handleShowBulkDistribute}>
                             จำหน่ายที่เลือก ({selectedIds.length})
                         </Button>
                     )}
                 </div>
-                <div className="mt-3 mt-md-0 w-100" style={{ maxWidth: '300px' }}>
-                    <div className="input-group">
-                        <span className="input-group-text bg-light border-end-0"><FaSearch className="text-muted" /></span>
-                        <Form.Control
-                            type="text"
-                            placeholder="ค้นหา ID, ยี่ห้อ, S/N..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="border-start-0"
-                        />
-                    </div>
-                </div>
-            </Card.Header>
-            <Card.Body className="p-0">
-                <div className="table-responsive">
-                    <Table hover striped className="mb-0 align-middle">
-                        <thead className="bg-light">
-                            <tr>
-                                <th style={{ width: '40px' }}>
-                                    <Form.Check
-                                        type="checkbox"
-                                        checked={selectedIds.length === filteredStocks.length && filteredStocks.length > 0}
-                                        onChange={toggleSelectAll}
-                                    />
-                                </th>
-                                <th>วันที่สำรวจ</th>
-                                <th>หมายเลขครุภัณฑ์</th>
-                                <th>ยี่ห้อ/รุ่น</th>
-                                <th>S/N</th>
-                                <th>หน่วยงาน</th>
-                                <th>สถานะ</th>
-                                <th className="text-center">จัดการ</th>
-                                <th className="text-center">กดดูรายละเอียด</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan="7" className="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
-                            ) : filteredStocks.length === 0 ? (
-                                <tr><td colSpan="7" className="text-center py-4 text-muted">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
-                            ) : (
-                                filteredStocks.map((stock) => (
-                                    <tr key={stock.id}>
-                                        <td>
-                                            <Form.Check
-                                                type="checkbox"
-                                                checked={selectedIds.includes(stock.id)}
-                                                onChange={() => toggleSelect(stock.id)}
-                                            />
-                                        </td>
-                                        <td>{stock.importDate}</td>
-                                        <td>{stock.assetId}</td>
-                                        <td>{stock.brandModel}</td>
-                                        <td><small className="text-muted">{stock.serialNumber}</small></td>
-                                        <td>{stock.department}</td>
-                                        <td><Badge bg="success">รับเข้า (Available)</Badge></td>
-                                        <td className="text-center">
-                                            <Button variant="outline-warning" size="sm" onClick={() => handleShowDistribute(stock)}>
-                                                <FaTruck className="me-1" /> จำหน่าย
-                                            </Button>
-                                        </td>
-                                        <td className="text-center">
-                                            <Button
-                                                variant="outline-info"
-                                                size="sm"
-                                                onClick={(e) => handleInfoClick(e, stock)}
-                                                title="ดูรายละเอียด"
-                                            >
-                                                <FaInfoCircle />
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </Table>
-                </div>
-            </Card.Body>
+            </div>
 
-            <ItemDetailModal
-                show={showDetailModal}
-                onHide={() => setShowDetailModal(false)}
-                item={selectedItem}
-            />
+            <div className="section-header-container mt-2">
+                <div className="section-accent"></div>
+                <h4 className="section-title-text">
+                    รายการพัสดุรอจำหน่าย
+                    <span className="section-title-badge">PENDING DISTRIBUTION</span>
+                </h4>
+            </div>
 
-            {/* Modal for Distribution */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>ยืนยันการจำหน่ายพัสดุ</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {distributeError && <Alert variant="danger">{distributeError}</Alert>}
-                    <p><strong>จำนวนพัสดุที่เลือก:</strong> {selectedIds.length} รายการ</p>
-                    <div className="mb-3" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                        {stocks.filter(s => selectedIds.includes(s.id)).map(s => (
-                            <div key={s.id} className="small border-bottom py-1">
-                                {s.assetId} - {s.brandModel.trim().replace(/-$/, '').trim()}
+            <Card className="shadow-sm border-0">
+                <Card.Header className="bg-white py-3">
+                    <div className="d-flex justify-content-end align-items-center">
+                        <div style={{ maxWidth: '300px', width: '100%' }}>
+                            <div className="input-group">
+                                <span className="input-group-text bg-light border-end-0"><FaSearch className="text-muted" /></span>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="ค้นหา ID, ยี่ห้อ, S/N..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="border-start-0"
+                                />
                             </div>
-                        ))}
+                        </div>
                     </div>
-                    <hr />
-                    <Form.Group className="mb-3">
-                        <Form.Label>วันที่จำหน่าย (Distribution Date)</Form.Label>
-                        <Form.Control
-                            type="date"
-                            value={distributeDate}
-                            onChange={(e) => setDistributeDate(e.target.value)}
-                        />
-                    </Form.Group>
-                    <Alert variant="info">
-                        <FaFileExcel className="me-2" />
-                        ระบบจะเปลี่ยนสถานะพัสดุทั้งหมดเป็น "จำหน่าย" และดาวน์โหลดไฟล์ Excel "ใบเบิกหรือใบส่งคืน"
-                    </Alert>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>ยกเลิก</Button>
-                    <Button variant="primary" onClick={handleDistribute}>ยืนยันจำหน่าย</Button>
-                </Modal.Footer>
-            </Modal>
-        </Card>
+                </Card.Header>
+                <Card.Body className="p-0">
+                    <div className="table-responsive">
+                        <Table hover striped className="mb-0 align-middle">
+                            <thead className="bg-light">
+                                <tr>
+                                    <th style={{ width: '40px' }}>
+                                        <Form.Check
+                                            type="checkbox"
+                                            checked={selectedIds.length === filteredStocks.length && filteredStocks.length > 0}
+                                            onChange={toggleSelectAll}
+                                        />
+                                    </th>
+                                    <th>วันที่สำรวจ</th>
+                                    <th>หมายเลขครุภัณฑ์</th>
+                                    <th>ยี่ห้อ/รุ่น</th>
+                                    <th>S/N</th>
+                                    <th>หน่วยงาน</th>
+                                    <th>สถานะ</th>
+                                    <th className="text-center">จัดการ</th>
+                                    <th className="text-center">กดดูรายละเอียด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr><td colSpan="7" className="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+                                ) : filteredStocks.length === 0 ? (
+                                    <tr><td colSpan="7" className="text-center py-4 text-muted">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
+                                ) : (
+                                    filteredStocks.map((stock) => (
+                                        <tr key={stock.id}>
+                                            <td>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    checked={selectedIds.includes(stock.id)}
+                                                    onChange={() => toggleSelect(stock.id)}
+                                                />
+                                            </td>
+                                            <td>{stock.importDate}</td>
+                                            <td>{stock.assetId}</td>
+                                            <td>{stock.brandModel}</td>
+                                            <td><small className="text-muted">{stock.serialNumber}</small></td>
+                                            <td>{stock.department}</td>
+                                            <td><Badge bg="success">รับเข้า (Available)</Badge></td>
+                                            <td className="text-center">
+                                                <Button variant="outline-warning" size="sm" onClick={() => handleShowDistribute(stock)}>
+                                                    <FaTruck className="me-1" /> จำหน่าย
+                                                </Button>
+                                            </td>
+                                            <td className="text-center">
+                                                <Button
+                                                    variant="outline-info"
+                                                    size="sm"
+                                                    onClick={(e) => handleInfoClick(e, stock)}
+                                                    title="ดูรายละเอียด"
+                                                >
+                                                    <FaInfoCircle />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </Table>
+                    </div>
+                </Card.Body>
+
+                <ItemDetailModal
+                    show={showDetailModal}
+                    onHide={() => setShowDetailModal(false)}
+                    item={selectedItem}
+                />
+
+                {/* Modal for Distribution */}
+                <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>ยืนยันการจำหน่ายพัสดุ</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {distributeError && <Alert variant="danger">{distributeError}</Alert>}
+                        <p><strong>จำนวนพัสดุที่เลือก:</strong> {selectedIds.length} รายการ</p>
+                        <div className="mb-3" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                            {stocks.filter(s => selectedIds.includes(s.id)).map(s => (
+                                <div key={s.id} className="small border-bottom py-1">
+                                    {s.assetId} - {s.brandModel.trim().replace(/-$/, '').trim()}
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+                        <Form.Group className="mb-3">
+                            <Form.Label>วันที่จำหน่าย (Distribution Date)</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={distributeDate}
+                                onChange={(e) => setDistributeDate(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Alert variant="info">
+                            <FaFileExcel className="me-2" />
+                            ระบบจะเปลี่ยนสถานะพัสดุทั้งหมดเป็น "จำหน่าย" และดาวน์โหลดไฟล์ Excel "ใบเบิกหรือใบส่งคืน"
+                        </Alert>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>ยกเลิก</Button>
+                        <Button variant="primary" onClick={handleDistribute}>ยืนยันจำหน่าย</Button>
+                    </Modal.Footer>
+                </Modal>
+            </Card>
+        </>
     );
 }
