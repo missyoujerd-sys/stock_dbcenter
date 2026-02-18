@@ -284,7 +284,7 @@ export default function Distribution() {
             row.getCell(8).value = ""; // ค้างจ่าย
             row.getCell(9).value = "";
             row.getCell(10).value = "";
-            row.getCell(11).value = "";
+            row.getCell(11).value = "บรรเจิด";
 
             row.eachCell((cell) => {
                 cell.border = borderStyle;
