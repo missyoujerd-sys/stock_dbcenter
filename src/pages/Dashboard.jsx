@@ -177,10 +177,10 @@ export default function Dashboard() {
                 </h4>
             </div>
             <Card className="shadow-sm border-0">
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover striped className="mb-0">
-                            <thead className="bg-light">
+                <Card.Body className="p-0 bg-transparent">
+                    <div className="table-responsive p-2">
+                        <Table hover className="mb-0 premium-table">
+                            <thead className="premium-thead">
                                 <tr>
                                     <th>วันที่</th>
                                     <th>หมายเลขครุภัณฑ์</th>

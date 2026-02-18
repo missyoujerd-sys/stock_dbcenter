@@ -12,32 +12,24 @@ import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
     const navigate = useNavigate();
-    const [stocks, setStocks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStock, setSelectedStock] = useState(null); // Keep for single edit if needed, but we'll use selectedIds
-    const [selectedIds, setSelectedIds] = useState([]);
-    const [showModal, setShowModal] = useState(false);
-    const [distributeDate, setDistributeDate] = useState(new Date().toISOString().split('T')[0]);
-    const [distributeError, setDistributeError] = useState('');
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const { currentUser } = useAuth();
+    const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();
             const loadedStocks = [];
+            let total = 0, available = 0, distributed = 0;
+
             if (data) {
                 for (const key in data) {
                     const item = data[key];
-                    // Only show items that are currently "Available" (รับเข้า)
+                    total++;
                     if (item.status === 'รับเข้า') {
+                        available++;
                         loadedStocks.push({
                             id: key,
                             ...item,
-                            // Decrypt fields
                             building: decryptData(item.building),
                             department: decryptData(item.department),
                             serialNumber: decryptData(item.serialNumber),
@@ -46,12 +38,14 @@ export default function Distribution() {
                             brandModel: decryptData(item.brandModel),
                             computerName: decryptData(item.computerName || ''),
                             remarks: decryptData(item.remarks || '-'),
-                            // Dates are plain text
                         });
+                    } else if (item.status === 'จำหน่าย') {
+                        distributed++;
                     }
                 }
             }
             setStocks(loadedStocks);
+            setSummary({ total, available, distributed });
             setLoading(false);
         });
 
@@ -412,10 +406,10 @@ export default function Distribution() {
                         </div>
                     </div>
                 </Card.Header>
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover striped className="mb-0 align-middle">
-                            <thead className="bg-light">
+                <Card.Body className="p-0 bg-transparent">
+                    <div className="table-responsive p-2">
+                        <Table hover className="mb-0 align-middle premium-table">
+                            <thead className="premium-thead">
                                 <tr>
                                     <th style={{ width: '40px' }}>
                                         <Form.Check
