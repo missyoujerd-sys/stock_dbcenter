@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaWarehouse, FaSearch, FaHome } from 'react-icons/fa';
+import { FaWarehouse, FaSearch, FaHome, FaTruck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 
