@@ -41,9 +41,9 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
-        "TV": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
-        "Tablet": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "Apple"],
+        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "Apple"],
+        "TV": ["LG", "Samsung", "Philips"],
+        "Tablet": ["Samsung", "Apple"],
         "Printer": [
             "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
             "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
@@ -53,6 +53,7 @@ export default function IncomingStock() {
         ],
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
         "จอคอมพิวเตอร์": [
+            "จอคอมพิวเตอร์ Acer",
             "จอคอมพิวเตอร์ AOC ",
             "จอคอมพิวเตอร์ ZOWIE",
             "จอคอมพิวเตอร์ BenQ ",
@@ -465,54 +466,6 @@ export default function IncomingStock() {
                     </Form>
                 </Card.Body>
             </Card>
-
-            <Card className="shadow-sm border-0 mt-4">
-                <Card.Header className="bg-white py-3">
-                    <h5 className="mb-0 text-primary fw-bold">
-                        <FaClipboardList className="me-2" /> รายการพัสดุล่าสุด (Latest Items)
-                    </h5>
-                </Card.Header>
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover striped className="mb-0">
-                            <thead className="bg-light">
-                                <tr>
-                                    <th>วันที่</th>
-                                    <th>หมายเลขพัสดุ</th>
-                                    <th>ยี่ห้อ/รุ่น</th>
-                                    <th>หน่วยงาน</th>
-                                    <th>สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stocksLoading ? (
-                                    <tr><td colSpan="5" className="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
-                                ) : stocks.length === 0 ? (
-                                    <tr><td colSpan="5" className="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>
-                                ) : stocks.slice(0, 5).map((stock) => (
-                                    <tr
-                                        key={stock.id}
-                                        onClick={() => handleRowClick(stock)}
-                                        style={{ cursor: 'pointer' }}
-                                        title="คลิกเพื่อดูรายละเอียด"
-                                    >
-                                        <td>{stock.importDate}</td>
-                                        <td className="fw-bold">{stock.assetId}</td>
-                                        <td>{stock.brandModel}</td>
-                                        <td>{stock.department}</td>
-                                        <td>
-                                            <Badge bg={stock.status === 'รับเข้า' ? 'success' : (stock.status === 'จำหน่าย' ? 'danger' : 'warning')}>
-                                                {stock.status}
-                                            </Badge>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </div>
-                </Card.Body>
-            </Card>
-
             <ItemDetailModal
                 show={showDetailModal}
                 onHide={() => setShowDetailModal(false)}

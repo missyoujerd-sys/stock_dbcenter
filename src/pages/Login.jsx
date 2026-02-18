@@ -32,6 +32,7 @@ export default function Login() {
         <div className="login-page">
             <div className="login-card">
                 <h1 className="login-title">Login</h1>
+                <h2 className="login-subtitle">ระบบจัดการ Stock อุปกรณ์รอจำหน่าย</h2>
 
                 {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
 
@@ -42,7 +43,7 @@ export default function Login() {
                             type="text"
                             ref={emailRef}
                             required
-                            placeholder="Username"
+                            placeholder="Email"
                             className="login-input"
                         />
                     </div>
@@ -58,26 +59,12 @@ export default function Login() {
                         />
                     </div>
 
-                    <div className="login-options">
-                        <label className="remember-me">
-                            <input type="checkbox" className="remember-checkbox" />
-                            <span>Remember me</span>
-                        </label>
-                        <Link to="/forgot-password" title="Forgot password?" className="forgot-link">
-                            Forgot your password?
-                        </Link>
-                    </div>
-
                     <Button disabled={loading} className="login-submit-btn" type="submit">
                         LOGIN
                     </Button>
                 </Form>
 
-                <div className="forgot-password-footer">
-                    <Link to="/forgot-password" style={{ color: 'inherit', textDecoration: 'none' }}>
-                        Forgot your password?
-                    </Link>
-                </div>
+
             </div>
         </div>
     );
