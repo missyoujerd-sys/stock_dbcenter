@@ -61,23 +61,37 @@ export default function Inventory() {
     );
 
     return (
-        <div className="container-fluid py-4">
-            <Card className="shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex flex-wrap justify-content-between align-items-center">
-                    <div className="d-flex align-items-center mb-2 mb-md-0">
-                        <Button
-                            variant="warning"
-                            className="me-3"
-                            size="sm"
-                            onClick={() => navigate('/')}
-                        >
-                            <FaHome className="me-1" /> กลับเมนูหลัก
-                        </Button>
-                        <h4 className="mb-0 text-primary fw-bold">
-                            <FaWarehouse className="me-2" /> รายการพัสดุทั้งหมด
-                        </h4>
+        <div className="container-fluid py-2">
+            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div className="page-title-badge">
+                    <div className="page-icon-box">
+                        <FaWarehouse />
                     </div>
+                    <h2 className="page-title-text">
+                        คลังพัสดุทั้งหมด <small>(Inventory)</small>
+                    </h2>
+                </div>
 
+                <Button
+                    variant="warning"
+                    className="logout-btn-custom border-warning text-dark px-4"
+                    size="sm"
+                    onClick={() => navigate('/')}
+                >
+                    <FaHome className="me-2" /> กลับเมนูหลัก
+                </Button>
+            </div>
+
+            <div className="section-header-container mt-2">
+                <div className="section-accent"></div>
+                <h4 className="section-title-text">
+                    ข้อมูลพัสดุในระบบ
+                    <span className="section-title-badge">INVENTORY DATA</span>
+                </h4>
+            </div>
+
+            <Card className="shadow-sm border-0">
+                <Card.Header className="bg-white py-3 d-flex flex-wrap justify-content-end align-items-center">
                     <div className="w-100 w-md-auto" style={{ maxWidth: '350px' }}>
                         <div className="input-group">
                             <span className="input-group-text bg-light border-end-0">
@@ -142,13 +156,13 @@ export default function Inventory() {
                 <Card.Footer className="bg-white py-3 text-muted">
                     <small>แสดงทั้งหมด {filteredStocks.length} รายการ</small>
                 </Card.Footer>
-            </Card>
+            </Card >
 
             <ItemDetailModal
                 show={showDetailModal}
                 onHide={() => setShowDetailModal(false)}
                 item={selectedItem}
             />
-        </div>
+        </div >
     );
 }

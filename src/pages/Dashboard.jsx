@@ -3,8 +3,8 @@ import { db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaBox, FaCheckCircle, FaTruck, FaWarehouse, FaPlusSquare, FaClipboardList, FaHome, FaInfoCircle } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaPlusSquare, FaTruck, FaWarehouse, FaClipboardList, FaHome, FaHistory, FaBolt, FaBox, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Dashboard() {
@@ -68,90 +68,115 @@ export default function Dashboard() {
 
     return (
         <div>
-            <h2 className="mb-4 text-primary fw-bold"><FaWarehouse className="me-2" /> ภาพรวมระบบ (Dashboard)</h2>
+            <div className="page-header-container">
+                <div className="page-title-badge">
+                    <div className="page-icon-box">
+                        <FaWarehouse />
+                    </div>
+                    <h2 className="page-title-text">
+                        ภาพรวมระบบ <small>(Dashboard)</small>
+                    </h2>
+                </div>
+            </div>
 
             <Row className="mb-2">
                 <Col xs={12} md={6} lg={4} className="mb-3">
-                    <Card className="text-white bg-primary shadow h-100 border-0">
-                        <Card.Body className="d-flex align-items-center justify-content-between">
+                    <Card className="text-white shadow h-100 border-0 summary-card card-summary-total">
+                        <Card.Body className="d-flex align-items-center justify-content-between p-4">
                             <div>
-                                <h6 className="opacity-75">พัสดุทั้งหมด (Total)</h6>
+                                <h6 className="opacity-75 mb-1 text-uppercase small fw-bold">พัสดุทั้งหมด (Total)</h6>
                                 <h2 className="mb-0 fw-bold">{summary.total}</h2>
                             </div>
-                            <FaBox size={40} className="opacity-50" />
+                            <div className="summary-icon-wrapper">
+                                <FaBox size={32} className="text-white" />
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col xs={12} md={6} lg={4} className="mb-3">
-                    <Card className="text-white bg-success shadow h-100 border-0">
-                        <Card.Body className="d-flex align-items-center justify-content-between">
+                    <Card className="text-white shadow h-100 border-0 summary-card card-summary-available">
+                        <Card.Body className="d-flex align-items-center justify-content-between p-4">
                             <div>
-                                <h6 className="opacity-75">คงเหลือ (Available)</h6>
+                                <h6 className="opacity-75 mb-1 text-uppercase small fw-bold">คงเหลือ (Available)</h6>
                                 <h2 className="mb-0 fw-bold">{summary.available}</h2>
-                                <small>สถานะ "รับเข้า"</small>
+                                <small className="opacity-75">สถานะ "รับเข้า"</small>
                             </div>
-                            <FaCheckCircle size={40} className="opacity-50" />
+                            <div className="summary-icon-wrapper">
+                                <FaCheckCircle size={32} className="text-white" />
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col xs={12} md={12} lg={4} className="mb-3">
-                    <Card className="text-white bg-danger shadow h-100 border-0">
-                        <Card.Body className="d-flex align-items-center justify-content-between">
+                    <Card className="text-white shadow h-100 border-0 summary-card card-summary-distributed">
+                        <Card.Body className="d-flex align-items-center justify-content-between p-4">
                             <div>
-                                <h6 className="opacity-75">จำหน่ายแล้ว (Distributed)</h6>
+                                <h6 className="opacity-75 mb-1 text-uppercase small fw-bold">จำหน่ายแล้ว (Distributed)</h6>
                                 <h2 className="mb-0 fw-bold">{summary.distributed}</h2>
-                                <small>สถานะ "จำหน่าย"</small>
+                                <small className="opacity-75">สถานะ "จำหน่าย"</small>
                             </div>
-                            <FaTruck size={40} className="opacity-50" />
+                            <div className="summary-icon-wrapper">
+                                <FaTruck size={32} className="text-white" />
+                            </div>
                         </Card.Body>
                     </Card>
                 </Col>
             </Row>
 
-            <h4 className="mb-3 mt-4 text-dark fw-bold">เมนูด่วนกดเลย (Quick Menu)</h4>
+            <div className="section-header-container mt-4">
+                <div className="section-accent"></div>
+                <h4 className="section-title-text">
+                    เมนูด่วนกดเลย
+                    <span className="section-title-badge">QUICK MENU</span>
+                </h4>
+            </div>
             <Row className="mb-4">
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/incoming" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-5 shadow border-0 quick-menu-card card-incoming">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                                <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaPlusSquare size={48} className="text-primary" />
+                                <div className="quick-menu-icon-wrapper">
+                                    <FaPlusSquare size={44} className="text-white" />
                                 </div>
-                                <h5 className="text-primary fw-bold mb-0">รับอุปกรณ์รอจำหน่ายเข้า</h5>
+                                <h5 className="mb-0">รับอุปกรณ์รอจำหน่ายเข้า</h5>
                             </Card.Body>
                         </Card>
                     </Link>
                 </Col>
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/distribution" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-5 shadow border-0 quick-menu-card card-distribution">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                                <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaTruck size={48} className="text-dark" />
+                                <div className="quick-menu-icon-wrapper">
+                                    <FaTruck size={44} className="text-white" />
                                 </div>
-                                <h5 className="text-dark fw-bold mb-0">รอจำหน่ายออก</h5>
+                                <h5 className="mb-0">รอจำหน่ายออก</h5>
                             </Card.Body>
                         </Card>
                     </Link>
                 </Col>
                 <Col xs={12} md={4} className="mb-3">
                     <Link to="/inventory" className="text-decoration-none">
-                        <Card className="h-100 text-center py-4 shadow-sm border-0 quick-menu-card">
+                        <Card className="h-100 text-center py-5 shadow border-0 quick-menu-card card-inventory">
                             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                                <div className="quick-menu-icon-wrapper mb-3">
-                                    <FaClipboardList size={48} className="text-dark" />
+                                <div className="quick-menu-icon-wrapper">
+                                    <FaClipboardList size={44} className="text-white" />
                                 </div>
-                                <h5 className="text-dark fw-bold mb-0">ดูรายการทั้งหมด</h5>
+                                <h5 className="mb-0">ดูรายการทั้งหมด</h5>
                             </Card.Body>
                         </Card>
                     </Link>
                 </Col>
             </Row>
 
+            <div className="section-header-container mt-2">
+                <div className="section-accent"></div>
+                <h4 className="section-title-text">
+                    รายการพัสดุล่าสุด
+                    <span className="section-title-badge">LATEST ITEMS</span>
+                </h4>
+            </div>
             <Card className="shadow-sm border-0">
-                <Card.Header className="bg-white py-3">
-                    <h5 className="mb-0 text-primary fw-bold">รายการพัสดุล่าสุด</h5>
-                </Card.Header>
                 <Card.Body className="p-0">
                     <div className="table-responsive">
                         <Table hover striped className="mb-0">

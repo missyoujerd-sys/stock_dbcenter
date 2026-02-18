@@ -179,10 +179,18 @@ export default function IncomingStock() {
 
     return (
         <>
+            <div className="page-header-container">
+                <div className="page-title-badge">
+                    <div className="page-icon-box">
+                        <FaClipboardList />
+                    </div>
+                    <h2 className="page-title-text">
+                        รับเข้าพัสดุ <small>(Incoming Stock)</small>
+                    </h2>
+                </div>
+            </div>
+
             <Card className="shadow-sm border-0">
-                <Card.Header as="h5" className="bg-white py-4 text-dark border-0 fw-bold px-4">
-                    รับเข้า Stock (Incoming)
-                </Card.Header>
                 <Card.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     {success && <Alert variant="success">{success}</Alert>}
