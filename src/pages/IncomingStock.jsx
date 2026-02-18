@@ -412,27 +412,7 @@ export default function IncomingStock() {
                                     </div>
                                 </Form.Group>
                             </Col>
-                            <Col md={4}>
-                                <Form.Group controlId="building">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
-                                        <FaBuilding className="me-2" /> อาคาร
-                                    </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaBuilding />
-                                        </span>
-                                        <Form.Control
-                                            type="text"
-                                            name="building"
-                                            value={formData.building}
-                                            onChange={handleChange}
-                                            placeholder="ระบุอาคาร"
-                                            required
-                                            className="border-start-0 ps-0 py-2"
-                                        />
-                                    </div>
-                                </Form.Group>
-                            </Col>
+
                         </Row>
 
                         <Row className="mb-4">
