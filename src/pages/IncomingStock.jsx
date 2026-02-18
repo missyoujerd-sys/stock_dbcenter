@@ -41,7 +41,7 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "Apple"],
+        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
         "Printer": [
