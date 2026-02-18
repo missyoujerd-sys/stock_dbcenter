@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaLock } from 'react-icons/fa';
 
 export default function Login() {
-    const userRef = useRef();
+    let userRef = useRef();
     const passwordRef = useRef();
     const { login } = useAuth();
     const [error, setError] = useState('');
@@ -18,7 +18,12 @@ export default function Login() {
         try {
             setError('');
             setLoading(true);
-            await login(userRef.current.value, passwordRef.current.value);
+            if (userRef.current.value.includes('@')) {
+                userRef = userRef.current.value;
+            } else {
+                userRef = userRef.current.value + '@nkp.com';
+            }
+            await login(userRef, passwordRef.current.value);
             navigate('/');
         } catch (err) {
             console.error(err);
