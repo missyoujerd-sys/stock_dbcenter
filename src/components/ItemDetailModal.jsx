@@ -1,85 +1,172 @@
-import React from 'react';
-import { Modal, Button, Row, Col, Badge } from 'react-bootstrap';
-import { FaInfoCircle, FaCalendarAlt, FaBuilding, FaMicrochip, FaTag, FaBarcode, FaStickyNote, FaUser } from 'react-icons/fa';
+import React, { useRef } from 'react';
+import { Modal, Button, Row, Col } from 'react-bootstrap';
+import { FaPrint, FaTimes } from 'react-icons/fa';
 
 const ItemDetailModal = ({ show, onHide, item }) => {
+    const printRef = useRef();
+
     if (!item) return null;
 
-    const DetailRow = ({ icon: Icon, label, value, color = "primary" }) => (
-        <Col md={6} className="mb-3">
-            <div className="d-flex align-items-start">
-                <div className={`bg-${color}-light p-2 rounded me-3`} style={{ minWidth: '40px', textAlign: 'center' }}>
-                    <Icon className={`text-${color}`} />
-                </div>
-                <div>
-                    <div className="text-muted small text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>{label}</div>
-                    <div className="fw-bold text-dark">{value || '-'}</div>
-                </div>
-            </div>
-        </Col>
-    );
+    const handlePrint = () => {
+        window.print();
+    };
 
     return (
-        <Modal show={show} onHide={onHide} size="lg" centered border="0" className="item-detail-modal">
-            <Modal.Header closeButton className="border-0 pb-0">
-                <Modal.Title className="fw-bold d-flex align-items-center">
-                    <FaInfoCircle className="text-primary me-2" /> รายละเอียดพัสดุ
-                </Modal.Title>
+        <Modal show={show} onHide={onHide} size="lg" centered className="item-detail-modal">
+            <Modal.Header closeButton className="d-print-none border-0">
+                <Modal.Title className="fw-bold">รายละเอียดพัสดุ</Modal.Title>
             </Modal.Header>
-            <Modal.Body className="pt-4 px-4 pb-5">
-                <div className="mb-4">
-                    <Badge bg={item.status === 'รับเข้า' ? 'success' : (item.status === 'จำหน่าย' ? 'danger' : 'warning')} className="px-3 py-2">
-                        สถานะ: {item.status}
-                    </Badge>
-                </div>
+            <Modal.Body className="p-0">
+                <div ref={printRef} className="document-container p-5 bg-white mx-auto shadow-sm" style={{ maxWidth: '800px', minHeight: '500px' }}>
+                    {/* Header Section */}
+                    <div className="text-center mb-5">
+                        <h4 className="document-title fw-bold text-decoration-underline mb-4">
+                            ใบเซ็นต์รับ/คืน คอมพิวเตอร์และอุปกรณ์ต่อพ่วง
+                        </h4>
+                    </div>
 
-                <Row>
-                    <DetailRow icon={FaCalendarAlt} label="วันที่รับเข้า" value={item.importDate} color="primary" />
-                    <DetailRow icon={FaBarcode} label="เลขครุภัณฑ์" value={item.assetId} color="danger" />
-
-                    <Col md={12}><hr className="my-2 opacity-50" /></Col>
-
-                    <DetailRow icon={FaTag} label="หมวดหมู่" value={item.category} color="success" />
-                    <DetailRow icon={FaMicrochip} label="ยี่ห้อ/รุ่น" value={item.brandModel ? item.brandModel.trim().replace(/-$/, '').trim() : '-'} color="info" />
-
-                    <DetailRow icon={FaTag} label="ชื่อเครื่อง" value={item.computerName} color="warning" />
-                    <DetailRow icon={FaBarcode} label="Serial Number (S/N)" value={item.serialNumber} color="dark" />
-
-                    <Col md={12}><hr className="my-2 opacity-50" /></Col>
-
-                    <DetailRow icon={FaBuilding} label="หน่วยงาน/ฝ่าย" value={item.department} color="secondary" />
-                    <DetailRow icon={FaBuilding} label="อาคาร/สถานที่" value={item.building} color="secondary" />
-
-                    {item.status === 'จำหน่าย' && (
-                        <>
-                            <Col md={12}><hr className="my-2 opacity-50" /></Col>
-                            <DetailRow icon={FaCalendarAlt} label="วันที่จำหน่าย" value={item.distributionDate} color="danger" />
-                            <DetailRow icon={FaUser} label="ผู้รับอุปกรณ์" value={item.distributor} color="danger" />
-                        </>
-                    )}
-
-                    <Col md={12} className="mt-3">
-                        <div className="bg-light p-3 rounded">
-                            <div className="text-muted small text-uppercase fw-bold mb-2">
-                                <FaStickyNote className="me-1" /> หมายเหตุ (Remarks)
-                            </div>
-                            <div className="text-dark">{item.remarks || '-'}</div>
+                    {/* Content Section */}
+                    <div className="document-content ps-2" style={{ fontSize: '1.1rem', lineHeight: '2.2' }}>
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>หน่วยงาน:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.department || '-'} {item.building && `(${item.building})`}</span>
+                            <span className="ms-3 fw-bold">เบอร์โทร.</span>
+                            <span className="ms-2 border-bottom-dotted px-2" style={{ minWidth: '150px' }}>{item.phoneNumber || '....................'}</span>
                         </div>
-                    </Col>
-                </Row>
+
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>ประเภทครุภัณฑ์:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.category || '-'}</span>
+                        </div>
+
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>Computer Name:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.computerName || '-'}</span>
+                        </div>
+
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>Serial Number:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.serialNumber || '-'}</span>
+                        </div>
+
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>เลขครุภัณฑ์:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.assetId || '-'}</span>
+                        </div>
+
+                        <div className="d-flex mb-2">
+                            <span className="fw-bold" style={{ minWidth: '150px' }}>ยี่ห้อ/รุ่น:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.brandModel || '-'}</span>
+                        </div>
+
+                        {/* Checkboxes Section */}
+                        <div className="d-flex gap-4 mt-3 mb-4 ps-4">
+                            <div className="d-flex align-items-center">
+                                <div className="custom-checkbox me-2"></div>
+                                <span>เพิ่ม</span>
+                            </div>
+                            <div className="d-flex align-items-center">
+                                <div className="custom-checkbox me-2"></div>
+                                <span>ทดแทน</span>
+                            </div>
+                            <div className="d-flex align-items-center">
+                                <div className="custom-checkbox me-2"></div>
+                                <span>คืน IT (ชำรุด,ไม่ใช้งาน)</span>
+                            </div>
+                        </div>
+
+                        {/* Remarks Section */}
+                        <div className="d-flex mb-5">
+                            <span className="fw-bold" style={{ minWidth: '100px' }}>หมายเหตุ:</span>
+                            <div className="flex-grow-1 border-bottom-dotted min-height-dotted px-2">
+                                {item.remarks || ''}
+                            </div>
+                        </div>
+
+                        {/* Signature Section */}
+                        <Row className="mt-5 text-center">
+                            <Col xs={6}>
+                                <div className="mx-auto mb-2" style={{ width: '250px', borderBottom: '1px dotted #000' }}></div>
+                                <div className="mb-2">......../................/............</div>
+                                <div className="fw-bold">เจ้าหน้าที่คอมพิวเตอร์</div>
+                            </Col>
+                            <Col xs={6}>
+                                <div className="mx-auto mb-2" style={{ width: '250px', borderBottom: '1px dotted #000' }}></div>
+                                <div className="mb-2">......../................/............</div>
+                                <div className="fw-bold">ผู้รับอุปกรณ์</div>
+                            </Col>
+                        </Row>
+
+                        {/* Footer Text */}
+                        <div className="text-end mt-5 small fw-bold">
+                            **กรอกชื่อ-นามสกุลตัวบรรจงเท่านั้น**
+                        </div>
+                    </div>
+                </div>
             </Modal.Body>
-            <Modal.Footer className="border-0">
-                <Button variant="secondary" onClick={onHide} className="px-4">ปิด</Button>
+            <Modal.Footer className="d-print-none border-0">
+                <Button variant="outline-secondary" onClick={onHide} className="px-4 border-0">
+                    <FaTimes className="me-2" /> ยกเลิก
+                </Button>
+                <Button variant="primary" onClick={handlePrint} className="px-5 shadow-sm">
+                    <FaPrint className="me-2" /> พิมพ์เอกสาร
+                </Button>
             </Modal.Footer>
 
             <style>{`
-                .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
-                .bg-success-light { background-color: rgba(25, 135, 84, 0.1); }
-                .bg-danger-light { background-color: rgba(220, 53, 69, 0.1); }
-                .bg-info-light { background-color: rgba(13, 202, 240, 0.1); }
-                .bg-warning-light { background-color: rgba(255, 193, 7, 0.1); }
-                .bg-dark-light { background-color: rgba(33, 37, 41, 0.1); }
-                .bg-secondary-light { background-color: rgba(108, 117, 125, 0.1); }
+                .item-detail-modal .modal-content {
+                    border: none;
+                    border-radius: 12px;
+                    overflow: hidden;
+                }
+                .document-container {
+                    font-family: 'Sarabun', sans-serif;
+                    color: #000;
+                }
+                .border-bottom-dotted {
+                    border-bottom: 1px dotted #000;
+                    min-height: 1.5em;
+                }
+                .min-height-dotted {
+                    min-height: 60px;
+                }
+                .custom-checkbox {
+                    width: 18px;
+                    height: 18px;
+                    border: 1px solid #000;
+                    border-radius: 3px;
+                }
+                
+                @media print {
+                    body {
+                        background-color: white !important;
+                    }
+                    .modal-dialog {
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    .modal-content {
+                        border: none !important;
+                        box-shadow: none !important;
+                    }
+                    .modal-header, .modal-footer {
+                        display: none !important;
+                    }
+                    .modal-body {
+                        padding: 0 !important;
+                    }
+                    .document-container {
+                        box-shadow: none !important;
+                        padding: 1cm !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                    }
+                    @page {
+                        margin: 1cm;
+                        size: A4;
+                    }
+                }
             `}</style>
         </Modal>
     );
