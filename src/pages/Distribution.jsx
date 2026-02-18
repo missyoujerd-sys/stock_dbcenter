@@ -11,7 +11,18 @@ import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle } from 'react-icon
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
+    const [stocks, setStocks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedStock, setSelectedStock] = useState(null);
+    const [distributeDate, setDistributeDate] = useState('');
+    const [distributeError, setDistributeError] = useState('');
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {

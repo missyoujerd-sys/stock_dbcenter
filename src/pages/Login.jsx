@@ -18,11 +18,9 @@ export default function Login() {
         try {
             setError('');
             setLoading(true);
-            if (userRef.current.value.includes('@')) {
-                userRef = userRef.current.value;
-            } else {
-                userRef = userRef.current.value + '@nkp.com';
-            }
+            if (userRef.current.value.includes('@')) { userRef = userRef.current.value; }
+            else { userRef = userRef.current.value + '@nkp.com'; }
+
             await login(userRef, passwordRef.current.value);
             navigate('/');
         } catch (err) {
