@@ -409,6 +409,7 @@ export default function Distribution() {
                                 <th>หน่วยงาน</th>
                                 <th>สถานะ</th>
                                 <th className="text-center">จัดการ</th>
+                                <th className="text-center">กดดูรายละเอียด</th>
                             </tr>
                         </thead>
                         <tbody>
