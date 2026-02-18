@@ -15,15 +15,22 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
 
+    const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
+
     useEffect(() => {
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();
             const loadedStocks = [];
+            let total = 0, available = 0, distributed = 0;
 
             if (data) {
                 for (const key in data) {
                     const item = data[key];
+                    total++;
+                    if (item.status === 'รับเข้า') available++;
+                    if (item.status === 'จำหน่าย') distributed++;
+
                     loadedStocks.push({
                         id: key,
                         ...item,
@@ -42,11 +49,44 @@ export default function Inventory() {
             // Sort by timestamp desc
             loadedStocks.sort((a, b) => b.timestamp - a.timestamp);
             setStocks(loadedStocks);
+            setSummary({ total, available, distributed });
             setLoading(false);
         });
 
         return unsubscribe;
     }, []);
+
+    const StatusSummaryBar = () => (
+        <div className="status-summary-bar">
+            <div className="status-badge-pill status-pill-total">
+                <div className="status-badge-icon">
+                    <FaWarehouse />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">พัสดุทั้งหมด (Total)</span>
+                    <span className="status-badge-value">{summary.total}</span>
+                </div>
+            </div>
+            <div className="status-badge-pill status-pill-available">
+                <div className="status-badge-icon">
+                    <FaWarehouse />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">คงเหลือ (Available)</span>
+                    <span className="status-badge-value">{summary.available}</span>
+                </div>
+            </div>
+            <div className="status-badge-pill status-pill-distributed">
+                <div className="status-badge-icon">
+                    <FaTruck />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">จำหน่ายแล้ว (Distributed)</span>
+                    <span className="status-badge-value">{summary.distributed}</span>
+                </div>
+            </div>
+        </div>
+    );
 
     const handleRowClick = (item) => {
         setSelectedItem(item);
@@ -82,6 +122,8 @@ export default function Inventory() {
                 </Button>
             </div>
 
+            <StatusSummaryBar />
+
             <div className="section-header-container mt-2">
                 <div className="section-accent"></div>
                 <h4 className="section-title-text">
@@ -107,10 +149,10 @@ export default function Inventory() {
                         </div>
                     </div>
                 </Card.Header>
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover striped className="mb-0">
-                            <thead className="bg-light">
+                <Card.Body className="p-0 bg-transparent">
+                    <div className="table-responsive p-2">
+                        <Table hover className="mb-0 premium-table">
+                            <thead className="premium-thead">
                                 <tr>
                                     <th>วันที่</th>
                                     <th>หมายเลขครุภัณฑ์</th>

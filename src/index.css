@@ -1,4 +1,5 @@
 :root {
+  /* Premium Design Tokens */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -453,6 +454,79 @@ h6 {
   font-size: 1.4rem;
 }
 
+/* --- Status Summary Bar (Notification Row) --- */
+.status-summary-bar {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.status-badge-pill {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1.8rem 0.8rem 1rem;
+  border-radius: 50px;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  text-decoration: none !important;
+}
+
+.status-badge-pill:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.status-badge-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.2rem;
+  font-size: 1.2rem;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-badge-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6c757d;
+  letter-spacing: 0.5px;
+  margin-bottom: -2px;
+  line-height: 1;
+}
+
+.status-badge-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1a2a44;
+  line-height: 1.2;
+}
+
+/* Status Pill Themes */
+.status-pill-total .status-badge-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.status-pill-available .status-badge-icon {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.status-pill-distributed .status-badge-icon {
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
 .page-title-text {
   font-size: 1.6rem !important;
   font-weight: 800 !important;
@@ -508,4 +582,74 @@ h6 {
   font-weight: 600;
   margin-left: 0.75rem;
   border: 1px solid rgba(30, 60, 114, 0.1);
+}
+
+/* --- Premium Table & Pill Header --- */
+.premium-table {
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.premium-thead tr {
+  background: white !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+/* Pill shape logic for the header row */
+.premium-thead th:first-child {
+  border-top-left-radius: 50px !important;
+  border-bottom-left-radius: 50px !important;
+  padding-left: 2.5rem !important;
+}
+
+.premium-thead th:last-child {
+  border-top-right-radius: 50px !important;
+  border-bottom-right-radius: 50px !important;
+  padding-right: 2.5rem !important;
+}
+
+.premium-thead th {
+  background: white !important;
+  color: #1a2a44 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  padding: 1.4rem 1rem !important;
+  border: none !important;
+  vertical-align: middle;
+}
+
+/* Table body adjustments */
+.premium-table tbody tr {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.premium-table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.premium-table tbody td {
+  padding: 1.2rem 1rem !important;
+  vertical-align: middle;
+  border: none !important;
+  background: white !important;
+}
+
+.premium-table tbody td:first-child {
+  border-top-left-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
+}
+
+.premium-table tbody td:last-child {
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
 }
