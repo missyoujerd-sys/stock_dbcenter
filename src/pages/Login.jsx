@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { FaSignInAlt } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaUser, FaLock } from 'react-icons/fa';
 
 export default function Login() {
     const emailRef = useRef();
@@ -29,33 +29,44 @@ export default function Login() {
     }
 
     return (
-        <div className="auth-background d-flex align-items-center justify-content-center">
-            <Container>
-                <div className="mx-auto" style={{ maxWidth: "400px" }}>
-                    <Card className="auth-card border-0 p-3">
-                        <Card.Body>
-                            <div className="text-center mb-4">
-                                <h2 className="mb-3 text-primary fw-bold">เข้าสู่ระบบ</h2>
-                                <p className="text-muted"><h4>ระบบจัดการ Stock พัสดุครุภัณฑ์จำหน่าย</h4></p>
-                            </div>
-                            {error && <Alert variant="danger">{error}</Alert>}
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group id="email" className="mb-3">
-                                    <Form.Label>Email</Form.Label>
-                                    <Form.Control type="email" ref={emailRef} required placeholder="Nkp@nkp.com" />
-                                </Form.Group>
-                                <Form.Group id="password" className="mb-4">
-                                    <Form.Label>Password</Form.Label>
-                                    <Form.Control type="password" ref={passwordRef} required placeholder="*******" />
-                                </Form.Group>
-                                <Button disabled={loading} className="w-100" type="submit" size="lg">
-                                    <FaSignInAlt className="me-2" /> เข้าสู่ระบบ
-                                </Button>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </div>
-            </Container>
+        <div className="login-page">
+            <div className="login-card">
+                <h1 className="login-title">Login</h1>
+                <h2 className="login-subtitle">ระบบจัดการ Stock อุปกรณ์รอจำหน่าย</h2>
+
+                {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
+
+                <Form onSubmit={handleSubmit}>
+                    <div className="login-input-group">
+                        <FaUser className="login-input-icon" />
+                        <Form.Control
+                            type="text"
+                            ref={emailRef}
+                            required
+                            placeholder="Email"
+                            className="login-input"
+                        />
+                    </div>
+
+                    <div className="login-input-group">
+                        <FaLock className="login-input-icon" />
+                        <Form.Control
+                            type="password"
+                            ref={passwordRef}
+                            required
+                            placeholder="Password"
+                            className="login-input"
+                        />
+                    </div>
+
+                    <Button disabled={loading} className="login-submit-btn" type="submit">
+                        LOGIN
+                    </Button>
+                </Form>
+
+
+            </div>
         </div>
     );
 }
+

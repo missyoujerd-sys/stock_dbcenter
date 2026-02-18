@@ -41,9 +41,9 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
-        "TV": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "AOC", "Philips", "Apple"],
-        "Tablet": ["HP", "Dell", "Lenovo", "Acer", "Asus", "LG", "Samsung", "MSI", "Apple"],
+        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
+        "TV": ["LG", "Samsung", "Philips"],
+        "Tablet": ["Samsung", "Apple"],
         "Printer": [
             "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
             "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
@@ -53,6 +53,7 @@ export default function IncomingStock() {
         ],
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
         "จอคอมพิวเตอร์": [
+            "จอคอมพิวเตอร์ Acer",
             "จอคอมพิวเตอร์ AOC ",
             "จอคอมพิวเตอร์ ZOWIE",
             "จอคอมพิวเตอร์ BenQ ",

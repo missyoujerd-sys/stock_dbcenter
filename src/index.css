@@ -19,22 +19,146 @@ body {
   background-color: #f8f9fa;
 }
 
-.auth-background {
-  background-image: linear-gradient(rgba(99, 102, 99, 0.925), rgba(31, 30, 30, 0.4)), url('https://images.unsplash.com/photo-1581142452278-9c883ea42f75?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+.login-page {
+  background: radial-gradient(circle at center, #2b4c8c 0%, #152238 100%);
   min-height: 100vh;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  padding: 1rem;
 }
 
-.auth-card {
-  backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+.login-card {
+  background: rgba(30, 48, 80, 0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  padding: 3rem 4rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
 }
+
+.login-title {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.login-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 3rem;
+  line-height: 1.4;
+}
+
+.login-input-group {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1.2rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-input-group:focus-within {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.login-input-icon {
+  color: #f7a000;
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+.login-input {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 1.1rem;
+  width: 100%;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.remember-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+}
+
+.forgot-link {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-link:hover {
+  color: white;
+}
+
+.login-submit-btn {
+  background-color: #4285f4 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.3rem !important;
+  padding: 1rem !important;
+  width: 100% !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-submit-btn:hover {
+  background-color: #357ae8 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4) !important;
+}
+
+.login-submit-btn:active {
+  transform: translateY(0);
+}
+
+.forgot-password-footer {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
 
 h1,
 h2,
@@ -134,14 +258,17 @@ h6 {
   padding-top: 0 !important;
 }
 
-.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
   width: 2.5rem !important;
   line-height: 2.5rem !important;
   margin: 0.2rem !important;
   font-weight: 500 !important;
 }
 
-.react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
   background-color: #0d6efd !important;
   color: #fff !important;
   border-radius: 50% !important;
@@ -159,4 +286,6 @@ h6 {
 .react-datepicker__day--today {
   font-weight: bold !important;
   color: #0d6efd !important;
+
+
 }
