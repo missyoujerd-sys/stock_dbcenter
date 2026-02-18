@@ -280,8 +280,13 @@ export default function Distribution() {
             const rowNumber = headerIndex + 1 + index;
             const row = worksheet.getRow(rowNumber);
             row.getCell(1).value = index + 1;
-            row.getCell(2).value = `${stock.assetId}${stock.serialNumber && stock.serialNumber.trim() !== '-' ? '\n' + stock.serialNumber.trim() : ''}`;
-            row.getCell(3).value = stock.brandModel ? stock.brandModel.trim().replace(/-$/, '').trim() : '';
+
+            // Clean up SN and Brand/Model
+            const cleanSN = stock.serialNumber ? stock.serialNumber.trim().replace(/[\s\d-]+$/, '') : '';
+            const cleanBrandModel = stock.brandModel ? stock.brandModel.trim().replace(/[\s\d-]+$/, '') : '';
+
+            row.getCell(2).value = `${stock.assetId}${cleanSN && cleanSN !== '-' ? '\n' + cleanSN : ''}`;
+            row.getCell(3).value = cleanBrandModel;
             row.getCell(4).value = "ชม.";
             row.getCell(5).value = "เครื่อง";
             row.getCell(6).value = 1;
@@ -301,22 +306,27 @@ export default function Distribution() {
         let currentFooterRow = headerIndex + selectedStocks.length + 1;
 
         // Sum rows
-        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow}`);
+        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
         worksheet.getCell(`A${currentFooterRow}`).value = 'หลักฐานที่ใช้ในการเบิก/ส่งคืน';
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+
         worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
         worksheet.getCell(`H${currentFooterRow}`).value = 'รวมแผ่นนี้';
-        applyBorders(currentFooterRow, 1, currentFooterRow, 11);
+        applyBorders(currentFooterRow, 1, currentFooterRow + 1, 11);
 
         currentFooterRow++;
         worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
         worksheet.getCell(`H${currentFooterRow}`).value = 'รวมทั้งสิ้น';
-        applyBorders(currentFooterRow, 8, currentFooterRow, 11);
+        // Borders already applied by merged range above
 
         currentFooterRow++;
         worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
         worksheet.getCell(`A${currentFooterRow}`).value = 'ให้บุคคลต่อไปนี้เป็นผู้รับพัสดุแทนได้';
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
+
         worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
         worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้ตรวจสอบ ..............................................................';
+
         currentFooterRow++;
         worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
         worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้อนุมัติจ่าย/รับคืน .....................................................';
@@ -324,32 +334,51 @@ export default function Distribution() {
         currentFooterRow++;
         worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
         worksheet.getCell(`A${currentFooterRow}`).value = `ผู้มีสิทธิเบิก/ส่งคืน   นาย ณรงค์ รวมสุข`;
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
+
         worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow + 1}`);
         worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้จ่าย .....................................................................';
-        worksheet.getCell(`H${currentFooterRow}`).alignment = { vertical: 'top' };
+        worksheet.getCell(`H${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
 
         currentFooterRow += 2;
         worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 2}`);
         worksheet.getCell(`A${currentFooterRow}`).value = 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว';
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top' };
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
 
-        // Codes legend
-        worksheet.getCell(`H${currentFooterRow}`).value = 'รหัสจ่าย';
-        worksheet.getCell(`J${currentFooterRow}`).value = 'ค.  ครั้งคราว';
-        currentFooterRow++;
-        worksheet.getCell(`J${currentFooterRow}`).value = 'ป.  ประจำ';
-        currentFooterRow++;
-        worksheet.getCell(`H${currentFooterRow}`).value = 'รหัสคืน';
-        worksheet.getCell(`J${currentFooterRow}`).value = 'ช.  ใช้การได้';
-        currentFooterRow++;
-        worksheet.getCell(`J${currentFooterRow}`).value = 'ชม.  ใช้การไม่ได้';
+        // Codes legend area
+        const legendStartRow = currentFooterRow;
+        worksheet.getCell(`H${legendStartRow}`).value = 'รหัสจ่าย';
+        worksheet.getCell(`J${legendStartRow}`).value = 'ค.  ครั้งคราว';
+        worksheet.getCell(`H${legendStartRow}`).border = borderStyle;
+        worksheet.getCell(`I${legendStartRow}`).border = borderStyle;
 
-        currentFooterRow++;
+        worksheet.getCell(`J${legendStartRow + 1}`).value = 'ป.  ประจำ';
+
+        worksheet.getCell(`H${legendStartRow + 2}`).value = 'รหัสคืน';
+        worksheet.getCell(`J${legendStartRow + 2}`).value = 'ช.  ใช้การได้';
+        worksheet.getCell(`H${legendStartRow + 2}`).border = borderStyle;
+        worksheet.getCell(`I${legendStartRow + 2}`).border = borderStyle;
+
+        worksheet.getCell(`J${legendStartRow + 3}`).value = 'ชม.  ใช้การไม่ได้';
+
+        currentFooterRow += 4;
         worksheet.mergeCells(`A${currentFooterRow}:A${currentFooterRow + 1}`);
         worksheet.getCell(`A${currentFooterRow}`).value = 'ผู้รับพัสดุ';
+        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'middle', horizontal: 'left' };
 
-        // Apply outer borders for footer area if needed
+        // Ensure all cells in specific footer ranges have some alignment
         applyBorders(headerIndex + selectedStocks.length + 1, 1, currentFooterRow + 1, 11);
+
+        // Fix for specific merged cells alignment
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber > headerIndex + selectedStocks.length) {
+                row.eachCell((cell) => {
+                    if (!cell.alignment) {
+                        cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                    }
+                });
+            }
+        });
 
         // Generate and Save
         const buffer = await workbook.xlsx.writeBuffer();
