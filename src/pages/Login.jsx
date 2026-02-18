@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaLock } from 'react-icons/fa';
 
 export default function Login() {
-    const emailRef = useRef();
+    const userRef = useRef();
     const passwordRef = useRef();
     const { login } = useAuth();
     const [error, setError] = useState('');
@@ -18,11 +18,11 @@ export default function Login() {
         try {
             setError('');
             setLoading(true);
-            await login(emailRef.current.value, passwordRef.current.value);
+            await login(userRef.current.value, passwordRef.current.value);
             navigate('/');
         } catch (err) {
             console.error(err);
-            setError('ไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบอีเมลและรหัสผ่าน');
+            setError('ไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบชื่อผู้ใช้งานและรหัสผ่าน');
         }
 
         setLoading(false);
@@ -41,9 +41,9 @@ export default function Login() {
                         <FaUser className="login-input-icon" />
                         <Form.Control
                             type="text"
-                            ref={emailRef}
+                            ref={userRef}
                             required
-                            placeholder="Email"
+                            placeholder="User"
                             className="login-input"
                         />
                     </div>
