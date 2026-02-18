@@ -100,8 +100,8 @@ export default function IncomingStock() {
                 department: encryptData(formData.department),
                 serialNumber: encryptData(formData.serialNumber),
                 assetId: encryptData(formData.assetId),
-                category: encryptData(formData.category), // New field
-                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim()),
+                category: encryptData(formData.category),
+                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.replace(/\s+-\s*$/, '').trim()),
                 computerName: encryptData(formData.computerName),
                 remarks: encryptData(formData.remarks),
 

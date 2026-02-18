@@ -473,7 +473,7 @@ export default function Distribution() {
                     <div className="mb-3" style={{ maxHeight: '150px', overflowY: 'auto' }}>
                         {stocks.filter(s => selectedIds.includes(s.id)).map(s => (
                             <div key={s.id} className="small border-bottom py-1">
-                                {s.assetId} - {s.brandModel}
+                                {s.assetId} - {s.brandModel.replace(/\s+-\s*$/, '').trim()}
                             </div>
                         ))}
                     </div>
