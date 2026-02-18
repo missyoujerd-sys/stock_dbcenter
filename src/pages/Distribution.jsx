@@ -280,7 +280,7 @@ export default function Distribution() {
             const rowNumber = headerIndex + 1 + index;
             const row = worksheet.getRow(rowNumber);
             row.getCell(1).value = index + 1;
-            row.getCell(2).value = `${stock.assetId}${stock.serialNumber ? '\n' + stock.serialNumber : ''}`;
+            row.getCell(2).value = `${stock.assetId}${stock.serialNumber && stock.serialNumber.trim() !== '-' ? '\n' + stock.serialNumber.trim() : ''}`;
             row.getCell(3).value = stock.brandModel ? stock.brandModel.trim().replace(/-$/, '').trim() : '';
             row.getCell(4).value = "ชม.";
             row.getCell(5).value = "เครื่อง";
