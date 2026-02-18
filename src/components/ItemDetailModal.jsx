@@ -40,7 +40,7 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                     <Col md={12}><hr className="my-2 opacity-50" /></Col>
 
                     <DetailRow icon={FaTag} label="หมวดหมู่" value={item.category} color="success" />
-                    <DetailRow icon={FaMicrochip} label="ยี่ห้อ/รุ่น" value={item.brandModel} color="info" />
+                    <DetailRow icon={FaMicrochip} label="ยี่ห้อ/รุ่น" value={item.brandModel ? item.brandModel.trim().replace(/-$/, '').trim() : '-'} color="info" />
 
                     <DetailRow icon={FaTag} label="ชื่อเครื่อง" value={item.computerName} color="warning" />
                     <DetailRow icon={FaBarcode} label="Serial Number (S/N)" value={item.serialNumber} color="dark" />

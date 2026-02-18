@@ -101,7 +101,7 @@ export default function IncomingStock() {
                 serialNumber: encryptData(formData.serialNumber),
                 assetId: encryptData(formData.assetId),
                 category: encryptData(formData.category),
-                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.replace(/\s+-\s*$/, '').trim()),
+                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim().replace(/-$/, '').trim()),
                 computerName: encryptData(formData.computerName),
                 remarks: encryptData(formData.remarks),
 
@@ -156,7 +156,7 @@ export default function IncomingStock() {
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
-                        brandModel: decryptData(item.brandModel),
+                        brandModel: decryptData(item.brandModel).trim().replace(/-$/, '').trim(),
                         computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status

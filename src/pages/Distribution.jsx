@@ -275,8 +275,9 @@ export default function Distribution() {
             const rowNumber = headerIndex + 1 + index;
             const row = worksheet.getRow(rowNumber);
             row.getCell(1).value = index + 1;
-            row.getCell(2).value = `${stock.assetId}${stock.serialNumber ? '\n' + stock.serialNumber : ''}`;
-            row.getCell(3).value = stock.brandModel;
+            const snValue = stock.serialNumber && stock.serialNumber.trim() !== '-' ? stock.serialNumber.trim() : '';
+            row.getCell(2).value = snValue ? `${stock.assetId}\n${snValue}` : stock.assetId;
+            row.getCell(3).value = stock.brandModel ? stock.brandModel.trim().replace(/-$/, '').trim() : '';
             row.getCell(4).value = "ชม.";
             row.getCell(5).value = "เครื่อง";
             row.getCell(6).value = 1;
@@ -473,7 +474,7 @@ export default function Distribution() {
                     <div className="mb-3" style={{ maxHeight: '150px', overflowY: 'auto' }}>
                         {stocks.filter(s => selectedIds.includes(s.id)).map(s => (
                             <div key={s.id} className="small border-bottom py-1">
-                                {s.assetId} - {s.brandModel.replace(/\s+-\s*$/, '').trim()}
+                                {s.assetId} - {s.brandModel.trim().replace(/-$/, '').trim()}
                             </div>
                         ))}
                     </div>
