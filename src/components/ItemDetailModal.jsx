@@ -122,13 +122,14 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 .document-container {
                     font-family: 'Sarabun', sans-serif;
                     color: #000;
+                    page-break-inside: avoid;
                 }
                 .border-bottom-dotted {
                     border-bottom: 1px dotted #000;
                     min-height: 1.5em;
                 }
                 .min-height-dotted {
-                    min-height: 60px;
+                    min-height: 40px;
                 }
                 .custom-checkbox {
                     width: 18px;
@@ -138,33 +139,66 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 }
                 
                 @media print {
-                    body {
-                        background-color: white !important;
+                    @page {
+                        margin: 0.5cm;
+                        size: A4 portrait;
+                    }
+                    html, body {
+                        height: 100%;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: hidden;
+                    }
+                    .modal {
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 100% !important;
+                        height: auto !important;
+                        overflow: visible !important;
                     }
                     .modal-dialog {
                         max-width: 100% !important;
+                        width: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                     }
                     .modal-content {
                         border: none !important;
                         box-shadow: none !important;
+                        background-color: white !important;
                     }
                     .modal-header, .modal-footer {
                         display: none !important;
                     }
                     .modal-body {
                         padding: 0 !important;
+                        margin: 0 !important;
                     }
                     .document-container {
                         box-shadow: none !important;
                         padding: 1cm !important;
                         width: 100% !important;
                         max-width: 100% !important;
+                        height: auto !important;
+                        page-break-after: avoid;
+                        page-break-before: avoid;
+                        margin: 0 auto !important;
                     }
-                    @page {
-                        margin: 1cm;
-                        size: A4;
+                    .document-title {
+                        margin-bottom: 1.5rem !important;
+                        font-size: 1.5rem !important;
+                    }
+                    .document-content {
+                        line-height: 2.0 !important;
+                    }
+                    .mt-5 {
+                        margin-top: 2rem !important;
+                    }
+                    .mb-5 {
+                        margin-bottom: 1.5rem !important;
                     }
                 }
             `}</style>
