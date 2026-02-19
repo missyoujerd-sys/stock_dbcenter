@@ -42,18 +42,9 @@ export default function IncomingStock() {
 
     const CATEGORY_OPTIONS = {
         "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
-        "TV": ["LG", "Samsung", "Philips"],
-        "Tablet": ["Samsung", "Apple"],
-        "Printer": [
-            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
-            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
-            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
-            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
-            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
-        ],
-        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
         "จอคอมพิวเตอร์": [
             "จอคอมพิวเตอร์ Acer",
+            "จอคอมพิวเตอร์ Asus",
             "จอคอมพิวเตอร์ AOC ",
             "จอคอมพิวเตอร์ ZOWIE",
             "จอคอมพิวเตอร์ BenQ ",
@@ -64,6 +55,17 @@ export default function IncomingStock() {
             "จอคอมพิวเตอร์ Alienware ",
             "จอคอมพิวเตอร์ LG "
         ],
+        "TV": ["LG", "Samsung", "Philips"],
+        "Tablet": ["Samsung", "Apple"],
+        "Printer": [
+            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
+            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
+            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
+            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
+            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+        ],
+        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
+
         "สแกนเนอร์": [
             "สแกนเนอร์ Canon PIXMA ",
             "สแกนเนอร์ Epson Scaner ",
