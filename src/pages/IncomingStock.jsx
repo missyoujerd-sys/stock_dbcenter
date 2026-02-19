@@ -293,7 +293,7 @@ export default function IncomingStock() {
                             <Col md={4}>
                                 <Form.Group controlId="assetId">
                                     <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
-                                        <FaBarcode className="me-2" /> เลบครุภัณฑ์
+                                        <FaBarcode className="me-2" /> เลขครุภัณฑ์
                                     </Form.Label>
                                     <div className="input-group shadow-sm">
                                         <span className="input-group-text bg-white text-muted border-end-0">
