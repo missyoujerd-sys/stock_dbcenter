@@ -16,7 +16,7 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'montri@nkp.com';
+    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'montri@nkp.com' || currentUser?.email === 'koom@nkp.com';
     console.log(isAdmin);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
