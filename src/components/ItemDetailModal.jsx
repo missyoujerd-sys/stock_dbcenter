@@ -11,6 +11,18 @@ const ItemDetailModal = ({ show, onHide, item }) => {
         window.print();
     };
 
+    const now = new Date();
+    const formattedDate = new Intl.DateTimeFormat('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }).format(now);
+    const formattedTime = new Intl.DateTimeFormat('th-TH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).format(now);
+
     return (
         <Modal show={show} onHide={onHide} size="lg" centered className="item-detail-modal">
             <Modal.Header closeButton className="d-print-none border-0">
@@ -18,11 +30,17 @@ const ItemDetailModal = ({ show, onHide, item }) => {
             </Modal.Header>
             <Modal.Body className="p-0">
                 <div ref={printRef} className="document-container p-5 bg-white mx-auto shadow-sm" style={{ maxWidth: '800px', minHeight: '500px' }}>
+                    {/* Date/Time Section */}
+                    <div className="text-end mb-2 small">
+                        <div>วันที่: {formattedDate}</div>
+                        <div>เวลา: {formattedTime} น.</div>
+                    </div>
+
                     {/* Header Section */}
                     <div className="text-center mb-5">
-                        <h4 className="document-title fw-bold text-decoration-underline mb-4">
-                            ใบเซ็นต์รับ/คืน คอมพิวเตอร์และอุปกรณ์ต่อพ่วง
-                        </h4>
+                        <h2 className="document-title fw-bold text-decoration-underline mb-4">
+                            จำหน่าย
+                        </h2>
                     </div>
 
                     {/* Content Section */}
@@ -31,17 +49,12 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                             <span className="fw-bold" style={{ minWidth: '150px' }}>หน่วยงาน:</span>
                             <span className="flex-grow-1 border-bottom-dotted px-2">{item.department || '-'} {item.building && `(${item.building})`}</span>
                             <span className="ms-3 fw-bold">เบอร์โทร.</span>
-                            <span className="ms-2 border-bottom-dotted px-2" style={{ minWidth: '150px' }}>{item.phoneNumber || '....................'}</span>
+                            <span className="ms-2 border-bottom-dotted px-2" style={{ minWidth: '150px' }}>{item.phoneNumber || '2299'}</span>
                         </div>
 
                         <div className="d-flex mb-2">
                             <span className="fw-bold" style={{ minWidth: '150px' }}>ประเภทครุภัณฑ์:</span>
                             <span className="flex-grow-1 border-bottom-dotted px-2">{item.category || '-'}</span>
-                        </div>
-
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>Computer Name:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.computerName || '-'}</span>
                         </div>
 
                         <div className="d-flex mb-2">
@@ -59,21 +72,7 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                             <span className="flex-grow-1 border-bottom-dotted px-2">{item.brandModel || '-'}</span>
                         </div>
 
-                        {/* Checkboxes Section */}
-                        <div className="d-flex gap-4 mt-3 mb-4 ps-4">
-                            <div className="d-flex align-items-center">
-                                <div className="custom-checkbox me-2"></div>
-                                <span>เพิ่ม</span>
-                            </div>
-                            <div className="d-flex align-items-center">
-                                <div className="custom-checkbox me-2"></div>
-                                <span>ทดแทน</span>
-                            </div>
-                            <div className="d-flex align-items-center">
-                                <div className="custom-checkbox me-2"></div>
-                                <span>คืน IT (ชำรุด,ไม่ใช้งาน)</span>
-                            </div>
-                        </div>
+
 
                         {/* Remarks Section */}
                         <div className="d-flex mb-5">
