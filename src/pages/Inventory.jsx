@@ -175,7 +175,14 @@ export default function Inventory() {
                                             style={{ cursor: 'pointer' }}
                                             title="คลิกเพื่อดูรายละเอียด"
                                         >
-                                            <td>{stock.importDate}</td>
+                                            <td>
+                                                <div>{stock.importDate}</div>
+                                                {stock.timestamp && (
+                                                    <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                                                        {new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.
+                                                    </div>
+                                                )}
+                                            </td>
                                             <td className="fw-bold">{stock.assetId}</td>
                                             <td>{stock.brandModel}</td>
                                             <td><small className="text-muted">{stock.serialNumber}</small></td>
