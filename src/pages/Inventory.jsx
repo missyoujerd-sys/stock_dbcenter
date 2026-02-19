@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, remove } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaWarehouse, FaSearch, FaHome, FaTruck } from 'react-icons/fa';
+import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
@@ -14,7 +15,9 @@ export default function Inventory() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
-
+    const { currentUser } = useAuth();
+    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'montri@nkp.com';
+    console.log(isAdmin);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {
@@ -34,13 +37,11 @@ export default function Inventory() {
                     loadedStocks.push({
                         id: key,
                         ...item,
-                        building: decryptData(item.building),
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
-                        computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
@@ -91,6 +92,17 @@ export default function Inventory() {
     const handleRowClick = (item) => {
         setSelectedItem(item);
         setShowDetailModal(true);
+    };
+
+    const handleDelete = async (e, stockId) => {
+        e.stopPropagation();
+        if (!window.confirm('ต้องการลบรายการนี้ออกจากระบบ?')) return;
+        try {
+            await remove(ref(db, `stocks/${stockId}`));
+        } catch (err) {
+            console.error('ลบไม่สำเร็จ:', err);
+            alert('เกิดข้อผิดพลาด ไม่สามารถลบรายการได้');
+        }
     };
 
     const filteredStocks = stocks.filter(stock =>
@@ -160,6 +172,7 @@ export default function Inventory() {
                                     <th>S/N</th>
                                     <th>หน่วยงาน/อาคาร</th>
                                     <th>สถานะ</th>
+                                    {isAdmin && <th style={{ width: '80px' }}></th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -195,6 +208,19 @@ export default function Inventory() {
                                                     {stock.status}
                                                 </Badge>
                                             </td>
+                                            {isAdmin && (
+                                                <td onClick={(e) => e.stopPropagation()}>
+                                                    <Button
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        title="ลบรายการนี้"
+                                                        onClick={(e) => handleDelete(e, stock.id)}
+                                                        style={{ padding: '2px 8px' }}
+                                                    >
+                                                        <FaTrash />
+                                                    </Button>
+                                                </td>
+                                            )}
                                         </tr>
                                     ))
                                 )}
