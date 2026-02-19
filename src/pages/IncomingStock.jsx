@@ -36,24 +36,14 @@ export default function IncomingStock() {
         category: '',
         brand: '',
         model: '',
-        computerName: '',
         remarks: ''
     });
 
     const CATEGORY_OPTIONS = {
         "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
-        "TV": ["LG", "Samsung", "Philips"],
-        "Tablet": ["Samsung", "Apple"],
-        "Printer": [
-            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
-            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
-            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
-            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
-            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
-        ],
-        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
         "จอคอมพิวเตอร์": [
             "จอคอมพิวเตอร์ Acer",
+            "จอคอมพิวเตอร์ Asus",
             "จอคอมพิวเตอร์ AOC ",
             "จอคอมพิวเตอร์ ZOWIE",
             "จอคอมพิวเตอร์ BenQ ",
@@ -64,6 +54,17 @@ export default function IncomingStock() {
             "จอคอมพิวเตอร์ Alienware ",
             "จอคอมพิวเตอร์ LG "
         ],
+        "TV": ["LG", "Samsung", "Philips"],
+        "Tablet": ["Samsung", "Apple"],
+        "Printer": [
+            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
+            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
+            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
+            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
+            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+        ],
+        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
+
         "สแกนเนอร์": [
             "สแกนเนอร์ Canon PIXMA ",
             "สแกนเนอร์ Epson Scaner ",
@@ -102,7 +103,6 @@ export default function IncomingStock() {
                 assetId: encryptData(formData.assetId),
                 category: encryptData(formData.category),
                 brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim().replace(/-$/, '').trim()),
-                computerName: encryptData(formData.computerName),
                 remarks: encryptData(formData.remarks),
 
                 qt_received: 1, // Default 1
@@ -128,7 +128,6 @@ export default function IncomingStock() {
                 category: '',
                 brand: '',
                 model: '',
-                computerName: '',
                 remarks: ''
             });
         } catch (err) {
@@ -157,7 +156,6 @@ export default function IncomingStock() {
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel).trim().replace(/-$/, '').trim(),
-                        computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
@@ -293,32 +291,11 @@ export default function IncomingStock() {
                             <Col md={4}>
                                 <Form.Group controlId="assetId">
                                     <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
-                                        <FaBarcode className="me-2" /> เลบครุภัณฑ์
+                                        <FaBarcode className="me-2" /> เลขครุภัณฑ์
                                     </Form.Label>
                                     <div className="input-group shadow-sm">
                                         <span className="input-group-text bg-white text-muted border-end-0">
                                             <FaBarcode />
-                                        </span>
-                                        <Form.Control
-                                            type="text"
-                                            name="assetId"
-                                            value={formData.assetId}
-                                            onChange={handleChange}
-                                            placeholder="ระบุหมายเลขครุภัณฑ์"
-                                            required
-                                            className="border-start-0 ps-0 py-2"
-                                        />
-                                    </div>
-                                </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                                <Form.Group controlId="brand">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
-                                        <FaTag className="me-2" /> ยี่ห้อ / ประเภท
-                                    </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaTag />
                                         </span>
                                         {formData.category && CATEGORY_OPTIONS[formData.category] ? (
                                             <Form.Select
