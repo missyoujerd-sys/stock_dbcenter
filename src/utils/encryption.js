@@ -5,7 +5,7 @@ const SECRET_KEY = import.meta.env.VITE_APP_ENCRYPTION_KEY || 'default-secret-ke
 export const encryptData = (data) => {
     if (!data) return '';
     try {
-        return data;
+        return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
     } catch (error) {
         console.error("Encryption Error:", error);
         return data;
@@ -15,7 +15,7 @@ export const encryptData = (data) => {
 export const decryptData = (ciphertext) => {
     if (!ciphertext || typeof ciphertext !== 'string') return ciphertext || '';
     try {
-        const bytes = ciphertext;
+        const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
         const utf8String = bytes.toString(CryptoJS.enc.Utf8);
 
         // If decryption results in an empty string, it's likely not encrypted
