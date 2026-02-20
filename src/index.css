@@ -185,60 +185,19 @@ body {
 
 
 .login-title {
-  font-family: 'Kanit', sans-serif;
-  font-size: 3rem;
-  font-weight: 800;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
   letter-spacing: 1px;
-  background: linear-gradient(to bottom, #ffffff 30%, #a5c7ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 15px rgba(66, 133, 244, 0.4));
-  text-shadow:
-    0 1px 0 #cccccc,
-    0 2px 0 #c5c5c5,
-    0 3px 0 #bbb,
-    0 4px 0 #b3b3b3,
-    0 5px 0 #aaa,
-    0 6px 1px rgba(0, 0, 0, .1),
-    0 0 5px rgba(0, 0, 0, .1),
-    0 1px 3px rgba(0, 0, 0, .3),
-    0 3px 5px rgba(0, 0, 0, .2),
-    0 5px 10px rgba(0, 0, 0, .25),
-    0 10px 10px rgba(0, 0, 0, .2),
-    0 20px 20px rgba(0, 0, 0, .15);
-  animation: title-shimmer 3s infinite alternate;
 }
 
 .login-subtitle {
-  font-family: 'Kanit', sans-serif;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 1.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.5rem;
   font-weight: 500;
-  margin-bottom: 3.5rem;
+  margin-bottom: 3rem;
   line-height: 1.4;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  display: inline-block;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes title-shimmer {
-  0% {
-    filter: drop-shadow(0 0 15px rgba(66, 133, 244, 0.4)) brightness(1);
-    transform: scale(1);
-  }
-
-  100% {
-    filter: drop-shadow(0 0 25px rgba(66, 133, 244, 0.6)) brightness(1.1);
-    transform: scale(1.02);
-  }
 }
 
 .login-input-group {
