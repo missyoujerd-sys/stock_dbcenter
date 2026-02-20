@@ -33,9 +33,18 @@ export default function Login() {
 
     return (
         <div className="login-page">
+            {/* Dimensional Background Text */}
+            <div className="login-bg-text" aria-hidden="true">
+                <span className="login-bg-word login-bg-word--1">STOCK</span>
+                <span className="login-bg-word login-bg-word--2">NKP</span>
+                <span className="login-bg-word login-bg-word--3">HOSPITAL</span>
+                <span className="login-bg-word login-bg-word--4">SYSTEM</span>
+                <span className="login-bg-word login-bg-word--5">LOGIN</span>
+            </div>
+
             <div className="login-card">
-                <h1 className="login-title">Login</h1>
-                <h2 className="login-subtitle">ระบบจัดการ Stock อุปกรณ์รอจำหน่าย</h2>
+                <h4 className="login-title">ระบบจัดการ Stock</h4>
+                <h4 className="login-subtitle"> อุปกรณ์รอจำหน่าย </h4>
 
                 {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
 
