@@ -136,102 +136,99 @@ export default function Inventory() {
 
             <StatusSummaryBar />
 
-            <div className="section-header-container mt-2">
-                <div className="section-accent"></div>
-                <h4 className="section-title-text">
-                    ข้อมูลพัสดุในระบบ
-                    <span className="section-title-badge">INVENTORY DATA</span>
-                </h4>
-            </div>
-
-            <Card className="shadow-sm border-0">
-                <Card.Header className="bg-white py-3 d-flex flex-wrap justify-content-end align-items-center">
-                    <div className="w-100 w-md-auto" style={{ maxWidth: '350px' }}>
-                        <div className="input-group">
-                            <span className="input-group-text bg-light border-end-0">
-                                <FaSearch className="text-muted" />
-                            </span>
-                            <Form.Control
+            <div className="latest-panel">
+                {/* Panel Header */}
+                <div className="latest-panel-header">
+                    <div className="latest-panel-title-wrap">
+                        <div className="latest-panel-dot"></div>
+                        <span className="latest-panel-title">ข้อมูลพัสดุในระบบ</span>
+                        <span className="latest-panel-badge">INVENTORY DATA</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
+                        {/* Search */}
+                        <div className="inv-search-wrap">
+                            <FaSearch className="inv-search-icon" />
+                            <input
                                 type="text"
+                                className="inv-search-input"
                                 placeholder="ค้นหา Asset ID, ยี่ห้อ, S/N, หน่วยงาน..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-start-0"
                             />
                         </div>
                     </div>
-                </Card.Header>
-                <Card.Body className="p-0 bg-transparent">
-                    <div className="table-responsive p-2">
-                        <Table hover className="mb-0 premium-table">
-                            <thead className="premium-thead">
-                                <tr>
-                                    <th>วันที่</th>
-                                    <th>หมายเลขครุภัณฑ์</th>
-                                    <th>ยี่ห้อ/รุ่น</th>
-                                    <th>S/N</th>
-                                    <th>หน่วยงาน/อาคาร</th>
-                                    <th>สถานะ</th>
-                                    {isAdmin && <th style={{ width: '80px' }}></th>}
+                </div>
+
+                {/* Table */}
+                <div className="latest-table-wrap">
+                    <table className="latest-table">
+                        <thead>
+                            <tr>
+                                <th>วันที่</th>
+                                <th>หมายเลขครุภัณฑ์</th>
+                                <th>ยี่ห้อ / รุ่น</th>
+                                <th>S/N</th>
+                                <th>หน่วยงาน / อาคาร</th>
+                                <th>สถานะ</th>
+                                {isAdmin && <th style={{ width: '60px' }}></th>}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="7" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                            ) : filteredStocks.length === 0 ? (
+                                <tr><td colSpan="7" className="latest-empty">ไม่พบข้อมูลพัสดุ</td></tr>
+                            ) : filteredStocks.map((stock, idx) => (
+                                <tr
+                                    key={stock.id}
+                                    onClick={() => handleRowClick(stock)}
+                                    className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
+                                    title="คลิกเพื่อดูรายละเอียด"
+                                >
+                                    <td>
+                                        <div className="latest-date">{stock.importDate}</div>
+                                        {stock.timestamp && (
+                                            <div className="latest-time">
+                                                {new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="latest-asset-id">{stock.assetId || '—'}</td>
+                                    <td className="latest-brand">{stock.brandModel}</td>
+                                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>{stock.serialNumber}</td>
+                                    <td>
+                                        <div className="latest-dept">{stock.department}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>{stock.building}</div>
+                                    </td>
+                                    <td>
+                                        <span className={`latest-status latest-status--${stock.status === 'รับเข้า' ? 'in' : stock.status === 'จำหน่าย' ? 'out' : 'other'}`}>
+                                            {stock.status}
+                                        </span>
+                                    </td>
+                                    {isAdmin && (
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                className="inv-del-btn"
+                                                title="ลบรายการนี้"
+                                                onClick={(e) => handleDelete(e, stock.id)}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </td>
+                                    )}
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan="6" className="text-center py-5">กำลังโหลดข้อมูล...</td></tr>
-                                ) : filteredStocks.length === 0 ? (
-                                    <tr><td colSpan="6" className="text-center py-5 text-muted">ไม่พบข้อมูลพัสดุ</td></tr>
-                                ) : (
-                                    filteredStocks.map((stock) => (
-                                        <tr
-                                            key={stock.id}
-                                            onClick={() => handleRowClick(stock)}
-                                            style={{ cursor: 'pointer' }}
-                                            title="คลิกเพื่อดูรายละเอียด"
-                                        >
-                                            <td>
-                                                <div>{stock.importDate}</div>
-                                                {stock.timestamp && (
-                                                    <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                                                        {new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="fw-bold">{stock.assetId}</td>
-                                            <td>{stock.brandModel}</td>
-                                            <td><small className="text-muted">{stock.serialNumber}</small></td>
-                                            <td>
-                                                <div>{stock.department}</div>
-                                                <small className="text-secondary">{stock.building}</small>
-                                            </td>
-                                            <td>
-                                                <Badge bg={stock.status === 'รับเข้า' ? 'success' : (stock.status === 'จำหน่าย' ? 'danger' : 'warning')}>
-                                                    {stock.status}
-                                                </Badge>
-                                            </td>
-                                            {isAdmin && (
-                                                <td onClick={(e) => e.stopPropagation()}>
-                                                    <Button
-                                                        variant="outline-danger"
-                                                        size="sm"
-                                                        title="ลบรายการนี้"
-                                                        onClick={(e) => handleDelete(e, stock.id)}
-                                                        style={{ padding: '2px 8px' }}
-                                                    >
-                                                        <FaTrash />
-                                                    </Button>
-                                                </td>
-                                            )}
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </Table>
-                    </div>
-                </Card.Body>
-                <Card.Footer className="bg-white py-3 text-muted">
-                    <small>แสดงทั้งหมด {filteredStocks.length} รายการ</small>
-                </Card.Footer>
-            </Card >
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Footer */}
+                <div className="inv-panel-footer">
+                    แสดงทั้งหมด <strong style={{ color: '#f5a623' }}>{filteredStocks.length}</strong> รายการ
+                </div>
+            </div>
+
 
             <ItemDetailModal
                 show={showDetailModal}
