@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5a623"/>
+      <stop offset="100%" stop-color="#f0c040"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#e8d5a3" stop-opacity="0.7"/>
+    </linearGradient>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+  </defs>
+
+  <!-- Outer ring -->
+  <circle cx="60" cy="60" r="56" fill="none" stroke="url(#g1)" stroke-width="2.5" opacity="0.7"/>
+  <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g1)" stroke-width="1" opacity="0.4"/>
+
+  <!-- Center pentagon/shield -->
+  <polygon points="60,18 98,42 86,84 34,84 22,42"
+           fill="url(#g1)" opacity="0.15"/>
+  <polygon points="60,22 94,44 83,80 37,80 26,44"
+           fill="none" stroke="url(#g1)" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Shield body -->
+  <path d="M60 28 L84 42 L84 62 C84 74 73 82 60 88 C47 82 36 74 36 62 L36 42 Z"
+        fill="url(#g1)" filter="url(#s)" opacity="0.9"/>
+
+  <!-- Shield inner -->
+  <path d="M60 34 L78 45 L78 62 C78 71 70 78 60 83 C50 78 42 71 42 62 L42 45 Z"
+        fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+
+  <!-- Warehouse/box icon inside shield -->
+  <!-- Roof -->
+  <polygon points="60,41 74,49 60,49 46,49" fill="white" opacity="0.95"/>
+  <!-- Body -->
+  <rect x="47" y="49" width="26" height="18" rx="1" fill="white" opacity="0.9"/>
+  <!-- Door -->
+  <rect x="56" y="55" width="8" height="12" rx="1" fill="url(#g1)" opacity="0.8"/>
+  <!-- Roof ridge -->
+  <line x1="60" y1="37" x2="60" y2="41" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <!-- Windows -->
+  <rect x="50" y="52" width="5" height="5" rx="1" fill="url(#g1)" opacity="0.7"/>
+  <rect x="65" y="52" width="5" height="5" rx="1" fill="url(#g1)" opacity="0.7"/>
+
+  <!-- Stars top -->
+  <circle cx="60" cy="10" r="3" fill="url(#g1)"/>
+  <circle cx="47" cy="13" r="2" fill="url(#g1)" opacity="0.7"/>
+  <circle cx="73" cy="13" r="2" fill="url(#g1)" opacity="0.7"/>
+
+  <!-- Laurel leaves left -->
+  <path d="M24 60 Q20 52 26 48 Q24 56 30 58 Q26 50 34 48 Q30 56 34 62 Q28 58 24 60Z"
+        fill="url(#g1)" opacity="0.7"/>
+  <!-- Laurel leaves right (mirrored) -->
+  <path d="M96 60 Q100 52 94 48 Q96 56 90 58 Q94 50 86 48 Q90 56 86 62 Q92 58 96 60Z"
+        fill="url(#g1)" opacity="0.7"/>
+
+  <!-- Bottom ribbon -->
+  <path d="M38 90 Q60 98 82 90 L80 96 Q60 104 40 96 Z"
+        fill="url(#g1)" opacity="0.8"/>
+  <path d="M42 91 Q60 97 78 91" fill="none" stroke="white" stroke-width="0.8" opacity="0.5"/>
+</svg>

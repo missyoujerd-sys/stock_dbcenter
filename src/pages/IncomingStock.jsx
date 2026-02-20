@@ -192,22 +192,30 @@ export default function IncomingStock() {
                 </div>
             </div>
 
-            <Card className="shadow-sm border-0">
-                <Card.Body>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
+            <div className="latest-panel">
+                {/* Panel Header */}
+                <div className="latest-panel-header">
+                    <div className="latest-panel-title-wrap">
+                        <div className="latest-panel-dot"></div>
+                        <span className="latest-panel-title">กรอกข้อมูลพัสดุ</span>
+                        <span className="latest-panel-badge">INCOMING STOCK FORM</span>
+                    </div>
+                </div>
+
+                {/* Form Body */}
+                <div className="inc-form-body">
+                    {error && <div className="inc-alert inc-alert--danger">{error}</div>}
+                    {success && <div className="inc-alert inc-alert--success">{success}</div>}
 
                     <Form onSubmit={handleSubmit}>
                         <Row className="mb-4">
                             <Col md={6}>
                                 <Form.Group controlId="surveyDate">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaCalendarAlt className="me-2" /> ว/ด/ป สำรวจ
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaCalendarAlt />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaCalendarAlt /></span>
                                         <div className="flex-grow-1">
                                             <DatePicker
                                                 selected={formData.surveyDate ? new Date(formData.surveyDate) : null}
@@ -221,7 +229,7 @@ export default function IncomingStock() {
                                                 }}
                                                 dateFormat="dd/MM/yyyy"
                                                 locale="th"
-                                                className="form-control border-start-0 ps-0 py-2 w-100"
+                                                className="inc-datepicker-input"
                                                 wrapperClassName="w-100"
                                                 placeholderText="เลือกวันที่"
                                                 calendarClassName="shadow-lg border-0"
@@ -258,13 +266,11 @@ export default function IncomingStock() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="category">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaList className="me-2" /> หมวดหมู่ (Category)
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaList />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaList /></span>
                                         <Form.Select
                                             name="category"
                                             value={formData.category}
@@ -277,8 +283,7 @@ export default function IncomingStock() {
                                                 });
                                             }}
                                             required
-                                            className="border-start-0 ps-0 py-2"
-                                            style={{ backgroundColor: '#fff', cursor: 'pointer', height: '100%' }}
+                                            className="inc-select"
                                         >
                                             <option value="">-- กรุณาเลือกหมวดหมู่ --</option>
                                             {Object.keys(CATEGORY_OPTIONS).map(cat => (
@@ -294,13 +299,11 @@ export default function IncomingStock() {
                         <Row className="mb-4">
                             <Col md={4}>
                                 <Form.Group controlId="assetId">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaBarcode className="me-2" /> เลขครุภัณฑ์
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaBarcode />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaBarcode /></span>
                                         <Form.Control
                                             type="text"
                                             name="assetId"
@@ -308,28 +311,25 @@ export default function IncomingStock() {
                                             onChange={handleChange}
                                             placeholder="ระบุหมายเลขครุภัณฑ์"
                                             required
-                                            className="border-start-0 ps-0 py-2"
+                                            className="inc-input"
                                         />
                                     </div>
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group controlId="brand">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaTag className="me-2" /> ยี่ห้อ / ประเภท
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaTag />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaTag /></span>
                                         {formData.category && CATEGORY_OPTIONS[formData.category] ? (
                                             <Form.Select
                                                 name="brand"
                                                 value={formData.brand}
                                                 onChange={handleChange}
                                                 required
-                                                className="border-start-0 ps-0 py-2"
-                                                style={{ cursor: 'pointer' }}
+                                                className="inc-select"
                                             >
                                                 <option value="">-- เลือกยี่ห้อ --</option>
                                                 {CATEGORY_OPTIONS[formData.category].map(opt => (
@@ -344,7 +344,7 @@ export default function IncomingStock() {
                                                 onChange={handleChange}
                                                 placeholder="ระบุยี่ห้อ/ประเภท"
                                                 required
-                                                className="border-start-0 ps-0 py-2"
+                                                className="inc-input"
                                             />
                                         )}
                                     </div>
@@ -352,20 +352,18 @@ export default function IncomingStock() {
                             </Col>
                             <Col md={4}>
                                 <Form.Group controlId="model">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaBox className="me-2" /> รุ่น (Model)
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaBox />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaBox /></span>
                                         <Form.Control
                                             type="text"
                                             name="model"
                                             value={formData.model}
                                             onChange={handleChange}
                                             placeholder="ระบุรุ่น (ถ้ามี)"
-                                            className="border-start-0 ps-0 py-2"
+                                            className="inc-input"
                                         />
                                     </div>
                                 </Form.Group>
@@ -375,33 +373,29 @@ export default function IncomingStock() {
                         <Row className="mb-4">
                             <Col md={4}>
                                 <Form.Group controlId="serialNumber">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaBarcode className="me-2" /> S/N (Serial Number)
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            #
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon">#</span>
                                         <Form.Control
                                             type="text"
                                             name="serialNumber"
                                             value={formData.serialNumber}
                                             onChange={handleChange}
                                             placeholder="ระบุ Serial Number"
-                                            className="border-start-0 ps-0 py-2"
+                                            className="inc-input"
                                         />
                                     </div>
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group controlId="department">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaBuilding className="me-2" /> หน่วยงาน
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaBuilding />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaBuilding /></span>
                                         <Form.Control
                                             type="text"
                                             name="department"
@@ -409,53 +403,51 @@ export default function IncomingStock() {
                                             onChange={handleChange}
                                             placeholder="ระบุหน่วยงาน"
                                             required
-                                            className="border-start-0 ps-0 py-2"
+                                            className="inc-input"
                                         />
                                     </div>
                                 </Form.Group>
                             </Col>
-
                         </Row>
 
                         <Row className="mb-4">
                             <Col md={12}>
                                 <Form.Group controlId="remarks">
-                                    <Form.Label className="fw-bold text-secondary text-uppercase" style={{ fontSize: '0.85rem' }}>
+                                    <Form.Label className="inc-label">
                                         <FaStickyNote className="me-2" /> หมายเหตุ
                                     </Form.Label>
-                                    <div className="input-group shadow-sm">
-                                        <span className="input-group-text bg-white text-muted border-end-0">
-                                            <FaStickyNote />
-                                        </span>
+                                    <div className="inc-input-group">
+                                        <span className="inc-input-icon"><FaStickyNote /></span>
                                         <Form.Control
                                             as="textarea"
                                             rows={2}
                                             name="remarks"
                                             value={formData.remarks}
                                             onChange={handleChange}
-                                            className="border-start-0 ps-0 py-2"
+                                            className="inc-input"
                                         />
                                     </div>
                                 </Form.Group>
                             </Col>
                         </Row>
 
-                        <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <div className="d-flex justify-content-end gap-2 pt-2">
                             <Button
                                 variant="warning"
-                                className="me-md-2"
                                 size="lg"
                                 onClick={() => navigate('/')}
+                                style={{ fontWeight: 700 }}
                             >
                                 <FaHome className="me-2" /> กลับเมนูหลัก
                             </Button>
-                            <Button variant="primary" type="submit" disabled={loading} size="lg">
+                            <Button variant="success" type="submit" disabled={loading} size="lg" className="btn-incoming-submit">
                                 <FaSave className="me-2" /> บันทึกรับเข้า (Incoming)
                             </Button>
                         </div>
                     </Form>
-                </Card.Body>
-            </Card>
+                </div>
+            </div>
+
             <ItemDetailModal
                 show={showDetailModal}
                 onHide={() => setShowDetailModal(false)}
@@ -464,5 +456,8 @@ export default function IncomingStock() {
         </>
     );
 }
+
+
+
 
 
