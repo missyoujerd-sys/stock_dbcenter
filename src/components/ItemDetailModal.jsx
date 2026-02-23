@@ -29,7 +29,11 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 <Modal.Title className="fw-bold">รายละเอียดพัสดุ</Modal.Title>
             </Modal.Header>
             <Modal.Body className="p-0">
-                <div ref={printRef} className="document-container p-5 bg-white mx-auto shadow-sm" style={{ maxWidth: '800px', minHeight: '500px' }}>
+                <div ref={printRef} className="document-container p-4 bg-white mx-auto shadow-sm position-relative" style={{ maxWidth: '800px', minHeight: '500px' }}>
+                    {/* Watermark for UI and printing */}
+                    <div className="watermark">
+                        ห้ามใช้งานฟอร์มนี้
+                    </div>
                     {/* Date/Time Section */}
                     <div className="text-end mb-2 small">
                         <div>วันที่: {formattedDate}</div>
@@ -38,9 +42,9 @@ const ItemDetailModal = ({ show, onHide, item }) => {
 
                     {/* Header Section */}
                     <div className="text-center mb-5">
-                        <h2 className="document-title fw-bold text-decoration-underline mb-4">
+                        <h1 className="document-title fw-bold text-decoration-underline mb-4">
                             จำหน่าย
-                        </h2>
+                        </h1>
                     </div>
 
                     {/* Content Section */}
@@ -136,11 +140,38 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                     border: 1px solid #000;
                     border-radius: 3px;
                 }
+
+                .watermark {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-30deg);
+                    font-size: 5rem;
+                    font-weight: 900;
+                    color: rgba(220, 53, 69, 0.1); /* Reddish for UI visibility */
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 0;
+                    border: 8px solid rgba(220, 53, 69, 0.1);
+                    padding: 15px 30px;
+                    border-radius: 20px;
+                    text-transform: uppercase;
+                }
+
+                .document-container {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .document-content {
+                    position: relative;
+                    z-index: 2;
+                }
                 
                 @media print {
                     @page {
-                        margin: 0.5cm;
-                        size: A4 portrait;
+                        margin: 0.3cm;
+                        size: A5 portrait;
                     }
                     html, body {
                         height: 100%;
@@ -187,17 +218,25 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                         margin: 0 auto !important;
                     }
                     .document-title {
-                        margin-bottom: 1.5rem !important;
-                        font-size: 1.5rem !important;
+                        margin-bottom: 1rem !important;
+                        font-size: 1.3rem !important;
                     }
                     .document-content {
-                        line-height: 2.0 !important;
+                        line-height: 1.8 !important;
                     }
                     .mt-5 {
-                        margin-top: 2rem !important;
+                        margin-top: 1.5rem !important;
                     }
                     .mb-5 {
-                        margin-bottom: 1.5rem !important;
+                        margin-bottom: 1rem !important;
+                    }
+                    .mb-4 {
+                        margin-bottom: 0.5rem !important;
+                    }
+                    .watermark {
+                        color: rgba(0, 0, 0, 0.05) !important; /* Lighter/Gray for actual printing */
+                        border-color: rgba(0, 0, 0, 0.05) !important;
+                        font-size: 5rem !important;
                     }
                 }
             `}</style>
