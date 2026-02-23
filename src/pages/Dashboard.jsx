@@ -10,7 +10,6 @@ import {
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 import logoSvg from '../assets/logo.svg';
-import emblemSvg from '../assets/emblem.svg';
 import qmIncomingSvg from '../assets/qm-incoming.svg';
 import qmDistributionSvg from '../assets/qm-distribution.svg';
 import qmInventorySvg from '../assets/qm-inventory.svg';
@@ -75,9 +74,6 @@ export default function Dashboard() {
         <div>
             {/* ── Hero Banner ── */}
             <div className="db-hero-banner mb-4">
-                {/* Decorative emblem */}
-                <img src={emblemSvg} alt="emblem" className="db-hero-emblem" />
-
                 {/* Title block */}
                 <div className="db-hero-title-block">
                     <div className="db-hero-logo-wrap">
@@ -134,7 +130,7 @@ export default function Dashboard() {
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
-                                <div className="qm-label">รับพัสดุรอจำหน่ายเข้าระบบ</div>
+                                <div className="qm-label"><h4>รับพัสดุรอจำหน่ายเข้าระบบ</h4></div>
                                 <div className="qm-title">รับพัสดุเข้าระบบ</div>
                                 <div className="qm-desc">บันทึกการรับพัสดุครุภัณฑ์เข้าคลัง<br />เพื่อรอดำเนินการจำหน่ายต่อไป</div>
                             </div>
@@ -152,7 +148,7 @@ export default function Dashboard() {
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
-                                <div className="qm-label">รายการพัสดุรอจำหน่าย</div>
+                                <div className="qm-label"><h4>รายการพัสดุรอจำหน่าย</h4></div>
                                 <div className="qm-title">จำหน่ายพัสดุออก</div>
                                 <div className="qm-desc">จัดการเอกสารและรายการพัสดุ<br />ที่รอดำเนินการจำหน่ายออกจากระบบ</div>
                             </div>
@@ -170,7 +166,7 @@ export default function Dashboard() {
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
-                                <div className="qm-label">ข้อมูลพัสดุในระบบทั้งหมด</div>
+                                <div className="qm-label"><h4>ข้อมูลพัสดุในระบบทั้งหมด</h4></div>
                                 <div className="qm-title">รายงานพัสดุทั้งหมด</div>
                                 <div className="qm-desc">ตรวจสอบและค้นหาข้อมูลพัสดุ<br />ครุภัณฑ์ทั้งหมดในระบบคลัง</div>
                             </div>

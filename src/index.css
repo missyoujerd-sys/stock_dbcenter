@@ -426,16 +426,19 @@ h6 {
   flex-direction: column;
   gap: 0;
   padding: 0;
-  border-radius: 16px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 10px 30px rgba(255, 182, 193, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  min-height: 160px;
-  border-top-width: 4px;
+  min-height: 180px;
 }
 
 .qm-card:hover {
@@ -498,20 +501,26 @@ h6 {
 }
 
 .qm-label {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 5px;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .qm-title {
-  font-size: 1.2rem;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 900;
   color: #1a2a44;
   line-height: 1.25;
   margin-bottom: 6px;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.qm-card:hover .qm-title {
+  transform: scale(1.02);
 }
 
 .qm-desc {
@@ -557,157 +566,133 @@ h6 {
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
 }
 
-/* === 1. Incoming — Royal Blue Gradient === */
-.qm-card--incoming {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #3a6bc0 100%);
-  border: none;
-  border-top: none;
-  box-shadow: 0 8px 32px rgba(30, 60, 114, 0.45);
+/* === New Dimensional Themes (Pinkish/Pastel) === */
+
+.qm-card::before,
+.qm-card::after {
+  content: '';
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  filter: blur(50px);
+  z-index: -1;
+  opacity: 0.4;
+  transition: all 0.5s ease;
 }
 
-.qm-card--incoming .qm-label {
-  color: rgba(255, 255, 255, 0.6);
+.qm-card::before {
+  top: -40px;
+  left: -40px;
+  background: #ffc2d1;
+}
+
+.qm-card::after {
+  bottom: -40px;
+  right: -40px;
+  background: #ffe5ec;
+}
+
+.qm-card:hover::before {
+  transform: translate(20px, 20px) scale(1.2);
+  opacity: 0.6;
+}
+
+.qm-card:hover::after {
+  transform: translate(-20px, -20px) scale(1.2);
+  opacity: 0.6;
+}
+
+/* 1. Incoming - Soft Pink/Peach */
+.qm-card--incoming {
+  background: linear-gradient(135deg, #fff5f7 0%, #ffeef2 100%);
+  box-shadow: 0 10px 30px rgba(255, 182, 193, 0.25);
 }
 
 .qm-card--incoming .qm-title {
-  color: #ffffff;
+  color: #d63384;
 }
 
-.qm-card--incoming .qm-desc {
-  color: rgba(255, 255, 255, 0.7);
+.qm-card--incoming .qm-icon-box {
+  background: linear-gradient(135deg, #ff85a1, #ffb3c1);
 }
 
 .qm-card--incoming .qm-card-footer {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 133, 161, 0.05);
+  border-top-color: rgba(255, 182, 193, 0.2);
 }
 
-.qm-card--incoming .qm-footer-text {
-  color: rgba(255, 255, 255, 0.85);
-  opacity: 1;
-}
-
-.qm-card--incoming .qm-card-footer svg {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.qm-card--incoming::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-}
-
-.qm-card--incoming:hover {
-  box-shadow: 0 20px 50px rgba(30, 60, 114, 0.55);
-  transform: translateY(-8px);
-}
-
-/* === 2. Distribution — Deep Purple Gradient === */
+/* 2. Distribution - Lilac/Lavender */
 .qm-card--distribution {
-  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 55%, #8b5cf6 100%);
-  border: none;
-  border-top: none;
-  box-shadow: 0 8px 32px rgba(76, 29, 149, 0.45);
+  background: linear-gradient(135deg, #f8f7ff 0%, #f0efff 100%);
+  box-shadow: 0 10px 30px rgba(216, 191, 216, 0.25);
 }
 
-.qm-card--distribution .qm-label {
-  color: rgba(255, 255, 255, 0.6);
+.qm-card--distribution .qm-card::before {
+  background: #e0d1ff;
+}
+
+.qm-card--distribution .qm-card::after {
+  background: #f3e8ff;
 }
 
 .qm-card--distribution .qm-title {
-  color: #ffffff;
+  color: #6f42c1;
 }
 
-.qm-card--distribution .qm-desc {
-  color: rgba(255, 255, 255, 0.7);
+.qm-card--distribution .qm-icon-box {
+  background: linear-gradient(135deg, #b794f4, #d6bcfa);
 }
 
 .qm-card--distribution .qm-card-footer {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(183, 148, 244, 0.05);
+  border-top-color: rgba(214, 188, 250, 0.2);
 }
 
-.qm-card--distribution .qm-footer-text {
-  color: rgba(255, 255, 255, 0.85);
-  opacity: 1;
-}
-
-.qm-card--distribution .qm-card-footer svg {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.qm-card--distribution::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-}
-
-.qm-card--distribution:hover {
-  box-shadow: 0 20px 50px rgba(76, 29, 149, 0.55);
-  transform: translateY(-8px);
-}
-
-/* === 3. Inventory — Deep Teal/Emerald Gradient === */
+/* 3. Inventory - Mint/Soft Green */
 .qm-card--inventory {
-  background: linear-gradient(135deg, #064e3b 0%, #059669 55%, #10b981 100%);
-  border: none;
-  border-top: none;
-  box-shadow: 0 8px 32px rgba(6, 78, 59, 0.45);
+  background: linear-gradient(135deg, #f6fffb 0%, #edfff7 100%);
+  box-shadow: 0 10px 30px rgba(183, 228, 199, 0.25);
 }
 
-.qm-card--inventory .qm-label {
-  color: rgba(255, 255, 255, 0.6);
+.qm-card--inventory .qm-card::before {
+  background: #b7e4c7;
+}
+
+.qm-card--inventory .qm-card::after {
+  background: #d8f3dc;
 }
 
 .qm-card--inventory .qm-title {
-  color: #ffffff;
+  color: #198754;
 }
 
-.qm-card--inventory .qm-desc {
-  color: rgba(255, 255, 255, 0.7);
+.qm-card--inventory .qm-icon-box {
+  background: linear-gradient(135deg, #74c69d, #95d5b2);
 }
 
 .qm-card--inventory .qm-card-footer {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(116, 198, 157, 0.05);
+  border-top-color: rgba(149, 213, 178, 0.2);
 }
 
-.qm-card--inventory .qm-footer-text {
-  color: rgba(255, 255, 255, 0.85);
-  opacity: 1;
+/* Refined text for light theme */
+.qm-card .qm-label h4 {
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  color: #495057;
+  font-weight: 700;
+  opacity: 0.9;
 }
 
-.qm-card--inventory .qm-card-footer svg {
-  color: rgba(255, 255, 255, 0.8);
+.qm-card .qm-desc {
+  color: #6c757d;
+  opacity: 0.9;
 }
 
-.qm-card--inventory::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-}
-
-.qm-card--inventory:hover {
-  box-shadow: 0 20px 50px rgba(6, 78, 59, 0.55);
-  transform: translateY(-8px);
+.qm-card .qm-footer-text {
+  color: #495057;
+  font-weight: 700;
 }
 
 /* Legacy large card themes (kept for compatibility) */
@@ -1281,32 +1266,35 @@ h6 {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 24px;
-  background: linear-gradient(to bottom, #1e3c72, #2a5298);
-  border-radius: 10px;
+  width: 6px;
+  height: 28px;
+  background: linear-gradient(to bottom, #1e3c72, #d63384);
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(214, 51, 132, 0.3);
 }
 
 .section-title-text {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #2c3e50 !important;
+  font-size: 1.7rem !important;
+  font-weight: 900 !important;
+  color: #1a2a44 !important;
   margin-bottom: 0 !important;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
   text-transform: uppercase;
   display: flex;
   align-items: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .section-title-badge {
-  background: rgba(30, 60, 114, 0.05);
-  color: #1e3c72;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-left: 0.75rem;
-  border: 1px solid rgba(30, 60, 114, 0.1);
+  background: rgba(214, 51, 132, 0.08);
+  color: #d63384;
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-left: 1rem;
+  border: 1px solid rgba(214, 51, 132, 0.15);
+  letter-spacing: 1px;
 }
 
 /* --- Premium Table & Pill Header --- */
@@ -2033,10 +2021,8 @@ h6 {
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   /* Subtle dot pattern overlay */
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(135deg, #0f1e3d 0%, #1e3c72 45%, #2a5298 75%, #1a237e 100%);
-  background-size: 28px 28px, auto;
+  background: linear-gradient(135deg, #0f1e3d 0%, #1e3c72 45%, #2a5298 75%, #1a237e 100%);
+  background-size: auto;
 }
 
 /* Right-side gold shimmer bar */
@@ -2049,19 +2035,6 @@ h6 {
   width: 4px;
   background: linear-gradient(180deg, #f5a623, #f0c040, #f5a623);
   border-radius: 0 20px 20px 0;
-}
-
-/* Emblem — large, ghosted, decorative */
-.db-hero-emblem {
-  position: absolute;
-  left: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 220px;
-  height: 220px;
-  opacity: 0.08;
-  pointer-events: none;
-  filter: blur(0.5px);
 }
 
 /* Title block */
