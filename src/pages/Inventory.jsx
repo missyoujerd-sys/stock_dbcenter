@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { ref, onValue, remove } from 'firebase/database';
+import { ref, onValue, remove, update } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash } from 'react-icons/fa';
+import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash, FaUndo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -105,6 +105,23 @@ export default function Inventory() {
         }
     };
 
+    const handleRevertStatus = async (e, stockId) => {
+        e.stopPropagation();
+        if (!window.confirm('ต้องการคืนสถานะรายการนี้เป็น "รับเข้า" ?')) return;
+        try {
+            await update(ref(db, `stocks/${stockId}`), {
+                status: 'รับเข้า',
+                distributionDate: null,
+                distributor: null,
+                qt_distributed: 0,
+                qt_balance: 1
+            });
+        } catch (err) {
+            console.error('คืนสถานะไม่สำเร็จ:', err);
+            alert('เกิดข้อผิดพลาด ไม่สามารถคืนสถานะได้');
+        }
+    };
+
     const filteredStocks = stocks.filter(stock =>
         stock.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         stock.brandModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -172,6 +189,7 @@ export default function Inventory() {
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
                                 {isAdmin && <th style={{ width: '60px' }}></th>}
+                                {isAdmin && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -215,6 +233,20 @@ export default function Inventory() {
                                             >
                                                 <FaTrash />
                                             </button>
+                                        </td>
+                                    )}
+                                    {isAdmin && (
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            {stock.status === 'จำหน่าย' && (
+                                                <button
+                                                    className="inv-del-btn"
+                                                    title="คืนสถานะเป็น รับเข้า"
+                                                    style={{ color: '#4fc3f7', borderColor: 'rgba(79,195,247,0.3)' }}
+                                                    onClick={(e) => handleRevertStatus(e, stock.id)}
+                                                >
+                                                    <FaUndo />
+                                                </button>
+                                            )}
                                         </td>
                                     )}
                                 </tr>
