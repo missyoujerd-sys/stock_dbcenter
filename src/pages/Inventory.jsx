@@ -7,7 +7,7 @@ import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
-
+export let isAdmin = false;
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === '' || currentUser?.email === 'koom@nkp.com'; //เพิ่มสิทธิ์ผู้ดูแลระบบ
+    isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'koom@nkp.com' || currentUser?.email === '' || currentUser?.email === '' || currentUser?.email === ''; //เพิ่มสิทธิ์ผู้ดูแลระบบ
     console.log(isAdmin);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 

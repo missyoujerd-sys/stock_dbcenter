@@ -8,7 +8,7 @@ export default function Layout({ children }) {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-
+    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'koom@nkp.com' || currentUser?.email === '' || currentUser?.email === '' || currentUser?.email === '';
     async function handleLogout() {
         try {
             await logout();
@@ -38,9 +38,12 @@ export default function Layout({ children }) {
                             <Nav.Link as={Link} to="/distribution" className={`nav-link-custom ${location.pathname === '/distribution' ? 'active' : ''}`}>
                                 <FaTruckLoading className="me-2" /> จำหน่ายสินค้า
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/inventory" className={`nav-link-custom ${location.pathname === '/inventory' ? 'active' : ''}`}>
-                                <FaBoxOpen className="me-2" /> คลังพัสดุ(Amin)
-                            </Nav.Link>
+
+                            {isAdmin && (
+                                <Nav.Link as={Link} to="/inventory" className={`nav-link-custom ${location.pathname === '/inventory' ? 'active' : ''}`}>
+                                    <FaBoxOpen className="me-2" /> คลังพัสดุ(Admin)
+                                </Nav.Link>
+                            )}
                         </Nav>
                         <div className="d-flex align-items-center text-white mt-3 mt-lg-0">
                             {currentUser && (
