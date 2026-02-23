@@ -39,7 +39,7 @@ export default function Layout({ children }) {
                                 <FaTruckLoading className="me-2" /> จำหน่ายสินค้า
                             </Nav.Link>
                             <Nav.Link as={Link} to="/inventory" className={`nav-link-custom ${location.pathname === '/inventory' ? 'active' : ''}`}>
-                                <FaBoxOpen className="me-2" /> คลังพัสดุ
+                                <FaBoxOpen className="me-2" /> คลังพัสดุ(Amin)
                             </Nav.Link>
                         </Nav>
                         <div className="d-flex align-items-center text-white mt-3 mt-lg-0">
