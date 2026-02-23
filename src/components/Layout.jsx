@@ -3,16 +3,18 @@ import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaTruckLoading } from 'react-icons/fa';
-
 export default function Layout({ children }) {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'koom@nkp.com' || currentUser?.email === '' || currentUser?.email === '' || currentUser?.email === '';
+    const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5;
+
     async function handleLogout() {
         try {
             await logout();
             navigate('/login');
+            console.log(isAdmin);
+            console.log(import.meta.env.VITE_ADMIN_EMAIL);
         } catch {
             console.error("Failed to log out");
         }

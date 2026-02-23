@@ -16,7 +16,7 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    isAdmin = currentUser?.email === 'bunjerd@nkp.com' || currentUser?.email === 'koom@nkp.com' || currentUser?.email === '' || currentUser?.email === '' || currentUser?.email === ''; //เพิ่มสิทธิ์ผู้ดูแลระบบ
+    isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5; //เพิ่มสิทธิ์ผู้ดูแลระบบ
     console.log(isAdmin);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
