@@ -2560,15 +2560,35 @@ h6 {
   padding: 1.8rem;
 }
 
-/* Labels */
+/* Labels — Premium Pill Badge */
 .inc-label {
-  display: block;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.73rem;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.1px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: #fbbf24;
   margin-bottom: 0.55rem;
+  padding: 0.26rem 0.9rem 0.26rem 0.55rem;
+  border-radius: 20px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.22);
+  line-height: 1;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.inc-label svg {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.inc-input-group:focus-within+.inc-label,
+.form-group:focus-within .inc-label {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.4);
 }
 
 /* Input group wrapper */
@@ -2681,4 +2701,114 @@ h6 {
   background: rgba(248, 113, 113, 0.12);
   color: #f87171;
   border-color: rgba(248, 113, 113, 0.3);
+}
+
+/* ── Premium Action Bar & Buttons ── */
+.inc-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  margin-top: 0.5rem;
+  border-top: 1.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.inc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.78rem 2rem;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Kanit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease,
+    filter 0.2s ease;
+  white-space: nowrap;
+}
+
+.inc-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(100deg,
+      rgba(255, 255, 255, 0) 20%,
+      rgba(255, 255, 255, 0.35) 50%,
+      rgba(255, 255, 255, 0) 80%);
+  transform: skewX(-15deg);
+  pointer-events: none;
+  transition: left 0.0s;
+}
+
+.inc-btn:hover::after {
+  left: 140%;
+  transition: left 0.55s ease;
+}
+
+.inc-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+.inc-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.inc-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.inc-btn-icon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+/* Back button — Amber / Warm Gold */
+.inc-btn--back {
+  background: linear-gradient(135deg, #f7b731 0%, #F59E0B 100%);
+  color: #1a1200;
+  box-shadow:
+    0 4px 18px rgba(245, 158, 11, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.inc-btn--back:hover {
+  box-shadow:
+    0 8px 28px rgba(245, 158, 11, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  filter: brightness(1.06);
+}
+
+/* Save button — Emerald Green */
+.inc-btn--save {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  box-shadow:
+    0 4px 18px rgba(5, 150, 105, 0.38),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  min-width: 220px;
+  justify-content: center;
+}
+
+.inc-btn--save:hover {
+  box-shadow:
+    0 8px 28px rgba(5, 150, 105, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  filter: brightness(1.06);
+}
+
+.inc-btn--save:disabled {
+  background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
 }
