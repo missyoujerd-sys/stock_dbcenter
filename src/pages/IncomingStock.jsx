@@ -41,7 +41,8 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอมพิวเตอร์ PC-Notebook": ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
+        "คอมพิวเตอร์ PC-Notebook":
+            ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
         "จอคอมพิวเตอร์": [
             "จอคอมพิวเตอร์ Acer",
             "จอคอมพิวเตอร์ Asus",
@@ -74,9 +75,16 @@ export default function IncomingStock() {
             "สแกนเนอร์ Aibecy ",
             "สแกนเนอร์ Canon Laserjet",
             "สแกนเนอร์ HP Laserjet ",
-            "สแกนเนอร์ Brother Scanner ",
+            "สแกนเนอร์ Brother Scanner ",],
 
-        ]
+        "Switc Hub": [
+            "TP-Link",
+            "D-Link",
+            "DGS",
+            "Cisco",
+            "LINKSYS",
+            "HIKVISION",
+            "Zyxel",],
     };
 
     const handleChange = (e) => {
@@ -187,7 +195,7 @@ export default function IncomingStock() {
                         <FaClipboardList />
                     </div>
                     <h2 className="page-title-text">
-                        รับเข้าพัสดุ <small>(Incoming Stock)</small>
+                        รับเข้าพัสดุเตรียมจำหน่าย <small>(Incoming Stock)</small>
                     </h2>
                 </div>
             </div>
@@ -197,7 +205,7 @@ export default function IncomingStock() {
                 <div className="latest-panel-header">
                     <div className="latest-panel-title-wrap">
                         <div className="latest-panel-dot"></div>
-                        <span className="latest-panel-title">กรอกข้อมูลพัสดุ</span>
+                        <span className="latest-panel-title">กรอกข้อมูลพัสดุให้ครบถ้วน</span>
                         <span className="latest-panel-badge">INCOMING STOCK FORM</span>
                     </div>
                 </div>
@@ -408,16 +416,13 @@ export default function IncomingStock() {
                                     </div>
                                 </Form.Group>
                             </Col>
-                        </Row>
-
-                        <Row className="mb-4">
-                            <Col md={12}>
+                            <Col md={4}>
                                 <Form.Group controlId="remarks">
                                     <Form.Label className="inc-label">
                                         <FaStickyNote className="me-2" /> หมายเหตุ
                                     </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaStickyNote /></span>
+                                    <div className="inc-input-group" style={{ alignItems: 'flex-start' }}>
+                                        <span className="inc-input-icon" style={{ paddingTop: '0.55rem' }}><FaStickyNote /></span>
                                         <Form.Control
                                             as="textarea"
                                             rows={2}
@@ -425,24 +430,31 @@ export default function IncomingStock() {
                                             value={formData.remarks}
                                             onChange={handleChange}
                                             className="inc-input"
+                                            placeholder="บันทึกหมายเหตุ (ถ้ามี)"
+                                            style={{ resize: 'none' }}
                                         />
                                     </div>
                                 </Form.Group>
                             </Col>
                         </Row>
 
-                        <div className="d-flex justify-content-end gap-2 pt-2">
-                            <Button
-                                variant="warning"
-                                size="lg"
+                        <div className="inc-action-bar">
+                            <button
+                                type="button"
+                                className="inc-btn inc-btn--back"
                                 onClick={() => navigate('/')}
-                                style={{ fontWeight: 700 }}
                             >
-                                <FaHome className="me-2" /> กลับเมนูหลัก
-                            </Button>
-                            <Button variant="success" type="submit" disabled={loading} size="lg" className="btn-incoming-submit">
-                                <FaSave className="me-2" /> บันทึกรับเข้า (Incoming)
-                            </Button>
+                                <FaHome className="inc-btn-icon" />
+                                <span>กลับเมนูหลัก</span>
+                            </button>
+                            <button
+                                type="submit"
+                                className="inc-btn inc-btn--save"
+                                disabled={loading}
+                            >
+                                <FaSave className="inc-btn-icon" />
+                                <span>{loading ? 'กำลังบันทึก...' : 'บันทึกรับเข้า (Incoming)'}</span>
+                            </button>
                         </div>
                     </Form>
                 </div>
