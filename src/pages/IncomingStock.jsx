@@ -9,7 +9,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { th, enUS } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList } from 'react-icons/fa';
+import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList, FaCamera, FaSignature, FaTrash, FaEraser } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 registerLocale('th', th);
@@ -26,6 +26,17 @@ export default function IncomingStock() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const serialInputRef = useRef(null);
+    const sigCanvasRef = useRef(null);
+    const sigDrawing = useRef(false);
+    const sigLastPos = useRef(null);
+    const photoInputRef = useRef(null);
+
+    const [photoData, setPhotoData] = useState('');      // base64 photo
+    const [signatureData, setSignatureData] = useState(''); // base64 signature
+    const [officerName, setOfficerName] = useState('');
+    const [officerDate, setOfficerDate] = useState(
+        new Date().toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    );
 
     const [formData, setFormData] = useState({
         surveyDate: new Date().toISOString().split('T')[0],
@@ -94,6 +105,58 @@ export default function IncomingStock() {
         });
     };
 
+    /* ── Photo capture ── */
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => setPhotoData(evt.target.result);
+        reader.readAsDataURL(file);
+    };
+
+    /* ── Signature pad helpers ── */
+    const getSigPos = (e, canvas) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY,
+        };
+    };
+    const sigStart = (e) => {
+        e.preventDefault();
+        sigDrawing.current = true;
+        sigLastPos.current = getSigPos(e, sigCanvasRef.current);
+    };
+    const sigMove = (e) => {
+        e.preventDefault();
+        if (!sigDrawing.current) return;
+        const canvas = sigCanvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const pos = getSigPos(e, canvas);
+        ctx.beginPath();
+        ctx.moveTo(sigLastPos.current.x, sigLastPos.current.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        sigLastPos.current = pos;
+    };
+    const sigEnd = () => {
+        sigDrawing.current = false;
+        setSignatureData(sigCanvasRef.current.toDataURL('image/png'));
+    };
+    const clearSignature = () => {
+        const canvas = sigCanvasRef.current;
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        setSignatureData('');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -114,6 +177,10 @@ export default function IncomingStock() {
                 brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim().replace(/-$/, '').trim()),
                 computerName: encryptData(formData.computerName),
                 remarks: encryptData(formData.remarks),
+                photoData: photoData || '',
+                signatureData: signatureData || '',
+                officerName: officerName || '',
+                officerDate: officerDate || '',
 
                 qt_received: 1, // Default 1
                 qt_distributed: 0,
@@ -141,6 +208,11 @@ export default function IncomingStock() {
                 computerName: '',
                 remarks: ''
             });
+            setPhotoData('');
+            setSignatureData('');
+            setOfficerName('');
+            setOfficerDate(new Date().toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+            clearSignature();
         } catch (err) {
             console.error("Error saving stock:", err);
             setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
@@ -435,6 +507,104 @@ export default function IncomingStock() {
                                         />
                                     </div>
                                 </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {/* ── Photo & Signature Row ── */}
+                        <Row className="mb-3">
+                            {/* Photo capture */}
+                            <Col md={6}>
+                                <div className="inc-media-label">
+                                    <FaCamera className="me-2" /> ถ่ายรูปพัสดุ
+                                </div>
+                                <div
+                                    className="inc-photo-box"
+                                    onClick={() => photoInputRef.current.click()}
+                                >
+                                    {photoData ? (
+                                        <>
+                                            <img src={photoData} alt="preview" className="inc-photo-preview" />
+                                            <button
+                                                type="button"
+                                                className="inc-photo-clear"
+                                                onClick={(e) => { e.stopPropagation(); setPhotoData(''); photoInputRef.current.value = ''; }}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="inc-photo-placeholder">
+                                            <FaCamera className="inc-photo-icon" />
+                                            <span>แตะเพื่อถ่ายรูป / เลือกไฟล์</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    ref={photoInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    style={{ display: 'none' }}
+                                    onChange={handlePhotoChange}
+                                />
+                            </Col>
+
+                            {/* Signature pad */}
+                            <Col md={6}>
+                                <div className="inc-sig-card">
+                                    {/* Header */}
+                                    <div className="inc-sig-card-header">
+                                        <span className="inc-media-label" style={{ width: 'auto', marginBottom: 0 }}>
+                                            <FaSignature className="me-2" />ลายเซ็นเจ้าหน้าที่
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="inc-sig-clear-btn"
+                                            onClick={clearSignature}
+                                        >
+                                            <FaEraser className="me-1" /> ล้าง
+                                        </button>
+                                    </div>
+
+                                    {/* Canvas */}
+                                    <div className="inc-sig-box">
+                                        <canvas
+                                            ref={sigCanvasRef}
+                                            width={700}
+                                            height={150}
+                                            className="inc-sig-canvas"
+                                            onMouseDown={sigStart}
+                                            onMouseMove={sigMove}
+                                            onMouseUp={sigEnd}
+                                            onMouseLeave={sigEnd}
+                                            onTouchStart={sigStart}
+                                            onTouchMove={sigMove}
+                                            onTouchEnd={sigEnd}
+                                        />
+                                        {!signatureData && (
+                                            <div className="inc-sig-hint">เซ็นชื่อในช่องนี้</div>
+                                        )}
+                                    </div>
+
+                                    {/* Officer info */}
+                                    <div className="inc-sig-footer">
+                                        <div className="inc-sig-footer-field">
+                                            <label className="inc-sig-footer-label">ชื่อเจ้าหน้าที่</label>
+                                            <input
+                                                type="text"
+                                                className="inc-sig-footer-input"
+                                                value={officerName}
+                                                onChange={(e) => setOfficerName(e.target.value)}
+                                                placeholder="ระบุชื่อ-นามสกุล"
+                                            />
+                                        </div>
+                                        <div className="inc-sig-footer-divider"></div>
+                                        <div className="inc-sig-footer-field">
+                                            <label className="inc-sig-footer-label">วันที่</label>
+                                            <div className="inc-sig-footer-date">{officerDate}</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </Col>
                         </Row>
 

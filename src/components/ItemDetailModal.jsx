@@ -89,8 +89,18 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                         {/* Signature Section */}
                         <Row className="mt-5 text-center">
                             <Col xs={6}>
-                                <div className="mx-auto mb-2" style={{ width: '250px', borderBottom: '1px dotted #000' }}></div>
-                                <div className="mb-2">......../................/............</div>
+                                {/* Signature image if available, else blank dotted line */}
+                                <div className="mx-auto mb-1" style={{ width: '250px', height: '70px', borderBottom: '1px dotted #000', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
+                                    {item.signatureData ? (
+                                        <img
+                                            src={item.signatureData}
+                                            alt="ลายเซ็น"
+                                            style={{ maxHeight: '68px', maxWidth: '240px', objectFit: 'contain', marginBottom: '2px', filter: 'invert(1) brightness(0)' }}
+                                        />
+                                    ) : null}
+                                </div>
+                                <div className="mb-1 small">({item.officerName || '............................................'})</div>
+                                <div className="mb-1 small">{item.officerDate || '........./............./............'}</div>
                                 <div className="fw-bold">เจ้าหน้าที่คอมพิวเตอร์</div>
                             </Col>
                             <Col xs={6}>
