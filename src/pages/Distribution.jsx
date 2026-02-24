@@ -315,7 +315,7 @@ export default function Distribution() {
             row.getCell(1).value = index + 1;
 
             // Clean up SN and Brand/Model
-            const cleanSN = stock.serialNumber ? stock.serialNumber.trim().replace(/[\s\d-]+$/, '') : '';
+            const cleanSN = stock.serialNumber ? stock.serialNumber.trim().replace(/[\s-]+$/, '') : '';
             const cleanBrandModel = stock.brandModel ? stock.brandModel.trim().replace(/[\s\d-]+$/, '') : '';
 
             row.getCell(2).value = `${stock.assetId}${cleanSN && cleanSN !== '-' ? '\n' + cleanSN : ''}`;
