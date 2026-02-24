@@ -32,7 +32,7 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 <div ref={printRef} className="document-container p-4 bg-white mx-auto shadow-sm position-relative" style={{ maxWidth: '800px', minHeight: '500px' }}>
                     {/* Watermark for UI and printing */}
                     <div className="watermark">
-                        อุปกรณ์นี้ห้ามใช้งาน
+                        จำหน่าย
                     </div>
                     {/* Date/Time Section */}
                     <div className="text-end mb-2 small">
