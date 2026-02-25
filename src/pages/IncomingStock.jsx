@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Tesseract from 'tesseract.js';
 import { Form, Button, Card, Row, Col, Alert, Table, Badge, InputGroup } from 'react-bootstrap';
 import { db } from '../firebase';
 import { ref, push, set, onValue } from 'firebase/database';
@@ -33,6 +34,8 @@ export default function IncomingStock() {
 
     const [photoData, setPhotoData] = useState('');      // base64 photo
     const [signatureData, setSignatureData] = useState(''); // base64 signature
+    const [ocrLoading, setOcrLoading] = useState(false);
+    const [ocrResult, setOcrResult] = useState('');
     const [officerName, setOfficerName] = useState('');
     const [officerDate, setOfficerDate] = useState(
         new Date().toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -105,14 +108,83 @@ export default function IncomingStock() {
         });
     };
 
-    /* ── Photo capture ── */
+    /* ── Photo capture + OCR ── */
+    const rotateToLandscape = (dataUrl) =>
+        new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const { naturalWidth: w, naturalHeight: h } = img;
+                if (h > w) {
+                    // รูปแนวตั้ง → หมุน 90° ทวนเข็ม (CCW) เพื่อให้ตัวอักษรถูกทิศ
+                    const canvas = document.createElement('canvas');
+                    canvas.width = h;
+                    canvas.height = w;
+                    const ctx = canvas.getContext('2d');
+                    ctx.translate(h / 2, w / 2);
+                    ctx.rotate(-Math.PI / 2);
+                    ctx.drawImage(img, -w / 2, -h / 2);
+                    resolve(canvas.toDataURL('image/jpeg', 0.92));
+                } else {
+                    resolve(dataUrl); // แนวนอนอยู่แล้ว ไม่ต้องหมุน
+                }
+            };
+            img.src = dataUrl;
+        });
+
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (evt) => setPhotoData(evt.target.result);
+        reader.onload = async (evt) => {
+            const rawUrl = evt.target.result;
+            const dataUrl = await rotateToLandscape(rawUrl);
+            setPhotoData(dataUrl);
+            setOcrLoading(true);
+            setOcrResult('');
+            try {
+                const result = await Tesseract.recognize(dataUrl, 'eng', {
+                    logger: () => { },
+                });
+                const text = result.data.text;
+                console.log('OCR raw text:', text); // debug
+
+                // ── 1) ดึงเลขครุภัณฑ์ (ตัวเลข + ขีด/สแลช) ──
+                const numMatches = text.match(/\d[\d\-\/]{2,}\d/g);
+                if (numMatches && numMatches.length > 0) {
+                    const extracted = numMatches.reduce((a, b) => (b.length > a.length ? b : a));
+                    setOcrResult(extracted);
+                    setFormData((prev) => ({ ...prev, assetId: extracted }));
+                } else {
+                    setOcrResult('ไม่พบตัวเลข');
+                }
+
+                // ── 2) ดึงข้อความภาษาอังกฤษจากรูป → ใส่ช่องยี่ห้อตรงๆ ──
+                const skipWords = new Set([
+                    'NPH', 'SN', 'NO', 'IN', 'PC', 'OF', 'THE', 'AND', 'FOR',
+                    'TYPE', 'MADE', 'MODEL', 'SERIAL', 'NUMBER', 'LABEL',
+                    'INPUT', 'OUTPUT', 'CLASS', 'UNIT', 'WATT', 'VOLT',
+                ]);
+                const brandText = text
+                    .replace(/[^A-Za-z ]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .split(' ')
+                    .filter(w => w.length >= 4 && !skipWords.has(w.toUpperCase()))
+                    .join(' ');
+                if (brandText) {
+                    setFormData((prev) => ({ ...prev, brand: brandText }));
+                }
+            } catch (err) {
+                console.error('OCR error:', err);
+                setOcrResult('OCR ผิดพลาด');
+            } finally {
+                setOcrLoading(false);
+            }
+        };
         reader.readAsDataURL(file);
     };
+
+
 
     /* ── Signature pad helpers ── */
     const getSigPos = (e, canvas) => {
@@ -140,7 +212,7 @@ export default function IncomingStock() {
         ctx.beginPath();
         ctx.moveTo(sigLastPos.current.x, sigLastPos.current.y);
         ctx.lineTo(pos.x, pos.y);
-        ctx.strokeStyle = '#fbbf24';
+        ctx.strokeStyle = '#1a1a1a';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -403,30 +475,22 @@ export default function IncomingStock() {
                                     </Form.Label>
                                     <div className="inc-input-group">
                                         <span className="inc-input-icon"><FaTag /></span>
-                                        {formData.category && CATEGORY_OPTIONS[formData.category] ? (
-                                            <Form.Select
-                                                name="brand"
-                                                value={formData.brand}
-                                                onChange={handleChange}
-                                                required
-                                                className="inc-select"
-                                            >
-                                                <option value="">-- เลือกยี่ห้อ --</option>
-                                                {CATEGORY_OPTIONS[formData.category].map(opt => (
-                                                    <option key={opt} value={opt}>{opt}</option>
-                                                ))}
-                                            </Form.Select>
-                                        ) : (
-                                            <Form.Control
-                                                type="text"
-                                                name="brand"
-                                                value={formData.brand}
-                                                onChange={handleChange}
-                                                placeholder="ระบุยี่ห้อ/ประเภท"
-                                                required
-                                                className="inc-input"
-                                            />
-                                        )}
+                                        <input
+                                            type="text"
+                                            name="brand"
+                                            list="brand-suggestions"
+                                            value={formData.brand}
+                                            onChange={handleChange}
+                                            placeholder="พิมพ์หรือเลือกยี่ห้อ/ประเภท"
+                                            required
+                                            className="inc-input"
+                                            autoComplete="off"
+                                        />
+                                        <datalist id="brand-suggestions">
+                                            {(CATEGORY_OPTIONS[formData.category] || []).map(opt => (
+                                                <option key={opt} value={opt} />
+                                            ))}
+                                        </datalist>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -515,11 +579,11 @@ export default function IncomingStock() {
                             {/* Photo capture */}
                             <Col md={6}>
                                 <div className="inc-media-label">
-                                    <FaCamera className="me-2" /> ถ่ายรูปพัสดุ
+                                    <FaCamera className="me-2" /> ให้ถ่ายรูปได้เฉพาะเลขครุภัณฑ์/ยี่ห้อ เท่านั้น
                                 </div>
                                 <div
                                     className="inc-photo-box"
-                                    onClick={() => photoInputRef.current.click()}
+                                    onClick={() => !ocrLoading && photoInputRef.current.click()}
                                 >
                                     {photoData ? (
                                         <>
@@ -527,7 +591,12 @@ export default function IncomingStock() {
                                             <button
                                                 type="button"
                                                 className="inc-photo-clear"
-                                                onClick={(e) => { e.stopPropagation(); setPhotoData(''); photoInputRef.current.value = ''; }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPhotoData('');
+                                                    setOcrResult('');
+                                                    photoInputRef.current.value = '';
+                                                }}
                                             >
                                                 <FaTrash />
                                             </button>
@@ -539,6 +608,23 @@ export default function IncomingStock() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* OCR status */}
+                                {ocrLoading && (
+                                    <div className="inc-ocr-status inc-ocr-status--loading">
+                                        <span className="inc-ocr-spinner" />
+                                        <span>กำลังอ่านตัวเลขจากรูป...</span>
+                                    </div>
+                                )}
+                                {!ocrLoading && ocrResult && (
+                                    <div className={`inc-ocr-status ${ocrResult === 'ไม่พบตัวเลข' || ocrResult === 'OCR ผิดพลาด' ? 'inc-ocr-status--warn' : 'inc-ocr-status--ok'}`}>
+                                        {ocrResult === 'ไม่พบตัวเลข' || ocrResult === 'OCR ผิดพลาด'
+                                            ? `⚠️ ${ocrResult}`
+                                            : `✅ อ่านได้: ${ocrResult} → ใส่ในช่องเลขครุภัณฑ์แล้ว`
+                                        }
+                                    </div>
+                                )}
+
                                 <input
                                     ref={photoInputRef}
                                     type="file"
