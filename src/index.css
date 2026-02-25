@@ -2936,7 +2936,7 @@ h6 {
   height: 180px;
   border-radius: 14px;
   border: 2px dashed rgba(251, 191, 36, 0.3);
-  background: rgba(0, 0, 0, 0.18);
+  background: #ffffff;
   overflow: hidden;
   transition: border-color 0.25s ease;
 }
@@ -2994,6 +2994,7 @@ h6 {
   border: none;
   border-bottom: 1px solid rgba(251, 191, 36, 0.12);
   height: 150px;
+  background: #ffffff;
 }
 
 /* Officer footer row */
@@ -3057,4 +3058,53 @@ h6 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   font-family: 'Kanit', sans-serif;
   letter-spacing: 0.3px;
+}
+
+/* ── OCR Status Bar ── */
+.inc-ocr-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.inc-ocr-status--loading {
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.inc-ocr-status--ok {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.inc-ocr-status--warn {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+/* Spinner for OCR loading */
+.inc-ocr-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(147, 197, 253, 0.35);
+  border-top-color: #93c5fd;
+  border-radius: 50%;
+  animation: incOcrSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes incOcrSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
