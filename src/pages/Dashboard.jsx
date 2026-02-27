@@ -80,7 +80,7 @@ export default function Dashboard() {
                         <img src={logoSvg} alt="logo" className="db-hero-logo" />
                     </div>
                     <div>
-                        <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ · ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
+                        <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ·ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
                         <h1 className="db-hero-title">ภาพรวมระบบ</h1>
                         <div className="db-hero-sub">STOCK MANAGEMENT DASHBOARD</div>
                     </div>
