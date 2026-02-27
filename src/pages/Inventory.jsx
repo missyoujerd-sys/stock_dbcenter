@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
 export let isAdmin = false;
+let isAdmin_2 = false;
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,8 +17,10 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5; //เพิ่มสิทธิ์ผู้ดูแลระบบ
+    isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1|| currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5; //สิทธิ์เฉพาะดูกลับสถานะไม่ได้
     console.log(isAdmin);
+    isAdmin_2 = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1|| currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 ;//แก้ไขไม่ให้ลบได้
+    console.log(isAdmin_2);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {
@@ -235,7 +238,7 @@ export default function Inventory() {
                                             </button>
                                         </td>
                                     )}
-                                    {isAdmin && (
+                                    {isAdmin_2 && (
                                         <td onClick={(e) => e.stopPropagation()}>
                                             {stock.status === 'จำหน่าย' && (
                                                 <button
