@@ -44,7 +44,7 @@ export default function Login() {
 
             <div className="login-card">
                 <h4 className="login-title">ระบบจัดการ Stock</h4>
-                <h4 className="login-subtitle"> อุปกรณ์รอจำหน่าย </h4>
+                <h4 className="login-subtitle"> งานซ่อมบำรุงคอมพิวเตอร์ </h4>
 
                 {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
 
