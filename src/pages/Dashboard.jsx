@@ -81,7 +81,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                         <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ·ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
-                        <h1 className="db-hero-title">ภาพรวมระบบ</h1>
+                        <h1 className="db-hero-title">ภาพรวมของระบบ</h1>
                         <div className="db-hero-sub">STOCK MANAGEMENT DASHBOARD</div>
                     </div>
                 </div>
