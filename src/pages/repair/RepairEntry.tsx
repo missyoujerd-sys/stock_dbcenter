@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Camera, 
-  FileText, 
   User, 
-  Calendar, 
   AlertCircle, 
   CheckCircle2, 
   Download,
@@ -17,10 +15,135 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+// ---- Shared constants ----
+const HOSPITAL_LOGO = '/hospital-logo.png';
+
+// ---- Premium styles injected once ----
+const PREMIUM_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
+
+.repair-page-wrap { font-family: 'Prompt', sans-serif; }
+
+/* A4 preview */
+.a4-preview {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Watermark */
+.a4-watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.a4-watermark img {
+  width: 55%;
+  opacity: 0.05;
+  filter: grayscale(100%);
+}
+
+.a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
+
+/* Header stripe */
+.a4-header-stripe {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%);
+  margin: -14mm -16mm 0;
+  padding: 10mm 16mm 8mm;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10mm;
+}
+.a4-header-stripe .logo-box img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25)); }
+.a4-header-title h1 { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: -0.5px; }
+.a4-header-title p  { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+
+/* Grid info cards */
+.a4-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  margin-bottom: 6mm;
+}
+.a4-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.a4-card .label { font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+.a4-card .value { font-size: 16px; font-weight: 900; color: #1e293b; }
+
+/* Problem box */
+.a4-problem {
+  background: linear-gradient(135deg, #fff1f2, #fff5f5);
+  border: 1.5px solid #fecdd3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 6mm;
+}
+.a4-problem .label { font-size: 8px; font-weight: 800; color: #fb7185; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+.a4-problem .value { font-size: 13px; font-weight: 600; color: #4c0519; line-height: 1.5; }
+
+/* Signature grid */
+.a4-sig-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  margin-bottom: 6mm;
+}
+.a4-sig-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.a4-sig-card.blue  { border-color: #bfdbfe; }
+.a4-sig-card.green { border-color: #bbf7d0; }
+.a4-sig-card.slate { border-color: #e2e8f0; }
+.a4-sig-card.teal  { border-color: #99f6e4; }
+
+.a4-sig-card .sig-header { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 6px; text-align: center; }
+.a4-sig-card.blue  .sig-header { color: #3b82f6; }
+.a4-sig-card.green .sig-header { color: #22c55e; }
+.a4-sig-card.slate .sig-header { color: #94a3b8; }
+.a4-sig-card.teal  .sig-header { color: #14b8a6; }
+
+.a4-sig-card .sig-row { font-size: 11px; margin-bottom: 3px; }
+.a4-sig-card .sig-row span.k { color: #94a3b8; font-weight: 700; margin-right: 4px; }
+.a4-sig-card .sig-row span.v { color: #1e293b; font-weight: 700; }
+.a4-sig-line { margin-top: auto; border-bottom: 1.5px dashed #cbd5e1; margin-top: 14px; }
+.a4-sig-line-label { font-size: 8px; text-align: center; color: #cbd5e1; margin-top: 3px; }
+
+/* Footer */
+.a4-footer { border-top: 1px solid #e2e8f0; padding-top: 5mm; text-align: center; font-size: 8px; color: #cbd5e1; font-style: italic;  }
+
+/* -- Export hidden wrapper -- */
+#repair-pdf-root {
+  display: none;
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 794px; /* 210mm at 96dpi */
+  background: transparent;
+}
+`;
+
 export default function RepairEntry() {
   const [formData, setFormData] = useState<Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt'>>({
-    equipmentModel: '',
     assetNumber: '',
+    equipmentModel: '',
     serialNumber: '',
     problemDescription: '',
     reporterName: '',
@@ -35,31 +158,38 @@ export default function RepairEntry() {
   });
 
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  // Inject premium CSS once
+  useEffect(() => {
+    const id = 'repair-premium-css';
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = PREMIUM_CSS;
+      document.head.appendChild(style);
+    }
+    return () => {};
+  }, []);
 
   useEffect(() => {
     if (scanning) {
       const scanner = new Html5QrcodeScanner(
-        "reader",
+        'reader',
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
+        false
       );
-
-      scanner.render((decodedText) => {
-        if (scanning === 'asset') {
-          setFormData(prev => ({ ...prev, assetNumber: decodedText }));
-        } else {
-          setFormData(prev => ({ ...prev, serialNumber: decodedText }));
-        }
-        scanner.clear();
-        setScanning(null);
-      }, (error) => {
-        // Handle error
-      });
-
-      return () => {
-        scanner.clear();
-      };
+      scanner.render(
+        (decodedText) => {
+          if (scanning === 'asset') setFormData(prev => ({ ...prev, assetNumber: decodedText }));
+          else setFormData(prev => ({ ...prev, serialNumber: decodedText }));
+          scanner.clear();
+          setScanning(null);
+        },
+        () => {}
+      );
+      return () => { scanner.clear(); };
     }
   }, [scanning]);
 
@@ -68,74 +198,87 @@ export default function RepairEntry() {
     try {
       RepairService.saveRepair(formData);
       setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จแล้ว' });
-      // Reset form or redirect
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
     }
   };
 
   const exportPDF = async () => {
-    const reportElement = document.getElementById('repair-report-template');
-    if (!reportElement) {
-      alert('ไม่พบ Template สำหรับสร้าง PDF');
-      return;
-    }
-
-    // Temporarily make it visible but outside the viewport for capture
-    reportElement.style.display = 'block';
-    reportElement.style.position = 'fixed';
-    reportElement.style.left = '-9999px';
-    reportElement.style.top = '0';
-    
+    const el = document.getElementById('repair-pdf-root');
+    if (!el) return;
+    setExporting(true);
+    el.style.display = 'block';
+    await new Promise(r => setTimeout(r, 300));
     try {
-      const canvas = await html2canvas(reportElement, {
-        scale: 2,
+      const canvas = await html2canvas(el, {
+        scale: 3,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: 794,
       });
-      
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Repair_${formData.assetNumber || 'record'}.pdf`);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = pdf.internal.pageSize.getWidth();
+      const ph = pdf.internal.pageSize.getHeight();
+      const ratio = canvas.height / canvas.width;
+      const imgH = pw * ratio;
+      if (imgH <= ph) {
+        pdf.addImage(imgData, 'PNG', 0, 0, pw, imgH);
+      } else {
+        // Multi-page
+        let yPos = 0;
+        let remaining = canvas.height;
+        const pageH = canvas.width * (ph / pw);
+        let page = 0;
+        while (remaining > 0) {
+          if (page > 0) pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, -(page * ph), pw, pw * ratio);
+          remaining -= pageH;
+          page++;
+        }
+      }
+      pdf.save(`Repair_${formData.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
       setMessage({ type: 'success', text: 'สร้างไฟล์ PDF สำเร็จแล้ว' });
-    } catch (error) {
-      console.error('PDF Generation Error:', error);
+    } catch (err) {
+      console.error(err);
       setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการสร้าง PDF' });
     } finally {
-      reportElement.style.display = 'none';
-      reportElement.style.position = '';
-      reportElement.style.left = '';
-      reportElement.style.top = '';
+      el.style.display = 'none';
+      setExporting(false);
     }
   };
 
+  // ─── Input helpers ───
+  const inp = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-[Prompt] text-slate-700 placeholder:text-slate-300';
+  const inpWhite = 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none font-[Prompt] text-slate-700';
+
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
-      {/* Header */}
+    <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
+
+      {/* ── Page Header ── */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2" style={{ fontFamily: 'Prompt, sans-serif' }}>
             <ShieldCheck className="w-8 h-8 text-blue-600" />
-            ข้อมูลการแจ้งซ่อม (Stock_Guaranteed)
+            ข้อมูลการแจ้งซ่อม
           </h1>
-          <p className="text-slate-500 mt-1">บันทึกประวัติการส่งซ่อมและรับเครื่องคืน</p>
+          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและรับเครื่องคืน</p>
         </div>
-        <button 
+        <button
           onClick={exportPDF}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-all shadow-lg shadow-indigo-200"
+          disabled={exporting}
+          className="flex items-center gap-2 bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-indigo-200 font-bold text-sm"
+          style={{ fontFamily: 'Prompt, sans-serif' }}
         >
           <Download size={18} />
-          Export PDF
+          {exporting ? 'กำลังสร้าง...' : 'Export PDF'}
         </button>
       </div>
 
+      {/* ── Alert ── */}
       {message && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-semibold ${
           message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
         }`}>
           {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
@@ -143,271 +286,302 @@ export default function RepairEntry() {
         </div>
       )}
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden">
-        <form onSubmit={handleSubmit} className="divide-y divide-slate-100">
-          
-          {/* Section 1: Equipment Details */}
-          <div className="p-6 md:p-8">
-            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Barcode className="text-blue-500" /> ข้อมูลตัวเครื่อง
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">รุ่นของอุปกรณ์</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="เช่น Dell Latitude 5420"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                  value={formData.equipmentModel}
-                  onChange={e => setFormData({...formData, equipmentModel: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">เลขครุภัณฑ์ (Asset Number)</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    required
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    value={formData.assetNumber}
-                    onChange={e => setFormData({...formData, assetNumber: e.target.value})}
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setScanning('asset')}
-                    className="absolute right-2 top-1.5 p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Camera size={20} />
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-600">Serial Number (S/N)</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    required
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    value={formData.serialNumber}
-                    onChange={e => setFormData({...formData, serialNumber: e.target.value})}
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setScanning('serial')}
-                    className="absolute right-2 top-1.5 p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Camera size={20} />
-                  </button>
-                </div>
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-semibold text-slate-600">อาการเสีย / รายละเอียดปัญหา</label>
-                <textarea 
-                  required
-                  rows={3}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                  value={formData.problemDescription}
-                  onChange={e => setFormData({...formData, problemDescription: e.target.value})}
-                />
+      {/* ══════════════════════════════════════════════
+          A4 FORM PREVIEW (also used for PDF export)
+      ══════════════════════════════════════════════ */}
+      <div className="a4-preview">
+        {/* Watermark */}
+        <div className="a4-watermark">
+          <img src={HOSPITAL_LOGO} alt="watermark" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+        </div>
+
+        <div className="a4-content">
+          {/* ── Header stripe ── */}
+          <div className="a4-header-stripe">
+            <div className="logo-box">
+              <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+            </div>
+            <div className="a4-header-title">
+              <h1>เอกสารบันทึกการแจ้งซ่อม</h1>
+              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</p>
+            </div>
+          </div>
+
+          {/* ── Intro line ── */}
+          <p style={{ fontSize: '10px', color: '#64748b', marginBottom: '6mm', fontStyle: 'italic' }}>
+            วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+          </p>
+
+          {/* ── Section 1: Equipment ── */}
+          <p style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4mm', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Barcode size={13} /> ข้อมูลตัวเครื่อง
+          </p>
+
+          <div className="a4-info-grid" style={{ marginBottom: '6mm' }}>
+            {/* ── SWAPPED: Asset Number first, then Model ── */}
+            <div className="a4-card">
+              <div className="label">เลขครุภัณฑ์ (Asset Number)</div>
+              <input
+                type="text"
+                required
+                className={inp}
+                style={{ fontSize: '18px', fontWeight: 900, background: 'transparent', border: 'none', padding: '2px 0', outline: 'none', color: '#1e293b', width: '100%' }}
+                value={formData.assetNumber}
+                onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
+                placeholder="เช่น 52-01-1234"
+              />
+              <button type="button" onClick={() => setScanning('asset')} style={{ fontSize: '10px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Camera size={13} /> สแกน QR/Barcode
+              </button>
+            </div>
+
+            <div className="a4-card">
+              <div className="label">รุ่นของอุปกรณ์ (Model)</div>
+              <input
+                type="text"
+                required
+                className={inp}
+                style={{ fontSize: '18px', fontWeight: 900, background: 'transparent', border: 'none', padding: '2px 0', outline: 'none', color: '#1e293b', width: '100%' }}
+                value={formData.equipmentModel}
+                onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
+                placeholder="เช่น Dell Latitude 5420"
+              />
+            </div>
+
+            <div className="a4-card">
+              <div className="label">Serial Number (S/N)</div>
+              <input
+                type="text"
+                required
+                className={inp}
+                style={{ fontSize: '16px', fontWeight: 700, background: 'transparent', border: 'none', padding: '2px 0', outline: 'none', color: '#1e293b', width: '100%' }}
+                value={formData.serialNumber}
+                onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
+                placeholder="Serial Number"
+              />
+              <button type="button" onClick={() => setScanning('serial')} style={{ fontSize: '10px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Camera size={13} /> สแกน QR/Barcode
+              </button>
+            </div>
+
+            {/* Placeholder 4th cell */}
+            <div className="a4-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #eff6ff, #f0f9ff)', border: '1.5px dashed #bfdbfe' }}>
+              <div style={{ textAlign: 'center' }}>
+                <ShieldCheck size={28} style={{ color: '#93c5fd', margin: '0 auto 6px' }} />
+                <div style={{ fontSize: '9px', color: '#93c5fd', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock Guaranteed</div>
               </div>
             </div>
           </div>
 
-          {/* Section 2: Roles & Names */}
-          <div className="p-6 md:p-8 bg-slate-50/50">
-            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <User className="text-indigo-500" /> ชื่อผู้รับผิดชอบและวันเวลา
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              {/* Reporter */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">เจ้าหน้าที่แจ้งซ่อม</h3>
-                <div className="space-y-2">
-                  <input 
-                    type="text" required placeholder="ชื่อ-นามสกุล"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.reporterName}
-                    onChange={e => setFormData({...formData, reporterName: e.target.value})}
-                  />
-                  <input 
-                    type="date" required
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.reportedDate}
-                    onChange={e => setFormData({...formData, reportedDate: e.target.value})}
-                  />
-                </div>
-              </div>
+          {/* ── Section 2: Problem ── */}
+          <p style={{ fontSize: '9px', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3mm' }}>
+            อาการเสีย / รายละเอียดปัญหา
+          </p>
+          <div className="a4-problem">
+            <textarea
+              required
+              rows={3}
+              style={{ fontSize: '13px', fontWeight: 600, color: '#4c0519', background: 'transparent', border: 'none', outline: 'none', resize: 'none', width: '100%', fontFamily: 'Prompt, sans-serif' }}
+              value={formData.problemDescription}
+              onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
+              placeholder="ระบุอาการเสียหรือปัญหาที่พบ..."
+            />
+          </div>
 
-              {/* Receiver */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">ผู้รับซ่อมเครื่อง</h3>
-                <div className="space-y-2">
-                  <input 
-                    type="text" required placeholder="ชื่อ-นามสกุล"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.receiverName}
-                    onChange={e => setFormData({...formData, receiverName: e.target.value})}
-                  />
-                  <input 
-                    type="date" required
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.receivedDate}
-                    onChange={e => setFormData({...formData, receivedDate: e.target.value})}
-                  />
-                </div>
-              </div>
+          {/* ── Section 3: Signatures ── */}
+          <p style={{ fontSize: '9px', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3mm', marginTop: '6mm', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <User size={13} /> ผู้รับผิดชอบและลายมือชื่อ
+          </p>
 
-              {/* Staff who received repaired device */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">เจ้าหน้าที่ผู้รับเครื่องคืน</h3>
-                <div className="space-y-2">
-                  <input 
-                    type="text" placeholder="ชื่อ-นามสกุล"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.staffReceiptName}
-                    onChange={e => setFormData({...formData, staffReceiptName: e.target.value})}
-                  />
-                  <input 
-                    type="date"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.staffReceiptDate}
-                    onChange={e => setFormData({...formData, staffReceiptDate: e.target.value})}
-                  />
-                </div>
-              </div>
+          <div className="a4-sig-grid">
+            {/* Reporter */}
+            <div className="a4-sig-card slate">
+              <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
+              <div className="sig-row"><span className="k">ชื่อ:</span></div>
+              <input type="text" required placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} />
+              <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
+              <input type="date" required className={inpWhite} style={{ fontSize: '12px' }} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+              <div className="a4-sig-line" />
+              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+            </div>
 
-              {/* Returner */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">ผู้ส่งมอบเครื่องคืน</h3>
-                <div className="space-y-2">
-                  <input 
-                    type="text" placeholder="ชื่อ-นามสกุล"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.returnerName}
-                    onChange={e => setFormData({...formData, returnerName: e.target.value})}
-                  />
-                  <input 
-                    type="date"
-                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500"
-                    value={formData.returnDate}
-                    onChange={e => setFormData({...formData, returnDate: e.target.value})}
-                  />
-                </div>
-              </div>
+            {/* Receiver */}
+            <div className="a4-sig-card blue">
+              <div className="sig-header">ผู้รับเครื่องซ่อม</div>
+              <div className="sig-row"><span className="k">ชื่อ:</span></div>
+              <input type="text" required placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+              <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
+              <input type="date" required className={inpWhite} style={{ fontSize: '12px' }} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+              <div className="a4-sig-line" />
+              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+            </div>
+
+            {/* Staff receipt */}
+            <div className="a4-sig-card teal">
+              <div className="sig-header">เจ้าหน้าที่ผู้รับเครื่องคืน</div>
+              <div className="sig-row"><span className="k">ชื่อ:</span></div>
+              <input type="text" placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} />
+              <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
+              <input type="date" className={inpWhite} style={{ fontSize: '12px' }} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+              <div className="a4-sig-line" />
+              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+            </div>
+
+            {/* Returner */}
+            <div className="a4-sig-card green">
+              <div className="sig-header">ผู้ส่งมอบเครื่องคืน</div>
+              <div className="sig-row"><span className="k">ชื่อ:</span></div>
+              <input type="text" placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+              <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
+              <input type="date" className={inpWhite} style={{ fontSize: '12px' }} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+              <div className="a4-sig-line" />
+              <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="p-8 flex justify-end">
-            <button 
-              type="submit"
-              className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-3.5 rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-blue-100"
+          {/* ── Submit ── */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={handleSubmit as any}
+              className="group flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200"
+              style={{ fontFamily: 'Prompt, sans-serif' }}
             >
               บันทึกข้อมูลการแจ้งซ่อม
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
             </button>
           </div>
-        </form>
+
+          {/* ── Footer ── */}
+          <div className="a4-footer" style={{ marginTop: '6mm' }}>
+            เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+          </div>
+        </div>
       </div>
 
-      {/* Barcode Scanner Modal overlay */}
+      {/* ═══════════════════════════════════════════════
+          HIDDEN DIV for PDF Export (cloned from above)
+      ═══════════════════════════════════════════════ */}
+      <div id="repair-pdf-root" style={{ fontFamily: 'Prompt, sans-serif' }}>
+        <div style={{
+          width: '794px',
+          minHeight: '1122px',
+          background: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* PDF Watermark */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none', zIndex: 0
+          }}>
+            <img
+              src={HOSPITAL_LOGO}
+              alt="watermark"
+              style={{ width: '50%', opacity: 0.05, filter: 'grayscale(100%)' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+            />
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 1, padding: '0' }}>
+            {/* PDF Header stripe */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%)',
+              padding: '24px 40px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              marginBottom: '20px'
+            }}>
+              <img
+                src={HOSPITAL_LOGO}
+                alt="logo"
+                style={{ width: '64px', height: '64px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+              />
+              <div>
+                <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', margin: 0 }}>เอกสารบันทึกการแจ้งซ่อม</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</div>
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
+                <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
+                <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '0 40px 30px' }}>
+              {/* Info grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
+                {/* SWAPPED: asset first, model second */}
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 18px' }}>
+                  <div style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px' }}>เลขครุภัณฑ์ (Asset Number)</div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b' }}>{formData.assetNumber || '-'}</div>
+                </div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 18px' }}>
+                  <div style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px' }}>รุ่นของอุปกรณ์ (Model)</div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b' }}>{formData.equipmentModel || '-'}</div>
+                </div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 18px' }}>
+                  <div style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '6px' }}>Serial Number (S/N)</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b' }}>{formData.serialNumber || '-'}</div>
+                </div>
+                <div style={{ background: 'linear-gradient(135deg,#eff6ff,#f0f9ff)', border: '1.5px dashed #bfdbfe', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                  <div style={{ fontSize: '9px', color: '#93c5fd', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>⚙ Stock Guaranteed</div>
+                </div>
+              </div>
+
+              {/* Problem */}
+              <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
+                <div style={{ fontSize: '8px', fontWeight: 800, color: '#fb7185', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>อาการเสีย / ปัญหาที่พบ</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
+              </div>
+
+              {/* Signatures */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
+                {[
+                  { label: 'เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง', name: formData.reporterName, date: formData.reportedDate, color: '#94a3b8', border: '#e2e8f0' },
+                  { label: 'ผู้รับเครื่องซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe' },
+                  { label: 'เจ้าหน้าที่ผู้รับเครื่องคืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#14b8a6', border: '#99f6e4' },
+                  { label: 'ผู้ส่งมอบเครื่องคืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0' },
+                ].map((sig, i) => (
+                  <div key={i} style={{ border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '14px 18px' }}>
+                    <div style={{ fontSize: '8px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px', marginBottom: '10px', textAlign: 'center' }}>{sig.label}</div>
+                    <div style={{ fontSize: '12px', marginBottom: '3px' }}><span style={{ color: sig.color, fontWeight: 700 }}>ชื่อ: </span><span style={{ color: '#1e293b', fontWeight: 700 }}>{sig.name || '-'}</span></div>
+                    <div style={{ fontSize: '12px', marginBottom: '3px' }}><span style={{ color: sig.color, fontWeight: 700 }}>วันที่: </span><span style={{ color: '#1e293b', fontWeight: 700 }}>{sig.date || '-'}</span></div>
+                    <div style={{ marginTop: '24px', borderBottom: '1.5px dashed #cbd5e1' }} />
+                    <div style={{ fontSize: '8px', textAlign: 'center', color: '#cbd5e1', marginTop: '3px' }}>ลายมือชื่อ</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* PDF Footer */}
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Barcode Scanner Modal ── */}
       {scanning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+            <h3 className="text-xl font-bold text-slate-800 mb-4" style={{ fontFamily: 'Prompt, sans-serif' }}>
               สแกน {scanning === 'asset' ? 'เลขครุภัณฑ์' : 'Serial Number'}
             </h3>
-            <div id="reader" className="overflow-hidden rounded-2xl border-4 border-slate-100"></div>
-            <button 
+            <div id="reader" className="overflow-hidden rounded-2xl border-4 border-slate-100" />
+            <button
               onClick={() => setScanning(null)}
-              className="mt-6 w-full py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl"
+              className="mt-6 w-full py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors"
+              style={{ fontFamily: 'Prompt, sans-serif' }}
             >
               ยกเลิก
             </button>
           </div>
         </div>
       )}
-
-      {/* Hidden PDF Template (Rendered in Thai) */}
-      <div id="repair-report-template" className="bg-white p-10" style={{ display: 'none', width: '800px', fontFamily: 'sans-serif' }}>
-        <div className="text-center mb-8 pb-4" style={{ borderBottom: '4px solid #2563eb' }}>
-          <h1 className="text-3xl font-black" style={{ color: '#1e293b' }}>เอกสารบันทึกการซ่อม</h1>
-          <p className="font-bold tracking-widest uppercase" style={{ color: '#2563eb' }}>อยู่ในประกัน</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-8 mb-10">
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9' }}>
-              <p className="text-xs font-bold uppercase mb-1" style={{ color: '#94a3b8' }}>เลขครุภัณฑ์ (Asset Number)</p>
-              <p className="text-xl font-black" style={{ color: '#1e293b' }}>{formData.assetNumber || '-'}</p>
-            </div>
-            <div className="p-4 rounded-xl border" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9' }}>
-              <p className="text-xs font-bold uppercase mb-1" style={{ color: '#94a3b8' }}>Serial Number (S/N)</p>
-              <p className="text-lg font-bold" style={{ color: '#1e293b' }}>{formData.serialNumber || '-'}</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9' }}>
-              <p className="text-xs font-bold uppercase mb-1" style={{ color: '#94a3b8' }}>รุ่นอุปกรณ์ (Model)</p>
-              <p className="text-xl font-black" style={{ color: '#1e293b' }}>{formData.equipmentModel || '-'}</p>
-            </div>
-            <div className="p-4 rounded-xl border" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9' }}>
-              <p className="text-xs font-bold uppercase mb-1" style={{ color: '#94a3b8' }}>วันที่สร้างเอกสาร</p>
-              <p className="text-lg font-bold" style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-10 p-6 rounded-2xl border" style={{ backgroundColor: '#fff1f2', borderColor: '#ffe4e6' }}>
-          <p className="text-sm font-bold uppercase mb-2" style={{ color: '#fb7185' }}>อาการเสีย / ปัญหาที่พบ</p>
-          <p className="text-lg leading-relaxed font-semibold" style={{ color: '#4c0519' }}>{formData.problemDescription || '-'}</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 mb-10">
-          <div className="p-6 border-2 rounded-2xl" style={{ borderColor: '#f1f5f9' }}>
-            <p className="text-xs font-bold uppercase mb-4 text-center border-b pb-2" style={{ color: '#94a3b8' }}>ผู้รายงาน / ผู้ส่งเครื่อง</p>
-            <div className="space-y-2">
-              <p className="text-sm"><span className="font-bold" style={{ color: '#94a3b8' }}>ชื่อ:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.reporterName || '-'}</span></p>
-              <p className="text-sm"><span className="font-bold" style={{ color: '#94a3b8' }}>วันที่:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.reportedDate || '-'}</span></p>
-              <div className="mt-8 border-b border-dashed h-10" style={{ borderColor: '#cbd5e1' }}></div>
-              <p className="text-[10px] text-center" style={{ color: '#cbd5e1' }}>ลายมือชื่อ</p>
-            </div>
-          </div>
-          <div className="p-6 border-2 rounded-2xl" style={{ borderColor: '#eff6ff' }}>
-            <p className="text-xs font-bold uppercase mb-4 text-center border-b pb-2" style={{ color: '#60a5fa' }}>ผู้รับเครื่องซ่อม</p>
-            <div className="space-y-2">
-              <p className="text-sm"><span className="font-bold" style={{ color: '#60a5fa' }}>ชื่อ:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.receiverName || '-'}</span></p>
-              <p className="text-sm"><span className="font-bold" style={{ color: '#60a5fa' }}>วันที่:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.receivedDate || '-'}</span></p>
-              <div className="mt-8 border-b border-dashed h-10" style={{ borderColor: '#cbd5e1' }}></div>
-              <p className="text-[10px] text-center" style={{ color: '#cbd5e1' }}>ลายมือชื่อ</p>
-            </div>
-          </div>
-          <div className="p-6 border-2 rounded-2xl" style={{ borderColor: '#f1f5f9' }}>
-            <p className="text-xs font-bold uppercase mb-4 text-center border-b pb-2" style={{ color: '#94a3b8' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</p>
-            <div className="space-y-2">
-              <p className="text-sm"><span className="font-bold" style={{ color: '#94a3b8' }}>ชื่อ:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.staffReceiptName || '-'}</span></p>
-              <p className="text-sm"><span className="font-bold" style={{ color: '#94a3b8' }}>วันที่:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.staffReceiptDate || '-'}</span></p>
-              <div className="mt-8 border-b border-dashed h-10" style={{ borderColor: '#cbd5e1' }}></div>
-              <p className="text-[10px] text-center" style={{ color: '#cbd5e1' }}>ลายมือชื่อ</p>
-            </div>
-          </div>
-          <div className="p-6 border-2 rounded-2xl" style={{ borderColor: '#ecfdf5' }}>
-            <p className="text-xs font-bold uppercase mb-4 text-center border-b pb-2" style={{ color: '#34d399' }}>ผู้ส่งมอบเครื่องคืน</p>
-            <div className="space-y-2">
-              <p className="text-sm"><span className="font-bold" style={{ color: '#34d399' }}>ชื่อ:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.returnerName || '-'}</span></p>
-              <p className="text-sm"><span className="font-bold" style={{ color: '#34d399' }}>วันที่:</span> <span className="font-bold" style={{ color: '#1e293b' }}>{formData.returnDate || '-'}</span></p>
-              <div className="mt-8 border-b border-dashed h-10" style={{ borderColor: '#cbd5e1' }}></div>
-              <p className="text-[10px] text-center" style={{ color: '#cbd5e1' }}>ลายมือชื่อ</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center text-[10px] italic pt-8 border-t" style={{ color: '#cbd5e1' }}>
-          เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ Stock_Guaranteed - {new Date().getFullYear()}
-        </div>
-      </div>
     </div>
   );
 }
