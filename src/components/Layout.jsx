@@ -48,7 +48,7 @@ export default function Layout({ children }) {
     { name: "หน้าหลัก", path: "/", icon: LayoutDashboard },
     { name: "รับเข้า Stock", path: "/incoming", icon: Package },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck },
-    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box }] : []),
+    ...(isAdmin ? [{ name: "คลังพัสดุ(Admin)", path: "/inventory", icon: Box }] : []),
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList },
   ];
