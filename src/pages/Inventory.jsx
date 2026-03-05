@@ -17,8 +17,10 @@ export default function Inventory() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5; //เพิ่มสิทธิ์ผู้ดูแลระบบ
-    isAdmin_2 = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3;
+    isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1|| currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 || currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5; //สิทธิ์เฉพาะดูกลับสถานะไม่ได้
+   
+    isAdmin_2 = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1|| currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 ;//แก้ไขไม่ให้ลบได้
+    console.log(isAdmin_2);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {

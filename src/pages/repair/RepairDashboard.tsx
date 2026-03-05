@@ -26,15 +26,10 @@ export default function RepairDashboard() {
 
   // @ts-ignore
   const env = import.meta.env;
-  isAdmin = currentUser?.email === env.VITE_ADMIN_EMAIL1 || 
-                currentUser?.email === env.VITE_ADMIN_EMAIL2 || 
-                currentUser?.email === env.VITE_ADMIN_EMAIL3 || 
-                currentUser?.email === env.VITE_ADMIN_EMAIL4 || 
-                currentUser?.email === env.VITE_ADMIN_EMAIL5;
-
-  isAdmin_2 = currentUser?.email === env.VITE_ADMIN_EMAIL1 || 
-                  currentUser?.email === env.VITE_ADMIN_EMAIL2 || 
-                  currentUser?.email === env.VITE_ADMIN_EMAIL3;
+  isAdmin = currentUser?.email === env.VITE_ADMIN_EMAIL1|| currentUser?.email === env.VITE_ADMIN_EMAIL2 || currentUser?.email === env.VITE_ADMIN_EMAIL3 || currentUser?.email === env.VITE_ADMIN_EMAIL4 || currentUser?.email === env.VITE_ADMIN_EMAIL5; //สิทธิ์เฉพาะดูกลับสถานะไม่ได้
+   
+  isAdmin_2 = currentUser?.email === env.VITE_ADMIN_EMAIL1|| currentUser?.email === env.VITE_ADMIN_EMAIL2 ;//แก้ไขไม่ให้ลบได้
+  console.log(isAdmin_2);
 
   const stats = useMemo(() => {
     return {
