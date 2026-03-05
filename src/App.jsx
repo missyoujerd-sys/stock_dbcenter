@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import IncomingStock from './pages/IncomingStock';
 import Distribution from './pages/Distribution';
 import Inventory from './pages/Inventory';
+import RepairEntry from './pages/repair/RepairEntry';
+import RepairDashboard from './pages/repair/RepairDashboard';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -43,6 +45,21 @@ function App() {
           <Route path="/inventory" element={
             <PrivateRoute>
               <Inventory />
+            </PrivateRoute>
+          } />
+          <Route path="/repair" element={
+            <PrivateRoute>
+              <RepairDashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/repair/entry" element={
+            <PrivateRoute>
+              <RepairEntry />
+            </PrivateRoute>
+          } />
+          <Route path="/repair/dashboard" element={
+            <PrivateRoute>
+              <RepairDashboard />
             </PrivateRoute>
           } />
         </Routes>
