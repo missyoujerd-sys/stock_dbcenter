@@ -16,7 +16,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 // ---- Shared constants ----
-const HOSPITAL_LOGO = '/hospital-logo.png';
+const HOSPITAL_LOGO = '/cnkp-logo-best.png';
 
 // ---- Premium styles injected once ----
 const PREMIUM_CSS = `
@@ -36,7 +36,7 @@ const PREMIUM_CSS = `
   overflow: hidden;
 }
 
-/* Watermark */
+/* Watermark styling - Premium */
 .a4-watermark {
   position: absolute;
   inset: 0;
@@ -47,9 +47,11 @@ const PREMIUM_CSS = `
   z-index: 0;
 }
 .a4-watermark img {
-  width: 55%;
-  opacity: 0.05;
-  filter: grayscale(100%);
+  width: 55%; /* Changed back to fit square logo */
+  opacity: 0.15; /* Increased opacity for prominence */
+  transform: rotate(-15deg) scale(1.1); /* Classic premium watermark rotation */
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3); /* Stronger shadow and colors */
+  user-select: none;
 }
 
 .a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
@@ -61,11 +63,26 @@ const PREMIUM_CSS = `
   padding: 10mm 16mm 8mm;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 10mm;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
 }
-.a4-header-stripe .logo-box img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25)); }
-.a4-header-title h1 { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: -0.5px; }
+.a4-header-stripe .logo-box {
+  background: #fff;
+  padding: 0; /* Remove padding to make it full bleed */
+  border-radius: 12px;
+  overflow: hidden; /* Ensure image respects border radius */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.8), 0 0 0 3px rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0; /* Extra crisp edge */
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+.a4-header-stripe .logo-box img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.1); padding: 2px; } /* Slightly scaled to fill margins */
+.a4-header-title h1 { font-size: 24px; font-weight: 900; color: #fff; margin: 0; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .a4-header-title p  { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); margin: 0; letter-spacing: 2px; text-transform: uppercase; }
 
 /* Grid info cards */
@@ -479,7 +496,7 @@ export default function RepairEntry() {
             <img
               src={HOSPITAL_LOGO}
               alt="watermark"
-              style={{ width: '50%', opacity: 0.05, filter: 'grayscale(100%)' }}
+              style={{ width: '55%', opacity: 0.15, transform: 'rotate(-15deg) scale(1.1)', filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3)' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
             />
           </div>
@@ -494,14 +511,29 @@ export default function RepairEntry() {
               gap: '18px',
               marginBottom: '20px'
             }}>
-              <img
-                src={HOSPITAL_LOGO}
-                alt="logo"
-                style={{ width: '64px', height: '64px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
-              />
+              <div style={{
+                background: '#fff',
+                padding: '0',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.25), 0 0 0 3px rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '76px',
+                height: '76px',
+                border: '1px solid #e2e8f0',
+                flexShrink: 0
+              }}>
+                <img
+                  src={HOSPITAL_LOGO}
+                  alt="logo"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(1.1)', padding: '2px' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+                />
+              </div>
               <div>
-                <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', margin: 0 }}>เอกสารบันทึกการแจ้งซ่อม</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>เอกสารบันทึกการแจ้งซ่อม</div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
