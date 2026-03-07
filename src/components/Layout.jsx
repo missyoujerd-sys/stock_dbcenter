@@ -72,10 +72,9 @@ export default function Layout({ children }) {
         <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] ${collapsible && isCollapsed ? 'justify-center' : 'px-1'}`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`absolute -inset-2 bg-emerald-500 rounded-[1.3rem] blur-xl transition-opacity duration-[800ms] animate-pulse ${isCollapsed ? 'opacity-[0.05]' : 'opacity-20'}`}></div>
-            <div className={`relative bg-transparent p-2 rounded-[1.1rem] shadow-2xl transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'scale-90' : 'scale-100 group-hover:scale-105'}`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-teal-600/10 rounded-[1.1rem]"></div>
-              <img src={emblemSvg} alt="Cross Logo" className="relative z-10 w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(16,185,129,0.3)]" />
+            <div className={`relative bg-white/10 backdrop-blur-md p-1 rounded-[1.1rem] shadow-2xl transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'scale-90' : 'scale-100 group-hover:scale-105'} border border-white/20`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-[1.1rem]"></div>
+              <img src="/cnkp-logo-best.png" alt="Hospital Logo" className="relative z-10 w-10 h-10 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           {(!collapsible || !isCollapsed) && (
@@ -219,10 +218,10 @@ export default function Layout({ children }) {
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
           <div className="flex items-center gap-2">
-            <div className="bg-transparent p-1 rounded-lg">
-              <img src={emblemSvg} alt="Cross Logo" className="w-6 h-6 object-contain" />
+            <div className="bg-white/90 p-1.5 rounded-lg shadow-sm border border-slate-100">
+              <img src="/cnkp-logo-best.png" alt="Hospital Logo" className="w-7 h-7 object-contain" />
             </div>
-            <span className="font-black text-slate-800">STOCK</span>
+            <span className="font-black text-slate-800 tracking-tight text-lg">STOCK</span>
           </div>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
