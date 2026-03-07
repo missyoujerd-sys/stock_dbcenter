@@ -339,7 +339,7 @@ export default function RepairEntry() {
             </div>
             <div className="a4-header-title">
               <h1>เอกสารบันทึกการแจ้งซ่อม</h1>
-              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</p>
+              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System (Google Forms)</p>
             </div>
           </div>
 
@@ -408,7 +408,7 @@ export default function RepairEntry() {
             <div className="a4-card" style={{ padding: '4px' }}>
               <div className="a4-stock-guaranteed">
                 <ShieldCheck size={36} />
-                <div className="text">Stock Guaranteed</div>
+                <div className="text">Stock อยู่ในประกัน</div>
               </div>
             </div>
           </div>
