@@ -81,7 +81,7 @@ export default function Layout({ children }) {
           {(!collapsible || !isCollapsed) && (
             <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
               <div className="flex flex-col">
-                <span className="text-[13px] font-medium text-slate-400 font-['Prompt'] leading-tight tracking-wide">ระบบ</span>
+                <span className="text-[16px] font-bold text-slate-300 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
                 <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-white font-['Prompt'] drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -mt-1 mb-1.5">
                   จัดการ
                 </h1>
@@ -90,7 +90,7 @@ export default function Layout({ children }) {
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
                 </div>
               </div>
-              <p className="text-[7px] text-blue-300/40 font-black tracking-[0.5em] uppercase leading-none mt-3 group-hover:text-blue-400/70 transition-colors duration-[600ms]">PREMIUM EDITION</p>
+              <p className="text-[11px] text-blue-300/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-blue-400 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
             </div>
           )}
         </div>
