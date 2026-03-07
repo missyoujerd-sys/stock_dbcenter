@@ -509,7 +509,7 @@ export default function RepairEntry() {
 
           {/* ── Footer ── */}
           <div className="a4-footer" style={{ marginTop: '6mm' }}>
-            เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+            เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ Google Forms &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
           </div>
         </div>
       </div>
