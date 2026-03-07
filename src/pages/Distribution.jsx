@@ -438,14 +438,6 @@ export default function Distribution() {
                 </div>
 
                 <div className="d-flex align-items-center gap-2">
-                    <Button
-                        variant="warning"
-                        className="logout-btn-custom border-warning text-dark px-4"
-                        size="sm"
-                        onClick={() => navigate('/')}
-                    >
-                        <FaHome className="me-2" /> กลับเมนูหลัก
-                    </Button>
                     {selectedIds.length > 0 && (
                         <Button variant="primary" className="logout-btn-custom px-4" size="sm" onClick={handleShowBulkDistribute}>
                             จำหน่ายที่เลือก ({selectedIds.length})
@@ -602,6 +594,19 @@ export default function Distribution() {
                     <Button variant="primary" onClick={handleDistribute}>ยืนยันจำหน่าย</Button>
                 </Modal.Footer>
             </Modal>
+
+            {/* Floating Back Button */}
+            <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 999 }}>
+                <Button
+                    variant="warning"
+                    className="logout-btn-custom border-warning text-dark px-4 shadow-lg"
+                    size="md"
+                    onClick={() => navigate('/')}
+                    style={{ borderRadius: '25px', fontWeight: 'bold' }}
+                >
+                    <FaHome className="me-2" /> กลับเมนูหลัก
+                </Button>
+            </div>
         </>
     );
 }
