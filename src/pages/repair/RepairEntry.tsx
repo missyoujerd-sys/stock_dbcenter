@@ -16,9 +16,11 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 // ---- Shared constants ----
+<<<<<<< HEAD
 const HOSPITAL_LOGO = '/nakornping-logo.png';
 =======
 const HOSPITAL_LOGO = '/cnkp-logo-best.png';
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
 
 // ---- Premium styles injected once ----
 const PREMIUM_CSS = `
@@ -38,16 +40,19 @@ const PREMIUM_CSS = `
   overflow: hidden;
 }
 
+<<<<<<< HEAD
 /* Watermark */
 .a4-watermark {
   position: absolute;
   top: 30%; /* Align toward the middle of the form details specifically */
   left: 0;
   right: 0;
+=======
 /* Watermark styling - Premium */
 .a4-watermark {
   position: absolute;
   inset: 0;
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,6 +60,7 @@ const PREMIUM_CSS = `
   z-index: 0;
 }
 .a4-watermark img {
+<<<<<<< HEAD
   width: 60%;
   opacity: 0.12; /* Slightly more visible */
 =======
@@ -63,12 +69,14 @@ const PREMIUM_CSS = `
   transform: rotate(-15deg) scale(1.1); /* Classic premium watermark rotation */
   filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3); /* Stronger shadow and colors */
   user-select: none;
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
 }
 
 .a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
 
 /* Header stripe */
 .a4-header-stripe {
+<<<<<<< HEAD
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   margin: -14mm -16mm 0;
   padding: 12mm 16mm 10mm;
@@ -87,6 +95,7 @@ const PREMIUM_CSS = `
 .section-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 .section-title.blue { color: #3b82f6; }
 .section-title.red { color: #ef4444; }
+=======
   background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%);
   margin: -14mm -16mm 0;
   padding: 10mm 16mm 8mm;
@@ -119,6 +128,7 @@ const PREMIUM_CSS = `
 .a4-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+<<<<<<< HEAD
   gap: 16px;
   margin-bottom: 8mm;
 }
@@ -158,6 +168,7 @@ const PREMIUM_CSS = `
 }
 .a4-stock-guaranteed svg { color: #60a5fa; margin-bottom: 8px; }
 .a4-stock-guaranteed .text { font-size: 11px; color: #60a5fa; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+=======
   gap: 5mm;
   margin-bottom: 6mm;
 }
@@ -169,28 +180,33 @@ const PREMIUM_CSS = `
 }
 .a4-card .label { font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
 .a4-card .value { font-size: 16px; font-weight: 900; color: #1e293b; }
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
 
 /* Problem box */
 .a4-problem {
   background: linear-gradient(135deg, #fff1f2, #fff5f5);
   border: 1.5px solid #fecdd3;
+<<<<<<< HEAD
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 8mm;
 }
 .a4-problem textarea { width: 100%; font-size: 16px; font-weight: 600; color: #4c0519; background: transparent; border: none; outline: none; resize: none; font-family: 'Prompt', sans-serif; line-height: 1.6; }
 .a4-problem textarea::placeholder { color: #fda4af; }
+=======
   border-radius: 10px;
   padding: 12px 16px;
   margin-bottom: 6mm;
 }
 .a4-problem .label { font-size: 8px; font-weight: 800; color: #fb7185; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
 .a4-problem .value { font-size: 13px; font-weight: 600; color: #4c0519; line-height: 1.5; }
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
 
 /* Signature grid */
 .a4-sig-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+<<<<<<< HEAD
   gap: 16px;
   margin-bottom: 8mm;
 }
@@ -220,6 +236,7 @@ const PREMIUM_CSS = `
 
 /* Footer */
 .a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; }
+=======
   gap: 5mm;
   margin-bottom: 6mm;
 }
@@ -249,6 +266,7 @@ const PREMIUM_CSS = `
 
 /* Footer */
 .a4-footer { border-top: 1px solid #e2e8f0; padding-top: 5mm; text-align: center; font-size: 8px; color: #cbd5e1; font-style: italic;  }
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
 
 /* -- Export hidden wrapper -- */
 #repair-pdf-root {
@@ -429,12 +447,16 @@ export default function RepairEntry() {
           </div>
 
           {/* ── Intro line ── */}
+<<<<<<< HEAD
           <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
+=======
           <p style={{ fontSize: '10px', color: '#64748b', marginBottom: '6mm', fontStyle: 'italic' }}>
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
             วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
           </p>
 
           {/* ── Section 1: Equipment ── */}
+<<<<<<< HEAD
           <div className="section-title blue">
             <Barcode size={18} /> ข้อมูลตัวเครื่อง
           </div>
@@ -495,6 +517,7 @@ export default function RepairEntry() {
               <div className="a4-stock-guaranteed">
                 <ShieldCheck size={36} />
                 <div className="text">Stock Guaranteed</div>
+=======
           <p style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4mm', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Barcode size={13} /> ข้อมูลตัวเครื่อง
           </p>
@@ -551,11 +574,13 @@ export default function RepairEntry() {
               <div style={{ textAlign: 'center' }}>
                 <ShieldCheck size={28} style={{ color: '#93c5fd', margin: '0 auto 6px' }} />
                 <div style={{ fontSize: '9px', color: '#93c5fd', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock Guaranteed</div>
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               </div>
             </div>
           </div>
 
           {/* ── Section 2: Problem ── */}
+<<<<<<< HEAD
           <div className="section-title red">
             อาการเสีย / รายละเอียดปัญหา
           </div>
@@ -563,6 +588,7 @@ export default function RepairEntry() {
             <textarea
               required
               rows={4}
+=======
           <p style={{ fontSize: '9px', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3mm' }}>
             อาการเสีย / รายละเอียดปัญหา
           </p>
@@ -571,6 +597,7 @@ export default function RepairEntry() {
               required
               rows={3}
               style={{ fontSize: '13px', fontWeight: 600, color: '#4c0519', background: 'transparent', border: 'none', outline: 'none', resize: 'none', width: '100%', fontFamily: 'Prompt, sans-serif' }}
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               value={formData.problemDescription}
               onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
               placeholder="ระบุอาการเสียหรือปัญหาที่พบ..."
@@ -578,6 +605,7 @@ export default function RepairEntry() {
           </div>
 
           {/* ── Section 3: Signatures ── */}
+<<<<<<< HEAD
           <div className="section-title blue" style={{ marginTop: '10mm' }}>
             <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
           </div>
@@ -594,6 +622,7 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
               </div>
+=======
           <p style={{ fontSize: '9px', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3mm', marginTop: '6mm', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <User size={13} /> ผู้รับผิดชอบและลายมือชื่อ
           </p>
@@ -606,6 +635,7 @@ export default function RepairEntry() {
               <input type="text" required placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} />
               <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
               <input type="date" required className={inpWhite} style={{ fontSize: '12px' }} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
@@ -613,6 +643,7 @@ export default function RepairEntry() {
             {/* Receiver */}
             <div className="a4-sig-card blue">
               <div className="sig-header">ผู้รับเครื่องซ่อม</div>
+<<<<<<< HEAD
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
                 <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
@@ -621,15 +652,18 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
               </div>
+=======
               <div className="sig-row"><span className="k">ชื่อ:</span></div>
               <input type="text" required placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
               <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
               <input type="date" required className={inpWhite} style={{ fontSize: '12px' }} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
 
             {/* Staff receipt */}
+<<<<<<< HEAD
             <div className="a4-sig-card green">
               <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="a4-sig-row">
@@ -640,18 +674,21 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
               </div>
+=======
             <div className="a4-sig-card teal">
               <div className="sig-header">เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="sig-row"><span className="k">ชื่อ:</span></div>
               <input type="text" placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} />
               <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
               <input type="date" className={inpWhite} style={{ fontSize: '12px' }} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
 
             {/* Returner */}
             <div className="a4-sig-card green">
+<<<<<<< HEAD
               <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
@@ -661,11 +698,13 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
               </div>
+=======
               <div className="sig-header">ผู้ส่งมอบเครื่องคืน</div>
               <div className="sig-row"><span className="k">ชื่อ:</span></div>
               <input type="text" placeholder="ชื่อ-นามสกุล" className={inpWhite} style={{ fontSize: '12px', marginBottom: '4px' }} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
               <div className="sig-row" style={{ marginTop: '4px' }}><span className="k">วันที่:</span></div>
               <input type="date" className={inpWhite} style={{ fontSize: '12px' }} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
@@ -704,17 +743,22 @@ export default function RepairEntry() {
         }}>
           {/* PDF Watermark */}
           <div style={{
+<<<<<<< HEAD
             position: 'absolute', top: '30%', left: 0, right: 0,
 =======
             position: 'absolute', inset: 0,
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             pointerEvents: 'none', zIndex: 0
           }}>
             <img
               src={HOSPITAL_LOGO}
               alt="watermark"
+<<<<<<< HEAD
               style={{ width: '60%', opacity: 0.12 }} /* Consistent with preview */
+=======
               style={{ width: '55%', opacity: 0.15, transform: 'rotate(-15deg) scale(1.1)', filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3)' }}
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
             />
           </div>
@@ -722,6 +766,7 @@ export default function RepairEntry() {
           <div style={{ position: 'relative', zIndex: 1, padding: '0' }}>
             {/* PDF Header stripe */}
             <div style={{
+<<<<<<< HEAD
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               padding: '24px 40px',
               display: 'flex',
@@ -735,6 +780,7 @@ export default function RepairEntry() {
                   src={HOSPITAL_LOGO}
                   alt="logo"
                   style={{ width: '65px', height: '65px', objectFit: 'contain' }}
+=======
               background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%)',
               padding: '24px 40px',
               display: 'flex',
@@ -760,22 +806,27 @@ export default function RepairEntry() {
                   src={HOSPITAL_LOGO}
                   alt="logo"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(1.1)', padding: '2px' }}
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
                   onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
                 />
               </div>
               <div>
+<<<<<<< HEAD
                 <div style={{ fontSize: '26px', fontWeight: 900, color: '#fff', margin: '0 0 4px 0', letterSpacing: '0.5px' }}>เอกสารบันทึกการแจ้งซ่อม</div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</div>
+=======
                 <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>เอกสารบันทึกการแจ้งซ่อม</div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
                 <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
                 <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
               </div>
             </div>
 
             <div style={{ padding: '0 40px 30px' }}>
+<<<<<<< HEAD
               <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
                 วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
               </div>
@@ -800,6 +851,7 @@ export default function RepairEntry() {
                 <div style={{ background: 'linear-gradient(135deg,#eff6ff,#f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }}>
                   <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
                   <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock Guaranteed</div>
+=======
               {/* Info grid */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 18px' }}>
@@ -816,10 +868,12 @@ export default function RepairEntry() {
                 </div>
                 <div style={{ background: 'linear-gradient(135deg,#eff6ff,#f0f9ff)', border: '1.5px dashed #bfdbfe', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                   <div style={{ fontSize: '9px', color: '#93c5fd', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>⚙ Stock Guaranteed</div>
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
                 </div>
               </div>
 
               {/* Problem */}
+<<<<<<< HEAD
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
                 อาการเสีย / รายละเอียดปัญหา
               </div>
@@ -852,6 +906,7 @@ export default function RepairEntry() {
                       <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px' }} />
                       <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>ลายมือชื่อ</div>
                     </div>
+=======
               <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
                 <div style={{ fontSize: '8px', fontWeight: 800, color: '#fb7185', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>อาการเสีย / ปัญหาที่พบ</div>
                 <div style={{ fontSize: '14px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
@@ -871,6 +926,7 @@ export default function RepairEntry() {
                     <div style={{ fontSize: '12px', marginBottom: '3px' }}><span style={{ color: sig.color, fontWeight: 700 }}>วันที่: </span><span style={{ color: '#1e293b', fontWeight: 700 }}>{sig.date || '-'}</span></div>
                     <div style={{ marginTop: '24px', borderBottom: '1.5px dashed #cbd5e1' }} />
                     <div style={{ fontSize: '8px', textAlign: 'center', color: '#cbd5e1', marginTop: '3px' }}>ลายมือชื่อ</div>
+>>>>>>> 938c24ebed8162d6cda838f430289cac93a1dd7e
                   </div>
                 ))}
               </div>
