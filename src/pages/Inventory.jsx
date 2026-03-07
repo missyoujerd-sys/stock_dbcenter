@@ -182,7 +182,7 @@ export default function Inventory() {
                                 <th>S/N</th>
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
-                                {isAdmin && <th style={{ width: '60px' }}></th>}
+                                {isAdmin && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
                                 {isAdmin && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
@@ -219,7 +219,7 @@ export default function Inventory() {
                                         </span>
                                     </td>
                                     {isAdmin && (
-                                        <td onClick={(e) => e.stopPropagation()}>
+                                        <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                             <button
                                                 className="inv-del-btn"
                                                 title="ลบรายการนี้"

@@ -682,7 +682,25 @@ export default function IncomingStock() {
                                                 value={officerName}
                                                 onChange={(e) => setOfficerName(e.target.value)}
                                                 placeholder="ระบุชื่อ-นามสกุล"
+                                                list="officer-names-list"
                                             />
+                                            <datalist id="officer-names-list">
+                                                <option value="Admin IT" />
+                                                <option value="จันทกานต์ จันทร์ตาใหม่" />
+                                                <option value="ฉันทวัฒน์ สุทธิพงษ์" />
+                                                <option value="ณรงค์ รวมสุข" />
+                                                <option value="ณัฐวุฒิ อินต๊ะผัด" />
+                                                <option value="ทรงกลด สิงห์สันต์" />
+                                                <option value="ธนากร ลุงหม่อง" />
+                                                <option value="บรรเจิด สลักพิศพักตร์" />
+                                                <option value="พัชชามาศ กาแก้ว" />
+                                                <option value="ภาณุพงศ์ เชื่อมชิต" />
+                                                <option value="มนตรี เครือซุย" />
+                                                <option value="รสริน อุทิศเวทศักดิ์" />
+                                                <option value="ศิวาพร ยอดเมือง" />
+                                                <option value="อณุศักดิ์ เวียงนาค" />
+                                                <option value="อาจารีย์ โสภากร" />
+                                            </datalist>
                                         </div>
                                         <div className="inc-sig-footer-divider"></div>
                                         <div className="inc-sig-footer-field">
