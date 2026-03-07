@@ -36,7 +36,7 @@ const PREMIUM_CSS = `
   overflow: hidden;
 }
 
-/* Watermark */
+/* Watermark styling - Premium */
 .a4-watermark {
   position: absolute;
   top: 30%; /* Align toward the middle of the form details specifically */
