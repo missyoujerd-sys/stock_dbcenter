@@ -91,8 +91,8 @@ export default function Dashboard() {
                     </div>
                     <div>
                         <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ·ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
-                        <h1 className="db-hero-title">ภาพรวมของระบบ</h1>
-                        <div className="db-hero-sub">STOCK MANAGEMENT DASHBOARD</div>
+                        <h1 className="db-hero-title">ภาพรวมระบบ</h1>
+                        <div className="db-hero-sub">STOCK DASHBOARD ห้องซ่อมบำรุงคอมพิวเตอร์</div>
                     </div>
                 </div>
 

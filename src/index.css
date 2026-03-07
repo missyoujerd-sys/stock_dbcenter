@@ -359,34 +359,36 @@ h6 {
   flex-direction: column;
   gap: 0;
   padding: 0;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 46px; /* Highly rounded / circular feel */
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.05),
-    inset 0 2px 4px rgba(255, 255, 255, 1),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.02);
+    10px 15px 35px rgba(0, 0, 0, 0.08),
+    -10px -15px 30px rgba(255, 255, 255, 1),
+    inset 2px 4px 10px rgba(255, 255, 255, 0.8),
+    inset -2px -4px 12px rgba(0, 0, 0, 0.03);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  min-height: 180px;
+  min-height: 190px;
   transform: perspective(1000px) translateZ(0);
 }
 
 .qm-card:hover {
-  transform: perspective(1000px) translateY(-8px) rotateX(2deg) scale(1.02);
+  transform: perspective(1000px) translateY(-10px) rotateX(3deg) scale(1.03);
   box-shadow: 
-    0 30px 60px rgba(0, 0, 0, 0.12),
-    0 0 40px rgba(255, 255, 255, 0.4),
-    inset 0 4px 8px rgba(255, 255, 255, 1);
+    15px 25px 50px rgba(0, 0, 0, 0.12),
+    -15px -25px 50px rgba(255, 255, 255, 1),
+    0 0 40px rgba(255, 255, 255, 0.6),
+    inset 0 4px 15px rgba(255, 255, 255, 1);
   border-color: rgba(255, 255, 255, 1);
 }
 
 .qm-card:hover .qm-arrow {
-  transform: translateX(8px);
+  transform: translateX(10px) scale(1.1);
   opacity: 1;
 }
 
@@ -395,17 +397,18 @@ h6 {
   display: flex;
   align-items: flex-start;
   gap: 1.2rem;
-  padding: 1.5rem 1.6rem 1.2rem;
+  padding: 1.8rem 2rem 1.2rem;
   flex: 1;
 }
 
 .qm-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.7rem 1.6rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  background: rgba(0, 0, 0, 0.015);
+  justify-content: center;
+  padding: 0.9rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.01);
 }
 
 .qm-footer-text {
@@ -657,197 +660,7 @@ h6 {
   }
 }
 
-.qm-card {
-  display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  padding: 1.1rem 1.3rem;
-  border-radius: 16px;
-  background: #fff;
-  border: 1.5px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.qm-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: inherit;
-}
-
-.qm-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-}
-
-.qm-card:hover::before {
-  opacity: 1;
-}
-
-.qm-card:hover .qm-arrow {
-  transform: translateX(4px);
-  opacity: 1;
-}
-
-/* Icon Box */
-.qm-icon-box {
-  flex-shrink: 0;
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  transition: transform 0.3s ease;
-}
-
-.qm-card:hover .qm-icon-box {
-  transform: scale(1.08) rotate(-3deg);
-}
-
-/* Body text */
-.qm-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.qm-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-  opacity: 0.55;
-}
-
-.qm-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a2a44;
-  line-height: 1.2;
-  margin-bottom: 3px;
-}
-
-.qm-desc {
-  font-size: 0.78rem;
-  color: #8a9ab0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Arrow */
-.qm-arrow {
-  font-size: 1.6rem;
-  line-height: 1;
-  opacity: 0.3;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-  margin-left: 0.25rem;
-}
-
-/* === Incoming Theme === */
-.qm-card--incoming {
-  border-color: rgba(79, 172, 254, 0.25);
-  background: linear-gradient(135deg, #f0faff 0%, #fff 60%);
-}
-
-.qm-card--incoming::before {
-  background: linear-gradient(
-    135deg,
-    rgba(79, 172, 254, 0.06) 0%,
-    rgba(0, 242, 254, 0.04) 100%
-  );
-}
-
-.qm-icon-box--incoming {
-  background: linear-gradient(135deg, #4facfe 0%, #00c6fb 100%);
-  box-shadow: 0 6px 18px rgba(79, 172, 254, 0.4);
-}
-
-.qm-card--incoming .qm-label {
-  color: #2196f3;
-}
-
-.qm-card--incoming .qm-arrow {
-  color: #4facfe;
-}
-
-.qm-card--incoming:hover {
-  border-color: rgba(79, 172, 254, 0.5);
-  box-shadow: 0 12px 32px rgba(79, 172, 254, 0.18);
-}
-
-/* === Distribution Theme === */
-.qm-card--distribution {
-  border-color: rgba(240, 147, 251, 0.25);
-  background: linear-gradient(135deg, #fdf0ff 0%, #fff 60%);
-}
-
-.qm-card--distribution::before {
-  background: linear-gradient(
-    135deg,
-    rgba(240, 147, 251, 0.06) 0%,
-    rgba(245, 87, 108, 0.04) 100%
-  );
-}
-
-.qm-icon-box--distribution {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  box-shadow: 0 6px 18px rgba(240, 87, 108, 0.4);
-}
-
-.qm-card--distribution .qm-label {
-  color: #e040fb;
-}
-
-.qm-card--distribution .qm-arrow {
-  color: #f093fb;
-}
-
-.qm-card--distribution:hover {
-  border-color: rgba(240, 147, 251, 0.5);
-  box-shadow: 0 12px 32px rgba(240, 147, 251, 0.18);
-}
-
-/* === Inventory Theme === */
-.qm-card--inventory {
-  border-color: rgba(67, 233, 123, 0.25);
-  background: linear-gradient(135deg, #f0fff6 0%, #fff 60%);
-}
-
-.qm-card--inventory::before {
-  background: linear-gradient(
-    135deg,
-    rgba(67, 233, 123, 0.06) 0%,
-    rgba(56, 249, 215, 0.04) 100%
-  );
-}
-
-.qm-icon-box--inventory {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  box-shadow: 0 6px 18px rgba(67, 233, 123, 0.4);
-}
-
-.qm-card--inventory .qm-label {
-  color: #00c853;
-}
-
-.qm-card--inventory .qm-arrow {
-  color: #43e97b;
-}
-
-.qm-card--inventory:hover {
-  border-color: rgba(67, 233, 123, 0.5);
-  box-shadow: 0 12px 32px rgba(67, 233, 123, 0.18);
-}
+/* Removed conflicting duplicate styles */
 
 /* Legacy large card themes (kept for compatibility) */
 .card-incoming {
