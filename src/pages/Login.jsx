@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function Login() {
     let userRef = useRef();
@@ -10,6 +10,7 @@ export default function Login() {
     const { login } = useAuth();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
@@ -60,15 +61,35 @@ export default function Login() {
                         />
                     </div>
 
-                    <div className="login-input-group">
+                    <div className="login-input-group" style={{ position: 'relative' }}>
                         <FaLock className="login-input-icon" />
                         <Form.Control
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             ref={passwordRef}
                             required
                             placeholder="Password"
                             className="login-input"
+                            style={{ paddingRight: '40px' }}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '15px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                cursor: 'pointer',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
                     </div>
 
                     <Button disabled={loading} className="login-submit-btn" type="submit">

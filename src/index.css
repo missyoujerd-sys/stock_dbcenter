@@ -183,18 +183,33 @@ body {
 }
 
 .login-input {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid #f7a000;
-  color: white;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #f7a000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: white !important;
   font-size: 1.1rem;
   width: 100%;
   padding: 0.5rem 0;
   transition: 0.3s;
 }
 
+/* Fix browser autofill background color */
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:hover, 
+.login-input:-webkit-autofill:focus, 
+.login-input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 .login-input:focus {
-  border-bottom: 2px solid #ffcc33;
+  border-bottom: 2px solid #ffcc33 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
   outline: none;
 }
 
