@@ -438,7 +438,7 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} />
+                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
@@ -468,7 +468,7 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} />
+                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
@@ -493,6 +493,24 @@ export default function RepairEntry() {
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
           </div>
+
+          <datalist id="officer-names-list">
+            <option value="Admin IT" />
+            <option value="จันทกานต์ จันทร์ตาใหม่" />
+            <option value="ฉันทวัฒน์ สุทธิพงษ์" />
+            <option value="ณรงค์ รวมสุข" />
+            <option value="ณัฐวุฒิ อินต๊ะผัด" />
+            <option value="ทรงกลด สิงห์สันต์" />
+            <option value="ธนากร ลุงหม่อง" />
+            <option value="บรรเจิด สลักพิศพักตร์" />
+            <option value="พัชชามาศ กาแก้ว" />
+            <option value="ภาณุพงศ์ เชื่อมชิต" />
+            <option value="มนตรี เครือซุย" />
+            <option value="รสริน อุทิศเวทศักดิ์" />
+            <option value="ศิวาพร ยอดเมือง" />
+            <option value="อณุศักดิ์ เวียงนาค" />
+            <option value="อาจารีย์ โสภากร" />
+          </datalist>
 
           {/* ── Submit ── */}
           <div style={{ display: 'flex', justifyItems: 'end', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
