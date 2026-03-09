@@ -15,6 +15,8 @@ import {
   User,
   Package
 } from "lucide-react";
+import emblemSvg from "../assets/emblem.svg";
+
 
 export default function Layout({ children }) {
   const { currentUser, logout } = useAuth();
@@ -48,7 +50,7 @@ export default function Layout({ children }) {
     { name: "หน้าหลัก", path: "/", icon: LayoutDashboard },
     { name: "รับเข้า Stock", path: "/incoming", icon: Package },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck },
-    ...(isAdmin ? [{ name: "คลังพัสดุ(Admin)", path: "/inventory", icon: Box }] : []),
+    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box }] : []),
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList },
   ];
@@ -70,16 +72,14 @@ export default function Layout({ children }) {
         <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] ${collapsible && isCollapsed ? 'justify-center' : 'px-1'}`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`absolute -inset-2 bg-blue-500 rounded-[1.3rem] blur-xl transition-opacity duration-[800ms] animate-pulse ${isCollapsed ? 'opacity-[0.05]' : 'opacity-20'}`}></div>
-            <div className={`relative bg-[#0F172A] p-2.5 rounded-[1.1rem] shadow-2xl transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border border-white/20 ${isCollapsed ? 'scale-90' : 'scale-100 group-hover:scale-105'}`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-indigo-600/30 rounded-[1.1rem]"></div>
-              <Box size={22} className="text-white relative z-10 drop-shadow-[0_0_8px_rgba(255,255,250,0.5)]" />
+            <div className={`relative bg-transparent p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'scale-90' : 'scale-100 group-hover:scale-105'}`}>
+              <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           {(!collapsible || !isCollapsed) && (
             <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
               <div className="flex flex-col">
-                <span className="text-[13px] font-medium text-slate-400 font-['Prompt'] leading-tight tracking-wide">ระบบ</span>
+                <span className="text-[16px] font-bold text-slate-300 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
                 <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-white font-['Prompt'] drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -mt-1 mb-1.5">
                   จัดการ
                 </h1>
@@ -88,7 +88,7 @@ export default function Layout({ children }) {
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
                 </div>
               </div>
-              <p className="text-[7px] text-blue-300/40 font-black tracking-[0.5em] uppercase leading-none mt-3 group-hover:text-blue-400/70 transition-colors duration-[600ms]">PREMIUM EDITION</p>
+              <p className="text-[11px] text-blue-300/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-blue-400 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
             </div>
           )}
         </div>
@@ -217,10 +217,10 @@ export default function Layout({ children }) {
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-1.5 rounded-lg">
-              <Box size={18} className="text-white" />
+            <div className="bg-transparent p-1 rounded-lg">
+              <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="w-8 h-8 object-contain" />
             </div>
-            <span className="font-black text-slate-800">STOCK</span>
+            <span className="font-black text-slate-800 tracking-tight text-lg">STOCK</span>
           </div>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}

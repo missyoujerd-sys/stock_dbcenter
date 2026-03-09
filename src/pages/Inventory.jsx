@@ -143,15 +143,6 @@ export default function Inventory() {
                         คลังพัสดุทั้งหมด <small>(Inventory)</small>
                     </h2>
                 </div>
-
-                <Button
-                    variant="warning"
-                    className="logout-btn-custom border-warning text-dark px-4"
-                    size="sm"
-                    onClick={() => navigate('/')}
-                >
-                    <FaHome className="me-2" /> กลับเมนูหลัก
-                </Button>
             </div>
 
             <StatusSummaryBar />
@@ -191,7 +182,7 @@ export default function Inventory() {
                                 <th>S/N</th>
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
-                                {isAdmin && <th style={{ width: '60px' }}></th>}
+                                {isAdmin && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
                                 {isAdmin && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
@@ -228,7 +219,7 @@ export default function Inventory() {
                                         </span>
                                     </td>
                                     {isAdmin && (
-                                        <td onClick={(e) => e.stopPropagation()}>
+                                        <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                             <button
                                                 className="inv-del-btn"
                                                 title="ลบรายการนี้"
@@ -270,6 +261,19 @@ export default function Inventory() {
                 onHide={() => setShowDetailModal(false)}
                 item={selectedItem}
             />
+
+            {/* Floating Back Button */}
+            <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 999 }}>
+                <Button
+                    variant="warning"
+                    className="logout-btn-custom border-warning text-dark px-4 shadow-lg"
+                    size="md"
+                    onClick={() => navigate('/')}
+                    style={{ borderRadius: '25px', fontWeight: 'bold' }}
+                >
+                    <FaHome className="me-2" /> กลับเมนูหลัก
+                </Button>
+            </div>
         </div >
     );
 }

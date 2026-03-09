@@ -76,13 +76,23 @@ export default function Dashboard() {
             <div className="db-hero-banner mb-4">
                 {/* Title block */}
                 <div className="db-hero-title-block">
-                    <div className="db-hero-logo-wrap">
-                        <img src={logoSvg} alt="logo" className="db-hero-logo" />
+                    {/* Hospital Logo (Left-aligned with background) */}
+                    <div className="db-hero-logo-wrap" style={{ 
+                        background: 'rgba(255,255,255,0.85)', 
+                        padding: '12px 20px', 
+                        borderRadius: '20px', 
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1), inset 0 2px 5px rgba(255,255,255,1)',
+                        border: '1px solid rgba(255,255,255,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <img src="/cnkp-logo-transparent.png" alt="Nakornping Hospital Logo" style={{ height: '55px', objectFit: 'contain' }} />
                     </div>
                     <div>
                         <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ·ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
-                        <h1 className="db-hero-title">ภาพรวมของระบบ</h1>
-                        <div className="db-hero-sub">STOCK MANAGEMENT DASHBOARD</div>
+                        <h1 className="db-hero-title">ภาพรวมระบบ</h1>
+                        <div className="db-hero-sub">STOCK DASHBOARD ห้องซ่อมบำรุงคอมพิวเตอร์</div>
                     </div>
                 </div>
 
