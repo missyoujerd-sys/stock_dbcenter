@@ -111,7 +111,33 @@ const PREMIUM_CSS = `
   min-height: 100px;
 }
 .a4-stock-guaranteed svg { color: #60a5fa; margin-bottom: 8px; }
-.a4-stock-guaranteed .text { font-size: 11px; color: #60a5fa; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+.a4-stock-guaranteed .text { 
+  font-size: 11px; 
+  color: #60a5fa; 
+  font-weight: 800; 
+  letter-spacing: 2px; 
+  text-transform: uppercase; 
+}
+
+.a4-stock-expired {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 3px dashed #f87171;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100px;
+}
+.a4-stock-expired svg { color: #ef4444; margin-bottom: 8px; }
+.a4-stock-expired .text { 
+  font-size: 14px; 
+  color: #ef4444; 
+  font-weight: 800; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+}
 
 /* Problem box */
 .a4-problem {
@@ -333,9 +359,18 @@ export default function RepairView() {
             </div>
 
             <div className="a4-card" style={{ padding: '4px' }}>
-              <div className="a4-stock-guaranteed">
-                <ShieldCheck size={36} />
-                <div className="text">Stock อยู่ในประกัน</div>
+              <div className={data.isWarranty !== false ? "a4-stock-guaranteed" : "a4-stock-expired"}>
+                {data.isWarranty !== false ? (
+                  <>
+                    <ShieldCheck size={36} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>STOCK อยู่ในประกัน</div>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={36} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>หมดประกัน</div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -506,9 +541,22 @@ export default function RepairView() {
                   <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Serial Number (S/N)</div>
                   <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.serialNumber || '-'}</div>
                 </div>
-                <div style={{ background: 'linear-gradient(135deg,#eff6ff,#f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }}>
-                  <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
-                  <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock อยู่ในประกัน</div>
+                <div style={
+                  data.isWarranty !== false 
+                  ? { background: 'linear-gradient(135deg, #eff6ff, #f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
+                  : { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', border: '3px dashed #f87171', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
+                }>
+                  {data.isWarranty !== false ? (
+                    <>
+                      <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>STOCK อยู่ในประกัน</div>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>หมดประกัน</div>
+                    </>
+                  )}
                 </div>
               </div>
 
