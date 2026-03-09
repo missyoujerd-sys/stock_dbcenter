@@ -21,13 +21,14 @@ const PREMIUM_CSS = `
 
 /* A4 preview */
 .a4-preview {
-  width: 210mm;
+  width: 100%;
+  max-width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
   background: #fff;
   position: relative;
   box-shadow: 0 30px 80px rgba(0,0,0,0.18);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -185,6 +186,20 @@ const PREMIUM_CSS = `
 /* Footer */
 .a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; border-top: 1px solid #e2e8f0; }
 
+/* Responsive adjustments for A4 Preview */
+@media (max-width: 768px) {
+  .a4-preview { min-height: auto; }
+  .a4-content { padding: 5mm; }
+  .a4-header-stripe { margin: -5mm -5mm 0; padding: 5mm; flex-direction: column; text-align: center; gap: 8px; margin-bottom: 4mm; }
+  .a4-header-title h1 { font-size: 20px; }
+  .a4-header-title p { font-size: 9px; line-height: 1.4; }
+  .a4-info-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
+  .a4-sig-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
+  .a4-static-box { padding: 8px 12px; font-size: 14px; min-height: 40px; }
+  .a4-stock-guaranteed, .a4-stock-expired { min-height: 80px; padding: 12px; }
+  .a4-sig-card { padding: 12px; }
+}
+
 #repair-pdf-root {
   display: none;
   position: fixed;
@@ -286,7 +301,7 @@ export default function RepairView() {
   return (
     <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
       {/* ── Page Header ── */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link to="/repair" className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
             <ArrowLeft size={24} />
