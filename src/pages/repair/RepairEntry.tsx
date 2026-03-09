@@ -339,7 +339,7 @@ export default function RepairEntry() {
             </div>
             <div className="a4-header-title">
               <h1>เอกสารบันทึกการแจ้งซ่อม</h1>
-              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System (Google Forms)</p>
+              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</p>
             </div>
           </div>
 
@@ -590,7 +590,7 @@ export default function RepairEntry() {
               </div>
               <div>
                 <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>เอกสารบันทึกการแจ้งซ่อม</div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
                 <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
