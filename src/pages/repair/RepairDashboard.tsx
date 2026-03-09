@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -21,8 +21,25 @@ let isAdmin_2 = false;
 export default function RepairDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
-  const [repairs, setRepairs] = useState<RepairRecord[]>(RepairService.getRepairs());
+  const [repairs, setRepairs] = useState<RepairRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const { currentUser } = useAuth();
+
+  useEffect(() => {
+    const fetchRepairs = async () => {
+      setLoading(true);
+      try {
+        const data = await RepairService.getRepairs();
+        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setRepairs(data);
+      } catch (error) {
+        console.error("Failed to fetch repairs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRepairs();
+  }, []);
 
   // @ts-ignore
   const env = import.meta.env;
@@ -52,10 +69,15 @@ export default function RepairDashboard() {
     });
   }, [repairs, searchTerm, statusFilter]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('คุณต้องการลบข้อมูลการซ่อมนี้ใช่หรือไม่?')) {
-      RepairService.deleteRepair(id);
-      setRepairs(RepairService.getRepairs());
+      try {
+        await RepairService.deleteRepair(id);
+        setRepairs(prev => prev.filter(r => r.id !== id));
+      } catch (error) {
+        console.error("Failed to delete repair:", error);
+        alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+      }
     }
   };
 
@@ -165,7 +187,16 @@ export default function RepairDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRepairs.length > 0 ? filteredRepairs.map((repair) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      <p className="text-sm font-bold text-slate-400 animate-pulse">กำลังโหลดข้อมูล...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredRepairs.length > 0 ? filteredRepairs.map((repair) => (
                 <tr key={repair.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="px-6 py-5">
                     <div className="font-bold text-slate-800">{repair.equipmentModel}</div>
@@ -180,14 +211,21 @@ export default function RepairDashboard() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="text-sm font-bold text-slate-700">{repair.receiverName}</div>
-                    <div className="text-xs text-slate-400">{repair.receivedDate}</div>
+                    <div className="text-xs text-slate-400">
+                      {repair.receivedDate}
+                      {repair.createdAt && (
+                        <span className="ml-1 text-[10px] text-slate-300">
+                          {new Date(repair.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-5 text-right">
                     {(isAdmin || isAdmin_2) && (
                       <div className="flex items-center justify-end gap-1">
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="ดูรายละเอียด">
+                        <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ดูรายละเอียด">
                           <Eye size={18} />
-                        </button>
+                        </Link>
                         {isAdmin_2 && (
                           <button 
                             onClick={() => handleDelete(repair.id)}

@@ -11,6 +11,7 @@ import Distribution from './pages/Distribution';
 import Inventory from './pages/Inventory';
 import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
+import RepairView from './pages/repair/RepairView';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -55,6 +56,11 @@ function App() {
           <Route path="/repair/entry" element={
             <PrivateRoute>
               <RepairEntry />
+            </PrivateRoute>
+          } />
+          <Route path="/repair/view/:id" element={
+            <PrivateRoute>
+              <RepairView />
             </PrivateRoute>
           } />
           <Route path="/repair/dashboard" element={
