@@ -85,7 +85,7 @@ export default function Layout({ children }) {
                   จัดการ
                 </h1>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] uppercase">STOCK CENTER</span>
+                  <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function Layout({ children }) {
                 </div>
                 {(!collapsible || !isCollapsed) && (
                   <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">OPERATOR</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">Hello คุณ:</p>
                     <p className="text-[14px] font-bold text-slate-200 truncate tracking-tight group-hover/avatar:text-white transition-colors duration-[300ms]">
                       {currentUser.email.split('@')[0]}
                     </p>
