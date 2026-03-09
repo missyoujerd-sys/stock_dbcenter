@@ -23,6 +23,9 @@ export interface RepairRecord {
   returnerName: string;
   returnDate: string;
   
+  // Warranty status
+  isWarranty: boolean;
+  
   status: RepairStatus;
   createdAt: string;
   updatedAt: string;

@@ -11,6 +11,7 @@ import Distribution from './pages/Distribution';
 import Inventory from './pages/Inventory';
 import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
+import RepairView from './pages/repair/RepairView';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -19,11 +20,14 @@ function PrivateRoute({ children }) {
   return currentUser ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 }
 
+import { ThemeProvider } from './contexts/ThemeContext';
+
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={
             <PrivateRoute>
@@ -57,13 +61,19 @@ function App() {
               <RepairEntry />
             </PrivateRoute>
           } />
+          <Route path="/repair/view/:id" element={
+            <PrivateRoute>
+              <RepairView />
+            </PrivateRoute>
+          } />
           <Route path="/repair/dashboard" element={
             <PrivateRoute>
               <RepairDashboard />
             </PrivateRoute>
           } />
         </Routes>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

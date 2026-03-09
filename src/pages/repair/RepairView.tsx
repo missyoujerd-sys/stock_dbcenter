@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { 
-  Camera, 
-  User, 
-  AlertCircle, 
-  CheckCircle2, 
-  Download,
   Barcode,
-  ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  User,
+  ArrowLeft,
+  Download
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
-import { Html5QrcodeScanner } from 'html5-qrcode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-// ---- Shared constants ----
 const HOSPITAL_LOGO = '/nakornping-logo.png';
 
-// ---- Premium styles injected once ----
 const PREMIUM_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
 
@@ -40,7 +35,7 @@ const PREMIUM_CSS = `
 /* Watermark styling - Premium */
 .a4-watermark {
   position: absolute;
-  top: 30%; /* Align toward the middle of the form details specifically */
+  top: 30%;
   left: 0;
   right: 0;
   display: flex;
@@ -51,7 +46,7 @@ const PREMIUM_CSS = `
 }
 .a4-watermark img {
   width: 60%;
-  opacity: 0.12; /* Slightly more visible */
+  opacity: 0.12;
 }
 
 .a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
@@ -92,20 +87,18 @@ const PREMIUM_CSS = `
 .a4-card-inner { padding: 8px 14px; }
 .a4-card .label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 
-.a4-input-box {
+.a4-static-box {
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   padding: 10px 14px;
   background: #f8fafc;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  min-height: 48px;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
 }
-.a4-input-box:focus-within { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-.a4-input-box input { width: 100%; border: none; background: transparent; outline: none; font-size: 18px; font-weight: 800; color: #1e293b; font-family: 'Prompt', sans-serif; }
-.a4-input-box input::placeholder { color: #cbd5e1; }
-
-.a4-scan-btn { font-size: 11px; color: #3b82f6; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; margin-top: 8px; }
 
 .a4-stock-guaranteed {
   background: linear-gradient(135deg, #eff6ff, #f0f9ff);
@@ -117,12 +110,6 @@ const PREMIUM_CSS = `
   flex-direction: column;
   height: 100%;
   min-height: 100px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-.a4-stock-guaranteed:hover {
-  background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
 }
 .a4-stock-guaranteed svg { color: #60a5fa; margin-bottom: 8px; }
 .a4-stock-guaranteed .text { 
@@ -143,13 +130,6 @@ const PREMIUM_CSS = `
   flex-direction: column;
   height: 100%;
   min-height: 100px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-.a4-stock-expired:hover {
-  background: linear-gradient(135deg, #fee2e2, #fca5a5);
-  border-style: solid;
 }
 .a4-stock-expired svg { color: #ef4444; margin-bottom: 8px; }
 .a4-stock-expired .text { 
@@ -167,9 +147,12 @@ const PREMIUM_CSS = `
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 8mm;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4c0519;
+  line-height: 1.6;
+  min-height: 100px;
 }
-.a4-problem textarea { width: 100%; font-size: 16px; font-weight: 600; color: #4c0519; background: transparent; border: none; outline: none; resize: none; font-family: 'Prompt', sans-serif; line-height: 1.6; }
-.a4-problem textarea::placeholder { color: #fda4af; }
 
 /* Signature grid */
 .a4-sig-grid {
@@ -195,15 +178,13 @@ const PREMIUM_CSS = `
 
 .a4-sig-row { display: flex; align-items: center; margin-bottom: 10px; }
 .a4-sig-row .k { font-size: 13px; color: #64748b; font-weight: 700; width: 45px; }
-.a4-sig-input { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: 'Prompt', sans-serif; outline: none; font-weight: 600; color: #1e293b; background: white; transition: 0.2s; }
-.a4-sig-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-.a4-sig-input::placeholder { color: #cbd5e1; font-weight: 500;}
+.a4-sig-static { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 600; color: #1e293b; background: white; min-height: 40px; }
 
 .a4-sig-line { border-bottom: 1.5px dashed #cbd5e1; margin-top: 30px; }
 .a4-sig-line-label { font-size: 10px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 600; }
 
 /* Footer */
-.a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; }
+.a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; border-top: 1px solid #e2e8f0; }
 
 /* Responsive adjustments for A4 Preview */
 @media (max-width: 768px) {
@@ -214,90 +195,51 @@ const PREMIUM_CSS = `
   .a4-header-title p { font-size: 9px; line-height: 1.4; }
   .a4-info-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
   .a4-sig-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
-  .a4-input-box { padding: 8px 12px; }
-  .a4-input-box input { font-size: 14px; }
+  .a4-static-box { padding: 8px 12px; font-size: 14px; min-height: 40px; }
   .a4-stock-guaranteed, .a4-stock-expired { min-height: 80px; padding: 12px; }
   .a4-sig-card { padding: 12px; }
 }
 
-/* -- Export hidden wrapper -- */
 #repair-pdf-root {
   display: none;
   position: fixed;
   left: -9999px;
   top: 0;
-  width: 794px; /* 210mm at 96dpi */
+  width: 794px;
   background: transparent;
 }
 `;
 
-export default function RepairEntry() {
-  const [formData, setFormData] = useState<Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt'>>({
-    assetNumber: '',
-    equipmentModel: '',
-    serialNumber: '',
-    problemDescription: '',
-    reporterName: '',
-    reportedDate: new Date().toISOString().split('T')[0],
-    receiverName: '',
-    receivedDate: new Date().toISOString().split('T')[0],
-    staffReceiptName: '',
-    staffReceiptDate: '',
-    returnerName: '',
-    returnDate: '',
-    isWarranty: true,
-    status: 'pending'
-  });
-
-  const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+export default function RepairView() {
+  const { id } = useParams<{ id: string }>();
+  const [data, setData] = useState<RepairRecord | null>(null);
+  const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
 
-  // Inject premium CSS once
   useEffect(() => {
-    const id = 'repair-premium-css';
-    if (!document.getElementById(id)) {
+    const idName = 'repair-premium-css-view';
+    if (!document.getElementById(idName)) {
       const style = document.createElement('style');
-      style.id = id;
+      style.id = idName;
       style.textContent = PREMIUM_CSS;
       document.head.appendChild(style);
     }
-    return () => {};
   }, []);
 
   useEffect(() => {
-    if (scanning) {
-      const scanner = new Html5QrcodeScanner(
-        'reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
-      scanner.render(
-        (decodedText) => {
-          if (scanning === 'asset') setFormData(prev => ({ ...prev, assetNumber: decodedText }));
-          else setFormData(prev => ({ ...prev, serialNumber: decodedText }));
-          scanner.clear();
-          setScanning(null);
-        },
-        () => {}
-      );
-      return () => { scanner.clear(); };
-    }
-  }, [scanning]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await RepairService.saveRepair(formData);
-      setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จแล้ว' });
-    } catch {
-      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
-    }
-  };
+    const fetchData = async () => {
+      if (id) {
+        const result = await RepairService.getRepairById(id);
+        setData(result);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [id]);
 
   const exportPDF = async () => {
     const el = document.getElementById('repair-pdf-root');
-    if (!el) return;
+    if (!el || !data) return;
     setExporting(true);
     el.style.display = 'block';
     await new Promise(r => setTimeout(r, 300));
@@ -318,7 +260,6 @@ export default function RepairEntry() {
       if (imgH <= ph) {
         pdf.addImage(imgData, 'PNG', 0, 0, pw, imgH);
       } else {
-        // Multi-page
         let yPos = 0;
         let remaining = canvas.height;
         const pageH = canvas.width * (ph / pw);
@@ -330,57 +271,60 @@ export default function RepairEntry() {
           page++;
         }
       }
-      pdf.save(`Repair_${formData.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
-      setMessage({ type: 'success', text: 'สร้างไฟล์ PDF สำเร็จแล้ว' });
+      pdf.save(`Repair_${data.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
     } catch (err) {
       console.error(err);
-      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการสร้าง PDF' });
+      alert('เกิดข้อผิดพลาดในการสร้าง PDF');
     } finally {
       el.style.display = 'none';
       setExporting(false);
     }
   };
 
-  // ─── Input helpers ───
-  const inp = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-[Prompt] text-slate-700 placeholder:text-slate-300';
-  const inpWhite = 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none font-[Prompt] text-slate-700';
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen gap-4 text-slate-500 font-['Prompt']">
+        <h2 className="text-2xl font-bold">ไม่พบข้อมูลการแจ้งซ่อม</h2>
+        <Link to="/repair" className="text-blue-600 hover:underline">กลับไปหน้ารายการแจ้งซ่อม</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
-
       {/* ── Page Header ── */}
       <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2" style={{ fontFamily: 'Prompt, sans-serif' }}>
-            <ShieldCheck className="w-8 h-8 text-blue-600" />
-            ข้อมูลการแจ้งซ่อม
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและรับเครื่องคืน</p>
+        <div className="flex items-center gap-4">
+          <Link to="/repair" className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
+            <ArrowLeft size={24} />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+              <ShieldCheck className="w-8 h-8 text-blue-600" />
+              รายละเอียดแจ้งซ่อม
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">เลขที่เอกสาร: {data.id}</p>
+          </div>
         </div>
         <button
           onClick={exportPDF}
           disabled={exporting}
           className="flex items-center gap-2 bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-indigo-200 font-bold text-sm"
-          style={{ fontFamily: 'Prompt, sans-serif' }}
         >
           <Download size={18} />
           {exporting ? 'กำลังสร้าง...' : 'Export PDF'}
         </button>
       </div>
 
-      {/* ── Alert ── */}
-      {message && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-semibold ${
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
-        }`}>
-          {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-          {message.text}
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════
-          A4 FORM PREVIEW (also used for PDF export)
-      ══════════════════════════════════════════════ */}
+      {/* ── A4 VIEW PORT ── */}
       <div className="a4-preview">
         {/* Watermark */}
         <div className="a4-watermark">
@@ -388,7 +332,6 @@ export default function RepairEntry() {
         </div>
 
         <div className="a4-content">
-          {/* ── Header stripe ── */}
           <div className="a4-header-stripe">
             <div className="logo-box">
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
@@ -399,12 +342,11 @@ export default function RepairEntry() {
             </div>
           </div>
 
-          {/* ── Intro line ── */}
           <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
-            วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+            วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date(data.createdAt).toLocaleString('th-TH')}</strong>
           </p>
 
-          {/* ── Section 1: Equipment ── */}
+          {/* Section 1 */}
           <div className="section-title blue">
             <Barcode size={18} /> ข้อมูลตัวเครื่อง
           </div>
@@ -413,61 +355,27 @@ export default function RepairEntry() {
             <div className="a4-card">
               <div className="a4-card-inner">
                 <div className="label">เลขครุภัณฑ์ (Asset Number)</div>
-                <div className="a4-input-box">
-                  <input
-                    type="text"
-                    required
-                    value={formData.assetNumber}
-                    onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
-                    placeholder="เช่น 7440-006-1009/..-69"
-                  />
-                </div>
-                <button type="button" className="a4-scan-btn" onClick={() => setScanning('asset')}>
-                  <Camera size={14} /> สแกน QR/Barcode
-                </button>
+                <div className="a4-static-box">{data.assetNumber || '-'}</div>
               </div>
             </div>
 
             <div className="a4-card">
               <div className="a4-card-inner">
                 <div className="label">รุ่นของอุปกรณ์ (Model)</div>
-                <div className="a4-input-box">
-                  <input
-                    type="text"
-                    required
-                    value={formData.equipmentModel}
-                    onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
-                    placeholder="เช่น Acer X4690G"
-                  />
-                </div>
+                <div className="a4-static-box">{data.equipmentModel || '-'}</div>
               </div>
             </div>
 
             <div className="a4-card">
               <div className="a4-card-inner">
                 <div className="label">Serial Number (S/N)</div>
-                <div className="a4-input-box">
-                  <input
-                    type="text"
-                    required
-                    value={formData.serialNumber}
-                    onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
-                    placeholder="Serial Number"
-                  />
-                </div>
-                <button type="button" className="a4-scan-btn" onClick={() => setScanning('serial')}>
-                  <Camera size={14} /> สแกน QR/Barcode
-                </button>
+                <div className="a4-static-box">{data.serialNumber || '-'}</div>
               </div>
             </div>
 
             <div className="a4-card" style={{ padding: '4px' }}>
-              <div 
-                className={formData.isWarranty ? "a4-stock-guaranteed" : "a4-stock-expired"}
-                onClick={() => setFormData({ ...formData, isWarranty: !formData.isWarranty })}
-                title="คลิกเพื่อสลับสถานะการรับประกัน"
-              >
-                {formData.isWarranty ? (
+              <div className={data.isWarranty !== false ? "a4-stock-guaranteed" : "a4-stock-expired"}>
+                {data.isWarranty !== false ? (
                   <>
                     <ShieldCheck size={36} />
                     <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>STOCK อยู่ในประกัน</div>
@@ -482,21 +390,15 @@ export default function RepairEntry() {
             </div>
           </div>
 
-          {/* ── Section 2: Problem ── */}
+          {/* Section 2 */}
           <div className="section-title red">
             อาการเสีย / รายละเอียดปัญหา
           </div>
           <div className="a4-problem">
-            <textarea
-              required
-              rows={4}
-              value={formData.problemDescription}
-              onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
-              placeholder="ระบุอาการเสียหรือปัญหาที่พบ..."
-            />
+            {data.problemDescription || '-'}
           </div>
 
-          {/* ── Section 3: Signatures ── */}
+          {/* Section 3 */}
           <div className="section-title blue" style={{ marginTop: '10mm' }}>
             <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
           </div>
@@ -507,11 +409,11 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+                <div className="a4-sig-static">{data.reporterName || '-'}</div>
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+                <div className="a4-sig-static">{data.reportedDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -522,26 +424,26 @@ export default function RepairEntry() {
               <div className="sig-header">ผู้รับเครื่องซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <div className="a4-sig-static">{data.receiverName || '-'}</div>
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+                <div className="a4-sig-static">{data.receivedDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
 
-            {/* Staff receipt */}
+            {/* Staff Receipt */}
             <div className="a4-sig-card green">
               <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+                <div className="a4-sig-static">{data.staffReceiptName || '-'}</div>
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+                <div className="a4-sig-static">{data.staffReceiptDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -552,57 +454,25 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+                <div className="a4-sig-static">{data.returnerName || '-'}</div>
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+                <div className="a4-sig-static">{data.returnDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
             </div>
           </div>
 
-          <datalist id="officer-names-list">
-            <option value="จันทกานต์ จันทร์ตาใหม่" />
-            <option value="ฉันทวัฒน์ สุทธิพงษ์" />
-            <option value="ณรงค์ รวมสุข" />
-            <option value="ณัฐวุฒิ อินต๊ะผัด" />
-            <option value="ทรงกลด สิงห์สันต์" />
-            <option value="ธนากร ลุงหม่อง" />
-            <option value="บรรเจิด สลักพิศพักตร์" />
-            <option value="พัชชามาศ กาแก้ว" />
-            <option value="ภาณุพงศ์ เชื่อมชิต" />
-            <option value="มนตรี เครือซุย" />
-            <option value="รสริน อุทิศเวทศักดิ์" />
-            <option value="ศิวาพร ยอดเมือง" />
-            <option value="อณุศักดิ์ เวียงนาค" />
-            <option value="อาจารีย์ โสภากร" />
-          </datalist>
-
-          {/* ── Submit ── */}
-          <div style={{ display: 'flex', justifyItems: 'end', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
-            <button
-              type="button"
-              onClick={handleSubmit as any}
-              className="group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200"
-              style={{ fontFamily: 'Prompt, sans-serif' }}
-            >
-              บันทึกข้อมูลการแจ้งซ่อม
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
-            </button>
-          </div>
-
-          {/* ── Footer ── */}
+          {/* Footer */}
           <div className="a4-footer" style={{ marginTop: '6mm' }}>
             เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ Google Forms &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
           </div>
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════
-          HIDDEN DIV for PDF Export (cloned from above)
-      ═══════════════════════════════════════════════ */}
+      {/* ── PDF EXPORT DIV ── */}
       <div id="repair-pdf-root" style={{ fontFamily: 'Prompt, sans-serif' }}>
         <div style={{
           width: '794px',
@@ -663,7 +533,7 @@ export default function RepairEntry() {
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
                 <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
-                <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+                <div style={{ fontWeight: 400 }}>{new Date(data.createdAt).toLocaleString('th-TH')}</div>
               </div>
             </div>
 
@@ -676,22 +546,22 @@ export default function RepairEntry() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
                   <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>เลขครุภัณฑ์ (Asset Number)</div>
-                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.assetNumber || '-'}</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.assetNumber || '-'}</div>
                 </div>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
                   <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>รุ่นของอุปกรณ์ (Model)</div>
-                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.equipmentModel || '-'}</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.equipmentModel || '-'}</div>
                 </div>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
                   <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Serial Number (S/N)</div>
-                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.serialNumber || '-'}</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.serialNumber || '-'}</div>
                 </div>
                 <div style={
-                  formData.isWarranty 
+                  data.isWarranty !== false 
                   ? { background: 'linear-gradient(135deg, #eff6ff, #f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
                   : { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', border: '3px dashed #f87171', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
                 }>
-                  {formData.isWarranty ? (
+                  {data.isWarranty !== false ? (
                     <>
                       <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
                       <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>STOCK อยู่ในประกัน</div>
@@ -710,7 +580,7 @@ export default function RepairEntry() {
                 อาการเสีย / รายละเอียดปัญหา
               </div>
               <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '30px' }}>
-                <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{data.problemDescription || '-'}</div>
               </div>
 
               {/* Signatures */}
@@ -719,10 +589,10 @@ export default function RepairEntry() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {[
-                  { label: 'เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'ผู้รับเครื่องซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้รับเครื่องคืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
-                  { label: 'ผู้ส่งมอบเครื่องคืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง', name: data.reporterName, date: data.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'ผู้รับเครื่องซ่อม', name: data.receiverName, date: data.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้รับเครื่องคืน', name: data.staffReceiptName, date: data.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'ผู้ส่งมอบเครื่องคืน', name: data.returnerName, date: data.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
                 ].map((sig, i) => (
                   <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
@@ -750,25 +620,6 @@ export default function RepairEntry() {
           </div>
         </div>
       </div>
-
-      {/* ── Barcode Scanner Modal ── */}
-      {scanning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold text-slate-800 mb-4" style={{ fontFamily: 'Prompt, sans-serif' }}>
-              สแกน {scanning === 'asset' ? 'เลขครุภัณฑ์' : 'Serial Number'}
-            </h3>
-            <div id="reader" className="overflow-hidden rounded-2xl border-4 border-slate-100" />
-            <button
-              onClick={() => setScanning(null)}
-              className="mt-6 w-full py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors"
-              style={{ fontFamily: 'Prompt, sans-serif' }}
-            >
-              ยกเลิก
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
