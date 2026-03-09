@@ -495,7 +495,6 @@ export default function RepairEntry() {
           </div>
 
           <datalist id="officer-names-list">
-            <option value="Admin IT" />
             <option value="จันทกานต์ จันทร์ตาใหม่" />
             <option value="ฉันทวัฒน์ สุทธิพงษ์" />
             <option value="ณรงค์ รวมสุข" />
@@ -620,7 +619,7 @@ export default function RepairEntry() {
                 </div>
                 <div style={{ background: 'linear-gradient(135deg,#eff6ff,#f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }}>
                   <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
-                  <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock Guaranteed</div>
+                  <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>Stock อยู่ในประกัน</div>
                 </div>
               </div>
 
@@ -663,7 +662,7 @@ export default function RepairEntry() {
 
               {/* PDF Footer */}
               <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
-                เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+                เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ (Google Forms) &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
               </div>
             </div>
           </div>
