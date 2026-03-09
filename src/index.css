@@ -1,4 +1,23 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-900: #1e3a8a;
+}
 
 :root {
   /* Premium Design Tokens - Modern Neutral Palette */
@@ -21,6 +40,20 @@
   --border-subtle: rgba(0, 0, 0, 0.05);
 
   color-scheme: light;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
+}
+
+.dark {
+  --bg-main: #060a12;
+  --bg-sidebar: #02040a;
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #60a5fa;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  color-scheme: dark;
   color: var(--text-primary);
   background-color: var(--bg-main);
 

@@ -20,11 +20,14 @@ function PrivateRoute({ children }) {
   return currentUser ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 }
 
+import { ThemeProvider } from './contexts/ThemeContext';
+
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={
             <PrivateRoute>
@@ -69,7 +72,8 @@ function App() {
             </PrivateRoute>
           } />
         </Routes>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

@@ -16,6 +16,7 @@ import {
   Package
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
+import ThemeToggle from "./ThemeToggle";
 
 
 export default function Layout({ children }) {
@@ -56,13 +57,13 @@ export default function Layout({ children }) {
   ];
 
   const SidebarContent = ({ collapsible = false }) => (
-    <div className={`flex flex-col h-full bg-[#030712] text-white transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-white-[0.03] select-none ${collapsible && isCollapsed ? 'w-24' : 'w-72 shadow-[30px_0_70px_rgba(0,0,0,0.8)]'}`}>
+    <div className={`flex flex-col h-full bg-[#030712] dark:bg-[#02040a] text-white transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-white-[0.03] dark:border-white/[0.05] select-none ${collapsible && isCollapsed ? 'w-24' : 'w-72 shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.9)]'}`}>
       {/* Moving Glass Shine Effect */}
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full ${!isCollapsed ? 'animate-[shine_4s_infinite]' : ''} pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
-      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-blue-600/[0.08] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
-      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-indigo-700/[0.06] blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-blue-600/[0.08] dark:bg-blue-600/[0.12] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-indigo-700/[0.06] dark:bg-indigo-700/[0.1] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
       
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
@@ -106,15 +107,15 @@ export default function Layout({ children }) {
                 title={collapsible && isCollapsed ? item.name : ''}
                 className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                   isActive 
-                    ? "text-white bg-white/[0.04] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]" 
-                    : "text-slate-500 hover:text-slate-100"
+                    ? "text-white bg-white/[0.04] dark:bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-100 dark:hover:text-slate-200"
                 } ${collapsible && isCollapsed ? 'justify-center px-0 mx-1' : ''}`}
               >
                 {/* Icon Wrapper Circle */}
                 <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
                   isActive 
-                    ? "bg-[#1e293b] border-blue-500/50 shadow-[0_4px_15px_rgba(59,130,246,0.2)] scale-105" 
-                    : "bg-white/[0.02] border-white/[0.05] group-hover:bg-white/[0.06] group-hover:border-white/10 group-hover:scale-110"
+                    ? "bg-[#1e293b] dark:bg-blue-900/30 border-blue-500/50 shadow-[0_4px_15px_rgba(59,130,246,0.2)] dark:shadow-[0_4px_20px_rgba(59,130,246,0.3)] scale-105" 
+                    : "bg-white/[0.02] dark:bg-white/[0.03] border-white/[0.05] dark:border-white/[0.08] group-hover:bg-white/[0.06] dark:group-hover:bg-white/[0.08] group-hover:border-white/10 dark:group-hover:border-white/15 group-hover:scale-110"
                 }`}>
                   {/* Subtle Icon Glow */}
                   {isActive && (
@@ -145,7 +146,7 @@ export default function Layout({ children }) {
         </nav>
 
         {/* Elite Footer Section */}
-        <div className="mt-auto pt-6 border-t border-white/[0.06] space-y-5">
+        <div className="mt-auto pt-6 border-t border-white/[0.06] dark:border-white/[0.1] space-y-5">
           {currentUser && (
             <div className="space-y-5">
               <div className={`flex items-center gap-4 group/avatar transition-all duration-[600ms] ${collapsible && isCollapsed ? 'justify-center border border-white/5 p-2 rounded-2xl bg-white/[0.02]' : 'px-2'}`}>
@@ -187,7 +188,7 @@ export default function Layout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] flex overflow-x-hidden font-['Prompt']">
+    <div className="min-h-screen bg-[#fcfcfd] dark:bg-[#060a12] flex overflow-x-hidden font-['Prompt'] transition-colors duration-500">
       {/* Desktop Sidebar */}
       <aside 
         className={`hidden lg:block h-screen sticky top-0 shrink-0 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'w-24' : 'w-72'}`}
@@ -200,12 +201,12 @@ export default function Layout({ children }) {
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="relative w-80 max-w-[85vw] h-full shadow-2xl animate-in slide-in-from-left duration-300">
+          <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="relative w-80 max-w-[85vw] h-full shadow-[20px_0_50px_rgba(0,0,0,0.5)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)] animate-in slide-in-from-left duration-300">
             <SidebarContent />
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-4 right-[-50px] p-2 bg-slate-900 rounded-full text-white"
+              className="absolute top-4 right-[-50px] p-2 bg-slate-900 dark:bg-slate-800 rounded-full text-white"
             >
               <X size={24} />
             </button>
@@ -213,21 +214,30 @@ export default function Layout({ children }) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
+        
+        {/* Desktop Quick Header */}
+        <div className="hidden lg:flex h-20 items-center justify-end px-10 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500">
+           <ThemeToggle />
+        </div>
         {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
+        <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
           <div className="flex items-center gap-2">
             <div className="bg-transparent p-1 rounded-lg">
               <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="w-8 h-8 object-contain" />
             </div>
-            <span className="font-black text-slate-800 tracking-tight text-lg">STOCK</span>
+            <span className="font-black text-slate-800 dark:text-slate-200 tracking-tight text-lg">STOCK</span>
           </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
-          >
-            <Menu size={24} />
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </header>
 
         <main className="flex-grow p-4 lg:p-10 w-full max-w-[1720px] mx-auto transition-all duration-[600ms]">
@@ -236,9 +246,9 @@ export default function Layout({ children }) {
           </div>
         </main>
 
-        <footer className="py-6 px-10 border-t border-slate-200 text-slate-400 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/30 backdrop-blur-sm">
+        <footer className="py-6 px-10 border-t border-slate-200 dark:border-slate-800/50 text-slate-400 dark:text-slate-500 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/30 dark:bg-[#0f172a]/30 backdrop-blur-sm transition-colors duration-500">
           <p className="font-medium">&copy; {new Date().getFullYear()} ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
-          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-300">
+          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600">
             <span>Premium Dashboard Interface</span>
           </div>
         </footer>
