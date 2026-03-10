@@ -218,16 +218,16 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
         
         {/* Desktop Quick Header */}
-        <div className="hidden lg:flex h-20 items-center justify-end px-10 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500">
-           <ThemeToggle />
+        <div className="hidden lg:flex h-20 items-center justify-between px-10 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center">
+            <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-10 object-contain drop-shadow-sm transition-transform hover:scale-105 duration-300" />
+          </div>
+          <ThemeToggle />
         </div>
         {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500">
-          <div className="flex items-center gap-2">
-            <div className="bg-transparent p-1 rounded-lg">
-              <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="w-8 h-8 object-contain" />
-            </div>
-            <span className="font-black text-slate-800 dark:text-slate-200 tracking-tight text-lg">STOCK</span>
+        <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center">
+            <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-8 object-contain drop-shadow-sm" />
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
