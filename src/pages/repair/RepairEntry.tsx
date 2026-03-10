@@ -316,24 +316,10 @@ export default function RepairEntry() {
         });
         const text = result.data.text;
         
-        // หาวลี (token) ที่มีตัวเลขอยู่เยอะที่สุดก่อน เพื่อป้องกันการแยกคำผิดพลาด
-        const tokens = text.split(/\s+/);
-        let bestToken = '';
-        let maxDigits = 0;
-        for (const token of tokens) {
-          const digitCount = (token.match(/\d/g) || []).length;
-          if (digitCount > maxDigits) {
-            maxDigits = digitCount;
-            bestToken = token;
-          }
-        }
+        // ดึงเฉพาะตัวเลข ขีด (-) และสแลช (/) และลบตัวอักษรหรือช่องว่างอื่นๆทิ้งทั้งหมด
+        let extracted = text.replace(/[^\d\-\/]/g, '');
 
-        if (bestToken) {
-          // กรองเอาเฉพาะตัวเลข, เครื่องหมายลบ, เครื่องหมายสแลช จากกลุ่มคำที่ดีที่สุด
-          let extracted = bestToken.replace(/[^\d\-\/]/g, '');
-          extracted = extracted.replace(/^[\-\/]+|[\-\/]+$/g, '');
-
-          if (extracted.length > 0) {
+        if (extracted.length > 0) {
             if (scanning === 'asset') {
                 setFormData((prev) => ({ ...prev, assetNumber: extracted }));
             } else if (scanning === 'serial') {
@@ -341,9 +327,6 @@ export default function RepairEntry() {
             }
             setOcrResult('สำเร็จ');
             setMessage({ type: 'success', text: `อ่านค่าสำเร็จ: ${extracted}` });
-          } else {
-            setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
-          }
         } else {
             setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
         }
