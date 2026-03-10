@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
-import { Html5QrcodeScanner } from 'html5-qrcode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -254,6 +253,11 @@ export default function RepairEntry() {
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [exporting, setExporting] = useState(false);
+  
+  // OCR specific state
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrResult, setOcrResult] = useState('');
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
 
   // Inject premium CSS once
   useEffect(() => {
@@ -267,25 +271,94 @@ export default function RepairEntry() {
     return () => {};
   }, []);
 
-  useEffect(() => {
-    if (scanning) {
-      const scanner = new Html5QrcodeScanner(
-        'reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
-      scanner.render(
-        (decodedText) => {
-          if (scanning === 'asset') setFormData(prev => ({ ...prev, assetNumber: decodedText }));
-          else setFormData(prev => ({ ...prev, serialNumber: decodedText }));
-          scanner.clear();
-          setScanning(null);
-        },
-        () => {}
-      );
-      return () => { scanner.clear(); };
+  /* ── Photo capture + OCR for Asset matching ── */
+  const rotateToLandscape = (dataUrl: string): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img;
+        if (h > w) {
+          const canvas = document.createElement('canvas');
+          canvas.width = h;
+          canvas.height = w;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(h / 2, w / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.drawImage(img, -w / 2, -h / 2);
+            resolve(canvas.toDataURL('image/jpeg', 0.92));
+            return;
+          }
+        }
+        resolve(dataUrl);
+      };
+      img.src = dataUrl;
+    });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setScanning(null);
+      return;
     }
-  }, [scanning]);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const rawUrl = evt.target?.result as string;
+      const dataUrl = await rotateToLandscape(rawUrl);
+      
+      setOcrLoading(true);
+      setOcrResult('');
+      
+      try {
+        const Tesseract = (await import('tesseract.js')).default;
+        const result = await Tesseract.recognize(dataUrl, 'eng', {
+          logger: () => { },
+        });
+        const text = result.data.text;
+        
+        // หาวลี (token) ที่มีตัวเลขอยู่เยอะที่สุดก่อน เพื่อป้องกันการแยกคำผิดพลาด
+        const tokens = text.split(/\s+/);
+        let bestToken = '';
+        let maxDigits = 0;
+        for (const token of tokens) {
+          const digitCount = (token.match(/\d/g) || []).length;
+          if (digitCount > maxDigits) {
+            maxDigits = digitCount;
+            bestToken = token;
+          }
+        }
+
+        if (bestToken) {
+          // กรองเอาเฉพาะตัวเลข, เครื่องหมายลบ, เครื่องหมายสแลช จากกลุ่มคำที่ดีที่สุด
+          let extracted = bestToken.replace(/[^\d\-\/]/g, '');
+          extracted = extracted.replace(/^[\-\/]+|[\-\/]+$/g, '');
+
+          if (extracted.length > 0) {
+            if (scanning === 'asset') {
+                setFormData((prev) => ({ ...prev, assetNumber: extracted }));
+            } else if (scanning === 'serial') {
+                setFormData((prev) => ({ ...prev, serialNumber: extracted }));
+            }
+            setOcrResult('สำเร็จ');
+            setMessage({ type: 'success', text: `อ่านค่าสำเร็จ: ${extracted}` });
+          } else {
+            setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
+          }
+        } else {
+            setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
+        }
+      } catch (err) {
+        console.error('OCR error:', err);
+        setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการอ่านรูป (OCR)' });
+      } finally {
+        setOcrLoading(false);
+        setScanning(null);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -424,8 +497,8 @@ export default function RepairEntry() {
                     placeholder="เช่น 7440-006-1009/..-69"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => setScanning('asset')}>
-                  <Camera size={14} /> สแกน QR/Barcode
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
             </div>
@@ -457,8 +530,8 @@ export default function RepairEntry() {
                     placeholder="Serial Number"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => setScanning('serial')}>
-                  <Camera size={14} /> สแกน QR/Barcode
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
             </div>
@@ -753,24 +826,15 @@ export default function RepairEntry() {
         </div>
       </div>
 
-      {/* ── Barcode Scanner Modal ── */}
-      {scanning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold text-slate-800 mb-4" style={{ fontFamily: 'Prompt, sans-serif' }}>
-              สแกน {scanning === 'asset' ? 'เลขครุภัณฑ์' : 'Serial Number'}
-            </h3>
-            <div id="reader" className="overflow-hidden rounded-2xl border-4 border-slate-100" />
-            <button
-              onClick={() => setScanning(null)}
-              className="mt-6 w-full py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors"
-              style={{ fontFamily: 'Prompt, sans-serif' }}
-            >
-              ยกเลิก
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ── Native Camera Input ── */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={handlePhotoChange}
+      />
 
       {/* ── Bottom Actions ── */}
       <div className="mt-8 flex justify-end">
