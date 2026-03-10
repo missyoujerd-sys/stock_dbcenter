@@ -160,7 +160,7 @@ export default function Layout({ children }) {
                 </div>
                 {(!collapsible || !isCollapsed) && (
                   <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">Hello คุณ:</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">ยินดีต้อนรับ</p>
                     <p className="text-[14px] font-bold text-slate-200 truncate tracking-tight group-hover/avatar:text-white transition-colors duration-[300ms]">
                       {currentUser.email.split('@')[0]}
                     </p>

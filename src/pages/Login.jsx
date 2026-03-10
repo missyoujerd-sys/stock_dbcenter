@@ -36,12 +36,8 @@ export default function Login() {
         <div className="login-page">
             {/* Dimensional Background Text */}
             <div className="login-bg-text" aria-hidden="true">
-                <span className="login-bg-word login-bg-word--1">STOCK</span>
                 <span className="login-bg-word login-bg-word--2">NKP</span>
-                <span className="login-bg-word login-bg-word--3">HOSPITAL</span>
-                <span className="login-bg-word login-bg-word--4">SYSTEM</span>
-                <span className="login-bg-word login-bg-word--5">LOGIN</span>
-            </div>
+           </div>
 
             <div className="login-card">
                 <h4 className="login-title">ระบบจัดการ Stock</h4>

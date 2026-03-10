@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { 
   Barcode,
   ShieldCheck,
@@ -12,7 +12,7 @@ import { RepairRecord } from '../../types/repair';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const HOSPITAL_LOGO = '/nakornping-logo.png';
+const HOSPITAL_LOGO = '/cnkp-logo-best.png';
 
 const PREMIUM_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
@@ -212,9 +212,11 @@ const PREMIUM_CSS = `
 
 export default function RepairView() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [data, setData] = useState<RepairRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [autoExportTriggered, setAutoExportTriggered] = useState(false);
 
   useEffect(() => {
     const idName = 'repair-premium-css-view';
@@ -236,6 +238,19 @@ export default function RepairView() {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (!loading && data && !exporting && !autoExportTriggered) {
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams.get('action') === 'print') {
+        setAutoExportTriggered(true);
+        // Slightly delay the export to ensure styles are fully applied and fonts loaded
+        setTimeout(() => {
+          exportPDF();
+        }, 800);
+      }
+    }
+  }, [loading, data, location.search, exporting, autoExportTriggered]);
 
   const exportPDF = async () => {
     const el = document.getElementById('repair-pdf-root');
@@ -303,9 +318,6 @@ export default function RepairView() {
       {/* ── Page Header ── */}
       <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link to="/repair" className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
-            <ArrowLeft size={24} />
-          </Link>
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
               <ShieldCheck className="w-8 h-8 text-blue-600" />
@@ -619,6 +631,14 @@ export default function RepairView() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── Bottom Actions ── */}
+      <div className="mt-8 flex justify-end">
+        <Link to="/repair/dashboard" className="group flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-blue-200/50 font-bold text-base hover:-translate-y-1">
+          <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+          <span style={{ fontFamily: 'Prompt, sans-serif' }}>ย้อนกลับ</span>
+        </Link>
       </div>
     </div>
   );
