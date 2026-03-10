@@ -629,7 +629,6 @@ export default function IncomingStock() {
                                     ref={photoInputRef}
                                     type="file"
                                     accept="image/*"
-                                    capture="environment"
                                     style={{ display: 'none' }}
                                     onChange={handlePhotoChange}
                                 />
