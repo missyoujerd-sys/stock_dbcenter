@@ -240,6 +240,7 @@ export default function IncomingStock() {
         }
         localStorage.setItem(`saved_sig_${officerName.trim()}`, signatureData);
         alert(`บันทึกลายเซ็นของ ${officerName} เรียบร้อยแล้ว ระบบจะจดจำไว้ใช้งานครั้งต่อไป`);
+        window.location.reload();
     };
 
     const handleOfficerNameChange = (e) => {
