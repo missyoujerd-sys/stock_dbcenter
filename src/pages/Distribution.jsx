@@ -552,6 +552,21 @@ export default function Distribution() {
                         </tbody>
                     </table>
                 </div>
+
+                <div className="p-4 d-flex justify-content-between align-items-center" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <button
+                        type="button"
+                        className="inc-btn inc-btn--back"
+                        onClick={() => navigate('/')}
+                        style={{ margin: 0 }}
+                    >
+                        <FaHome className="inc-btn-icon" />
+                        <span>กลับเมนูหลัก</span>
+                    </button>
+                    <div>
+                        {/* Empty space for alignment if needed */}
+                    </div>
+                </div>
             </div>
 
             <ItemDetailModal
@@ -594,19 +609,6 @@ export default function Distribution() {
                     <Button variant="primary" onClick={handleDistribute}>ยืนยันจำหน่าย</Button>
                 </Modal.Footer>
             </Modal>
-
-            {/* Floating Back Button */}
-            <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 999 }}>
-                <Button
-                    variant="warning"
-                    className="logout-btn-custom border-warning text-dark px-4 shadow-lg"
-                    size="md"
-                    onClick={() => navigate('/')}
-                    style={{ borderRadius: '25px', fontWeight: 'bold' }}
-                >
-                    <FaHome className="me-2" /> กลับเมนูหลัก
-                </Button>
-            </div>
         </>
     );
 }

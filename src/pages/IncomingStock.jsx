@@ -684,7 +684,6 @@ export default function IncomingStock() {
                                                 list="officer-names-list"
                                             />
                                             <datalist id="officer-names-list">
-                                                <option value="Admin IT" />
                                                 <option value="จันทกานต์ จันทร์ตาใหม่" />
                                                 <option value="ฉันทวัฒน์ สุทธิพงษ์" />
                                                 <option value="ณรงค์ รวมสุข" />
