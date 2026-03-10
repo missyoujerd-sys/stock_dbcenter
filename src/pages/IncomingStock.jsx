@@ -229,6 +229,38 @@ export default function IncomingStock() {
         setSignatureData('');
     };
 
+    const saveSignatureLocally = () => {
+        if (!officerName.trim()) {
+            alert('กรุณาระบุชื่อเจ้าหน้าที่ก่อนบันทึกลายเซ็น');
+            return;
+        }
+        if (!signatureData) {
+            alert('กรุณาเซ็นชื่อก่อนบันทึก');
+            return;
+        }
+        localStorage.setItem(`saved_sig_${officerName.trim()}`, signatureData);
+        alert(`บันทึกลายเซ็นของ ${officerName} เรียบร้อยแล้ว ระบบจะจดจำไว้ใช้งานครั้งต่อไป`);
+    };
+
+    const handleOfficerNameChange = (e) => {
+        const val = e.target.value;
+        setOfficerName(val);
+        const savedSig = localStorage.getItem(`saved_sig_${val.trim()}`);
+        if (savedSig) {
+            setSignatureData(savedSig);
+            if (sigCanvasRef.current) {
+                const canvas = sigCanvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = savedSig;
+            }
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -638,10 +670,20 @@ export default function IncomingStock() {
                             <Col md={6}>
                                 <div className="inc-sig-card">
                                     {/* Header */}
-                                    <div className="inc-sig-card-header">
-                                        <span className="inc-media-label" style={{ width: 'auto', marginBottom: 0 }}>
-                                            <FaSignature className="me-2" />ลายเซ็นเจ้าหน้าที่
-                                        </span>
+                                    <div className="inc-sig-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div className="d-flex align-items-center gap-3">
+                                            <span className="inc-media-label" style={{ width: 'auto', marginBottom: 0 }}>
+                                                <FaSignature className="me-2" />ลายเซ็นเจ้าหน้าที่
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="btn btn-success btn-sm px-4 shadow-sm"
+                                                style={{ borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}
+                                                onClick={saveSignatureLocally}
+                                            >
+                                                <FaSave className="me-1" /> บันทึกลายเซ็น
+                                            </button>
+                                        </div>
                                         <button
                                             type="button"
                                             className="inc-sig-clear-btn"
@@ -679,7 +721,7 @@ export default function IncomingStock() {
                                                 type="text"
                                                 className="inc-sig-footer-input"
                                                 value={officerName}
-                                                onChange={(e) => setOfficerName(e.target.value)}
+                                                onChange={handleOfficerNameChange}
                                                 placeholder="ระบุชื่อ-นามสกุล"
                                                 list="officer-names-list"
                                             />
