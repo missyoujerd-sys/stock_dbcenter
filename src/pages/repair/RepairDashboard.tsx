@@ -6,7 +6,7 @@ import {
   Clock, 
   Database,
   Eye,
-  MoreVertical,
+  Printer,
   Plus,
   Trash2
 } from 'lucide-react';
@@ -235,9 +235,9 @@ export default function RepairDashboard() {
                             <Trash2 size={18} />
                           </button>
                         )}
-                        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="ตัวเลือกเพิ่มเติม">
-                          <MoreVertical size={18} />
-                        </button>
+                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="พิมพ์/ส่งออกเอกสาร">
+                          <Printer size={18} />
+                        </Link>
                       </div>
                     )}
                   </td>

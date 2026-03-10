@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Camera, 
   User, 
@@ -7,6 +8,7 @@ import {
   Download,
   Barcode,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
@@ -16,7 +18,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 // ---- Shared constants ----
-const HOSPITAL_LOGO = '/nakornping-logo.png';
+const HOSPITAL_LOGO = '/cnkp-logo-best.png';
 
 // ---- Premium styles injected once ----
 const PREMIUM_CSS = `
@@ -769,6 +771,14 @@ export default function RepairEntry() {
           </div>
         </div>
       )}
+
+      {/* ── Bottom Actions ── */}
+      <div className="mt-8 flex justify-end">
+        <Link to="/repair/dashboard" className="group flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-blue-200/50 font-bold text-base hover:-translate-y-1" style={{ fontFamily: 'Prompt, sans-serif' }}>
+          <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+          <span>ย้อนกลับ</span>
+        </Link>
+      </div>
     </div>
   );
 }
