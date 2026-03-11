@@ -92,6 +92,9 @@ export default function Login() {
                         LOGIN
                     </Button>
                 </Form>
+                <div className="login-footer-info">
+                    *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
+                </div>
             </div>
 
             {/* Error Popup Modal */}
