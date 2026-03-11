@@ -3071,4 +3071,11 @@ h6 {
     background: transparent !important;
     box-shadow: none !important;
   }
+  .qm-card-inner {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .qm-body {
+    text-align: center !important;
+  }
 }
