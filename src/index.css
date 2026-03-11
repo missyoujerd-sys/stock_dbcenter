@@ -3079,3 +3079,59 @@ h6 {
     text-align: center !important;
   }
 }
+
+/* ===================================================
+   Login Error Modal Styles
+   =================================================== */
+.login-error-modal .modal-content {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.login-error-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #ffc107;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.login-error-icon {
+  font-size: 2.5rem;
+  color: #ffc107;
+}
+
+.login-error-title {
+  color: #2b3a4a;
+  font-size: 1.5rem;
+}
+
+.login-error-message {
+  color: #475569;
+  font-size: 1.1rem;
+}
+
+.login-error-btn {
+  background-color: #2188ff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.login-error-btn:hover {
+  background-color: #0069d9 !important;
+  transform: translateY(-1px);
+}
+
+.login-footer-info {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
