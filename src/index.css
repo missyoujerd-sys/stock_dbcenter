@@ -12,7 +12,7 @@
   --color-slate-700: #334155;
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
-  
+
   --color-blue-400: #60a5fa;
   --color-blue-500: #3b82f6;
   --color-blue-600: #2563eb;
@@ -231,12 +231,12 @@ body {
 
 /* Fix browser autofill background color */
 .login-input:-webkit-autofill,
-.login-input:-webkit-autofill:hover, 
-.login-input:-webkit-autofill:focus, 
-.login-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
-    -webkit-text-fill-color: white !important;
-    transition: background-color 5000s ease-in-out 0s;
+.login-input:-webkit-autofill:hover,
+.login-input:-webkit-autofill:focus,
+.login-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .login-input:focus {
@@ -393,7 +393,11 @@ h6 {
   gap: 0;
   padding: 0;
   border-radius: 46px; /* Highly rounded / circular feel */
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.6)
+  );
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.8);
@@ -412,7 +416,7 @@ h6 {
 
 .qm-card:hover {
   transform: perspective(1000px) translateY(-10px) rotateX(3deg) scale(1.03);
-  box-shadow: 
+  box-shadow:
     15px 25px 50px rgba(0, 0, 0, 0.12),
     -15px -25px 50px rgba(255, 255, 255, 1),
     0 0 40px rgba(255, 255, 255, 0.6),
@@ -441,7 +445,7 @@ h6 {
   padding: 0.9rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.01);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.01);
 }
 
 .qm-footer-text {
@@ -3044,5 +3048,27 @@ h6 {
   35%,
   100% {
     transform: translateX(250%) skewX(-15deg);
+  }
+}
+
+/* ===================================================
+   Print Styles for qm-card
+   =================================================== */
+@media print {
+  .qm-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  .qm-card::before,
+  .qm-card::after {
+    display: none !important;
+  }
+  .qm-illu-wrap {
+    display: none !important;
+  }
+  .qm-card-footer {
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }
