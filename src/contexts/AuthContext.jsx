@@ -20,9 +20,32 @@ export function AuthProvider({ children }) {
         return signOut(auth);
     }
 
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin_2, setIsAdmin_2] = useState(false);
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
+            
+            if (user) {
+                const env = import.meta.env;
+                const email = user.email;
+                const admin1 = env.VITE_ADMIN_EMAIL1;
+                const admin2 = env.VITE_ADMIN_EMAIL2;
+                const admin3 = env.VITE_ADMIN_EMAIL3;
+                const admin4 = env.VITE_ADMIN_EMAIL4;
+                const admin5 = env.VITE_ADMIN_EMAIL5;
+
+                const isAdm2 = email === admin1 || email === admin2;
+                const isAdm = isAdm2 || email === admin3 || email === admin4 || email === admin5;
+
+                setIsAdmin(isAdm);
+                setIsAdmin_2(isAdm2);
+            } else {
+                setIsAdmin(false);
+                setIsAdmin_2(false);
+            }
+            
             setLoading(false);
         });
 
@@ -31,6 +54,8 @@ export function AuthProvider({ children }) {
 
     const value = {
         currentUser,
+        isAdmin,
+        isAdmin_2,
         login,
         logout
     };
