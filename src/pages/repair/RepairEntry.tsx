@@ -253,7 +253,7 @@ export default function RepairEntry() {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin_2 } = useAuth();
+  const { isAdmin_2, isAdmin_3 } = useAuth();
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [exporting, setExporting] = useState(false);
