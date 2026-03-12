@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdmin_2, setIsAdmin_2] = useState(false);
+    const [isAdmin_3, setIsAdmin_3] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -42,14 +43,17 @@ export function AuthProvider({ children }) {
                 const admin10 = env.VITE_ADMIN_EMAIL10;
 
                 const isAdm2 = email === admin1 || email === admin2;
+                const isAdm3 = email === admin5 || email === admin6;
                 const adminEmails = [admin1, admin2, admin3, admin4, admin5, admin6, admin7, admin8, admin9, admin10];
                 const isAdm = adminEmails.some(adm => adm && email === adm);
 
                 setIsAdmin(isAdm);
                 setIsAdmin_2(isAdm2);
+                setIsAdmin_3(isAdm3);
             } else {
                 setIsAdmin(false);
                 setIsAdmin_2(false);
+                setIsAdmin_3(false);
             }
             
             setLoading(false);
@@ -62,6 +66,7 @@ export function AuthProvider({ children }) {
         currentUser,
         isAdmin,
         isAdmin_2,
+        isAdmin_3,
         login,
         logout
     };

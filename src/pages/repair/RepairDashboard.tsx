@@ -22,7 +22,7 @@ export default function RepairDashboard() {
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
   const [repairs, setRepairs] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser, isAdmin, isAdmin_2 } = useAuth();
+  const { currentUser, isAdmin, isAdmin_2, isAdmin_3 } = useAuth();
 
   useEffect(() => {
     const fetchRepairs = async () => {
@@ -175,7 +175,7 @@ export default function RepairDashboard() {
                 <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">สถานะ</th>
                 <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">ผู้รับซ่อม / วันที่</th>
                 <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider text-right">
-                  {(isAdmin || isAdmin_2) && "จัดการ"}
+                  {(isAdmin || isAdmin_2 || isAdmin_3) && "จัดการ"}
                 </th>
               </tr>
             </thead>
@@ -214,7 +214,7 @@ export default function RepairDashboard() {
                     </div>
                   </td>
                   <td className="px-6 py-5 text-right">
-                    {(isAdmin || isAdmin_2) && (
+                    {(isAdmin || isAdmin_2 || isAdmin_3) && (
                       <div className="flex items-center justify-end gap-1">
                         <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ดูรายละเอียด">
                           <Eye size={18} />
