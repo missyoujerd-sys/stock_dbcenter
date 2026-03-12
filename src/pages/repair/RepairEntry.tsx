@@ -524,6 +524,7 @@ export default function RepairEntry() {
                     type="text"
                     required
                     readOnly={!isAdmin_2}
+                    value={formData.assetNumber}
                     onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
                     placeholder="เช่น 7440-006-1009/..-69"
                   />
@@ -542,6 +543,7 @@ export default function RepairEntry() {
                     type="text"
                     required
                     readOnly={!isAdmin_2}
+                    value={formData.equipmentModel}
                     onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
                     placeholder="เช่น Acer X4690G"
                   />
@@ -557,6 +559,7 @@ export default function RepairEntry() {
                     type="text"
                     required
                     readOnly={!isAdmin_2}
+                    value={formData.serialNumber}
                     onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
                     placeholder="Serial Number"
                   />
