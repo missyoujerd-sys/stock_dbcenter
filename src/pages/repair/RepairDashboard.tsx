@@ -8,22 +8,21 @@ import {
   Eye,
   Printer,
   Plus,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-export let isAdmin = false;
-let isAdmin_2 = false;
 
 export default function RepairDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
   const [repairs, setRepairs] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin, isAdmin_2 } = useAuth();
 
   useEffect(() => {
     const fetchRepairs = async () => {
@@ -41,12 +40,6 @@ export default function RepairDashboard() {
     fetchRepairs();
   }, []);
 
-  // @ts-ignore
-  const env = import.meta.env;
-  isAdmin = currentUser?.email === env.VITE_ADMIN_EMAIL1|| currentUser?.email === env.VITE_ADMIN_EMAIL2 || currentUser?.email === env.VITE_ADMIN_EMAIL3 || currentUser?.email === env.VITE_ADMIN_EMAIL4 || currentUser?.email === env.VITE_ADMIN_EMAIL5; //สิทธิ์เฉพาะดูกลับสถานะไม่ได้
-   
-  isAdmin_2 = currentUser?.email === env.VITE_ADMIN_EMAIL1|| currentUser?.email === env.VITE_ADMIN_EMAIL2 ;//แก้ไขไม่ให้ลบได้
-  console.log(isAdmin_2);
 
   const stats = useMemo(() => {
     return {
@@ -226,6 +219,11 @@ export default function RepairDashboard() {
                         <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ดูรายละเอียด">
                           <Eye size={18} />
                         </Link>
+                        {isAdmin_2 && (
+                          <Link to={`/repair/edit/${repair.id}`} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="แก้ไขข้อมูล">
+                            <Pencil size={18} />
+                          </Link>
+                        )}
                         {isAdmin_2 && (
                           <button 
                             onClick={() => handleDelete(repair.id)}

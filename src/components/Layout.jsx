@@ -20,23 +20,12 @@ import ThemeToggle from "./ThemeToggle";
 
 
 export default function Layout({ children }) {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
-  const isAdmin =
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL1||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL2 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL3 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL4 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL5 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL6 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL7 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL8 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL9 ||
-    currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL10;
 
   async function handleLogout() {
     try {
@@ -249,7 +238,7 @@ export default function Layout({ children }) {
         <footer className="py-6 px-10 border-t border-slate-200 dark:border-slate-800/50 text-slate-400 dark:text-slate-500 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/30 dark:bg-[#0f172a]/30 backdrop-blur-sm transition-colors duration-500">
           <p className="font-medium">&copy; {new Date().getFullYear()} ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
           <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600">
-            <span>Premium Dashboard Interface</span>
+            <span>Dashboard ห้องซ่อมบำรุงคอมพิวเตอร์</span>
           </div>
         </footer>
       </div>

@@ -66,6 +66,11 @@ function App() {
               <RepairView />
             </PrivateRoute>
           } />
+          <Route path="/repair/edit/:id" element={
+            <PrivateRoute>
+              <RepairEntry />
+            </PrivateRoute>
+          } />
           <Route path="/repair/dashboard" element={
             <PrivateRoute>
               <RepairDashboard />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   Camera, 
   User, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
+import { useAuth } from '../../contexts/AuthContext';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -250,9 +251,13 @@ export default function RepairEntry() {
     status: 'pending'
   });
 
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isAdmin_2 } = useAuth();
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   // OCR specific state
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -270,6 +275,29 @@ export default function RepairEntry() {
     }
     return () => {};
   }, []);
+
+  // Fetch data if editing
+  useEffect(() => {
+    const fetchRepair = async () => {
+      if (id) {
+        setLoading(true);
+        try {
+          const data = await RepairService.getRepairById(id);
+          if (data) {
+            setFormData(data);
+          } else {
+            setMessage({ type: 'error', text: 'ไม่พบข้อมูลที่ต้องการแก้ไข' });
+          }
+        } catch (error) {
+          console.error("Error fetching repair:", error);
+          setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล' });
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchRepair();
+  }, [id]);
 
   /* ── Photo capture + OCR for Asset matching ── */
   const rotateToLandscape = (dataUrl: string): Promise<string> =>
@@ -345,9 +373,21 @@ export default function RepairEntry() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin_2) {
+      setMessage({ type: 'error', text: 'คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขข้อมูล' });
+      return;
+    }
+
     try {
-      await RepairService.saveRepair(formData);
-      setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จแล้ว' });
+      if (id) {
+        await RepairService.updateRepair(id, formData);
+        setMessage({ type: 'success', text: 'อัปเดตข้อมูลสำเร็จแล้ว' });
+      } else {
+        await RepairService.saveRepair(formData);
+        setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จแล้ว' });
+        // After saving new, might want to redirect or clear form
+        setTimeout(() => navigate('/repair/dashboard'), 1500);
+      }
     } catch {
       setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
     }
@@ -402,6 +442,14 @@ export default function RepairEntry() {
   // ─── Input helpers ───
   const inp = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-[Prompt] text-slate-700 placeholder:text-slate-300';
   const inpWhite = 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none font-[Prompt] text-slate-700';
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
@@ -475,12 +523,12 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    value={formData.assetNumber}
+                    readOnly={!isAdmin_2}
                     onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
                     placeholder="เช่น 7440-006-1009/..-69"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading}>
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin_2}>
                   <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
@@ -493,7 +541,7 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    value={formData.equipmentModel}
+                    readOnly={!isAdmin_2}
                     onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
                     placeholder="เช่น Acer X4690G"
                   />
@@ -508,12 +556,12 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    value={formData.serialNumber}
+                    readOnly={!isAdmin_2}
                     onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
                     placeholder="Serial Number"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading}>
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin_2}>
                   <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
@@ -522,8 +570,8 @@ export default function RepairEntry() {
             <div className="a4-card" style={{ padding: '4px' }}>
               <div 
                 className={formData.isWarranty ? "a4-stock-guaranteed" : "a4-stock-expired"}
-                onClick={() => setFormData({ ...formData, isWarranty: !formData.isWarranty })}
-                title="คลิกเพื่อสลับสถานะการรับประกัน"
+                onClick={() => isAdmin_2 && setFormData({ ...formData, isWarranty: !formData.isWarranty })}
+                title={isAdmin_2 ? "คลิกเพื่อสลับสถานะการรับประกัน" : ""}
               >
                 {formData.isWarranty ? (
                   <>
@@ -547,6 +595,7 @@ export default function RepairEntry() {
           <div className="a4-problem">
             <textarea
               required
+              readOnly={!isAdmin_2}
               rows={4}
               value={formData.problemDescription}
               onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
@@ -565,11 +614,11 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin_2} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -580,11 +629,11 @@ export default function RepairEntry() {
               <div className="sig-header">ผู้รับเครื่องซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin_2} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -595,11 +644,11 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -610,11 +659,11 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -643,10 +692,11 @@ export default function RepairEntry() {
             <button
               type="button"
               onClick={handleSubmit as any}
-              className="group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200"
+              disabled={!isAdmin_2}
+              className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin_2 ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{ fontFamily: 'Prompt, sans-serif' }}
             >
-              บันทึกข้อมูลการแจ้งซ่อม
+              {id ? 'บันทึกการแก้ไขข้อมูล' : 'บันทึกข้อมูลการแจ้งซ่อม'}
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
             </button>
           </div>
