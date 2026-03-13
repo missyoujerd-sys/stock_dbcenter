@@ -184,8 +184,8 @@ export default function Inventory() {
                                 <th>S/N</th>
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
-                                 {isAdmin && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
-                                 {isAdmin && <th style={{ width: '100px' }}>คืนสถานะ</th>}
+                                 {isAdmin_2 && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
+                                 {isAdmin_2 && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -220,7 +220,7 @@ export default function Inventory() {
                                             {stock.status}
                                         </span>
                                     </td>
-                                     {isAdmin && (
+                                     {isAdmin_2 && (
                                          <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                              <button
                                                  className="inv-del-btn"
@@ -231,7 +231,7 @@ export default function Inventory() {
                                              </button>
                                          </td>
                                      )}
-                                     {isAdmin && (
+                                     {isAdmin_2 && (
                                          <td onClick={(e) => e.stopPropagation()}>
                                              {stock.status === 'จำหน่าย' && (
                                                  <button
