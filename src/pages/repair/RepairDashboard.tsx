@@ -228,7 +228,7 @@ export default function RepairDashboard() {
                             <Pencil size={18} />
                           </Link>
                         )}
-                        {isAdmin && (
+                        {isAdmin_2 && (
                           <button 
                             onClick={() => handleDelete(repair.id)}
                             className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
