@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
         return signOut(auth);
     }
 
+    const [isAdmin, setIsAdmin] = useState(false);
     const [isAdmin_2, setIsAdmin_2] = useState(false);
 
     useEffect(() => {
