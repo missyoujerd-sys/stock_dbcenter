@@ -20,7 +20,7 @@ import ThemeToggle from "./ThemeToggle";
 
 
 export default function Layout({ children }) {
-  const { currentUser, isAdmin, isAdmin_3, logout } = useAuth();
+  const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
