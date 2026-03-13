@@ -14,7 +14,7 @@ export default function Inventory() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
-    const { currentUser, isAdmin, isAdmin_2, isAdmin_3 } = useAuth();
+    const { currentUser, isAdmin, isAdmin_2 } = useAuth();
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     useEffect(() => {
@@ -93,6 +93,10 @@ export default function Inventory() {
 
     const handleDelete = async (e, stockId) => {
         e.stopPropagation();
+        if (!isAdmin_2) {
+            alert('ลบได้เฉพาะ Admin เท่านั้น');
+            return;
+        }
         if (!window.confirm('ต้องการลบรายการนี้ออกจากระบบ?')) return;
         try {
             await remove(ref(db, `stocks/${stockId}`));
@@ -104,6 +108,10 @@ export default function Inventory() {
 
     const handleRevertStatus = async (e, stockId) => {
         e.stopPropagation();
+        if (!isAdmin_2) {
+            alert('คืนสถานะได้เฉพาะ Admin เท่านั้น');
+            return;
+        }
         if (!window.confirm('ต้องการคืนสถานะรายการนี้เป็น "รับเข้า" ?')) return;
         try {
             await update(ref(db, `stocks/${stockId}`), {
@@ -176,8 +184,8 @@ export default function Inventory() {
                                 <th>S/N</th>
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
-                                 {isAdmin_2 && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
-                                 {isAdmin_2 && <th style={{ width: '100px' }}>คืนสถานะ</th>}
+                                 {isAdmin && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
+                                 {isAdmin && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -212,31 +220,31 @@ export default function Inventory() {
                                             {stock.status}
                                         </span>
                                     </td>
-                                    {isAdmin_2 && (
-                                        <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-                                            <button
-                                                className="inv-del-btn"
-                                                title="ลบรายการนี้"
-                                                onClick={(e) => handleDelete(e, stock.id)}
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </td>
-                                    )}
-                                    {isAdmin_2 && (
-                                        <td onClick={(e) => e.stopPropagation()}>
-                                            {stock.status === 'จำหน่าย' && (
-                                                <button
-                                                    className="inv-del-btn"
-                                                    title="คืนสถานะเป็น รับเข้า"
-                                                    style={{ color: '#4fc3f7', borderColor: 'rgba(79,195,247,0.3)' }}
-                                                    onClick={(e) => handleRevertStatus(e, stock.id)}
-                                                >
-                                                    <FaUndo />
-                                                </button>
-                                            )}
-                                        </td>
-                                    )}
+                                     {isAdmin && (
+                                         <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                             <button
+                                                 className="inv-del-btn"
+                                                 title="ลบรายการนี้"
+                                                 onClick={(e) => handleDelete(e, stock.id)}
+                                             >
+                                                 <FaTrash />
+                                             </button>
+                                         </td>
+                                     )}
+                                     {isAdmin && (
+                                         <td onClick={(e) => e.stopPropagation()}>
+                                             {stock.status === 'จำหน่าย' && (
+                                                 <button
+                                                     className="inv-del-btn"
+                                                     title="คืนสถานะเป็น รับเข้า"
+                                                     style={{ color: '#4fc3f7', borderColor: 'rgba(79,195,247,0.3)' }}
+                                                     onClick={(e) => handleRevertStatus(e, stock.id)}
+                                                 >
+                                                     <FaUndo />
+                                                 </button>
+                                             )}
+                                         </td>
+                                     )}
                                 </tr>
                             ))}
                         </tbody>

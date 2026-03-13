@@ -253,7 +253,7 @@ export default function RepairEntry() {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin_2, isAdmin_3 } = useAuth();
+  const { isAdmin, isAdmin_2 } = useAuth();
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -373,7 +373,7 @@ export default function RepairEntry() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAdmin_2) {
+    if (!isAdmin) {
       setMessage({ type: 'error', text: 'คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขข้อมูล' });
       return;
     }
@@ -523,13 +523,13 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    readOnly={!isAdmin_2}
+                    readOnly={!isAdmin}
                     value={formData.assetNumber}
                     onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
                     placeholder="เช่น 7440-006-1009/..-69"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin_2}>
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin}>
                   <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
@@ -542,7 +542,7 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    readOnly={!isAdmin_2}
+                    readOnly={!isAdmin}
                     value={formData.equipmentModel}
                     onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
                     placeholder="เช่น Acer X4690G"
@@ -558,13 +558,13 @@ export default function RepairEntry() {
                   <input
                     type="text"
                     required
-                    readOnly={!isAdmin_2}
+                    readOnly={!isAdmin}
                     value={formData.serialNumber}
                     onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
                     placeholder="Serial Number"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin_2}>
+                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin}>
                   <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
@@ -573,8 +573,8 @@ export default function RepairEntry() {
             <div className="a4-card" style={{ padding: '4px' }}>
               <div 
                 className={formData.isWarranty ? "a4-stock-guaranteed" : "a4-stock-expired"}
-                onClick={() => isAdmin_2 && setFormData({ ...formData, isWarranty: !formData.isWarranty })}
-                title={isAdmin_2 ? "คลิกเพื่อสลับสถานะการรับประกัน" : ""}
+                onClick={() => isAdmin && setFormData({ ...formData, isWarranty: !formData.isWarranty })}
+                title={isAdmin ? "คลิกเพื่อสลับสถานะการรับประกัน" : ""}
               >
                 {formData.isWarranty ? (
                   <>
@@ -598,7 +598,7 @@ export default function RepairEntry() {
           <div className="a4-problem">
             <textarea
               required
-              readOnly={!isAdmin_2}
+              readOnly={!isAdmin}
               rows={4}
               value={formData.problemDescription}
               onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
@@ -617,11 +617,11 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" readOnly={!isAdmin_2} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -632,11 +632,11 @@ export default function RepairEntry() {
               <div className="sig-header">ผู้รับเครื่องซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" required className="a4-sig-input" readOnly={!isAdmin_2} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -647,11 +647,11 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -662,11 +662,11 @@ export default function RepairEntry() {
               <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+                <input type="text" placeholder="ชื่อ-นามุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
-                <input type="date" className="a4-sig-input" readOnly={!isAdmin_2} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
               <div className="a4-sig-line-label">ลายมือชื่อ</div>
@@ -695,8 +695,8 @@ export default function RepairEntry() {
             <button
               type="button"
               onClick={handleSubmit as any}
-              disabled={!isAdmin_2}
-              className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin_2 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!isAdmin}
+              className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{ fontFamily: 'Prompt, sans-serif' }}
             >
               {id ? 'บันทึกการแก้ไขข้อมูล' : 'บันทึกข้อมูลการแจ้งซ่อม'}
