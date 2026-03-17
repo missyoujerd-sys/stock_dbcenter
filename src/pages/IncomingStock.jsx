@@ -671,18 +671,17 @@ export default function IncomingStock() {
                             <Col md={6}>
                                 <div className="inc-sig-card">
                                     {/* Header */}
-                                    <div className="inc-sig-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span className="inc-media-label" style={{ width: 'auto', marginBottom: 0 }}>
-                                                <FaSignature className="me-2" />ลายเซ็นเจ้าหน้าที่
-                                            </span>
+                                    <div className="inc-sig-card-header">
+                                        <div className="sig-action-group">
+                                            <div className="btn-sig-staff">
+                                                <FaSignature /> ลายเซ็นเจ้าหน้าที่
+                                            </div>
                                             <button
                                                 type="button"
-                                                className="btn btn-success btn-sm px-4 shadow-sm"
-                                                style={{ borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}
+                                                className="btn-sig-add"
                                                 onClick={saveSignatureLocally}
                                             >
-                                                <FaSave className="me-1" /> บันทึกลายเซ็น
+                                                <FaSave className="btn-icon-pulse" /> เพิ่มลายเซ็น
                                             </button>
                                         </div>
                                         <button
