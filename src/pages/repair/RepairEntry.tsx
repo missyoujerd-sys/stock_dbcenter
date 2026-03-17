@@ -9,8 +9,7 @@ import {
   Barcode,
   ArrowRight,
   ArrowLeft,
-  ShieldCheck,
-  ShieldX
+  ShieldCheck
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
@@ -111,77 +110,56 @@ const PREMIUM_CSS = `
 .a4-scan-btn { font-size: 11px; color: #3b82f6; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; margin-top: 8px; }
 
 .a4-stock-guaranteed {
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  border: 2px solid #bbf7d0;
-  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+  border: 2px dashed #bfdbfe;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
+  min-height: 100px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
 }
 .a4-stock-guaranteed:hover {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.15);
+  background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
 }
-.a4-stock-guaranteed svg { color: #22c55e; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(34, 197, 94, 0.2)); }
+.a4-stock-guaranteed svg { color: #60a5fa; margin-bottom: 8px; }
 .a4-stock-guaranteed .text { 
-  font-size: 18px; 
-  color: #166534; 
-  font-weight: 900; 
-  letter-spacing: 1px; 
+  font-size: 11px; 
+  color: #60a5fa; 
+  font-weight: 800; 
+  letter-spacing: 2px; 
   text-transform: uppercase; 
-}
-.a4-stock-guaranteed .hint {
-  font-size: 12px;
-  color: #15803d;
-  font-weight: 700;
-  margin-top: 6px;
-  opacity: 0.9;
 }
 
 .a4-stock-expired {
-  background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-  border: 2px solid #fecdd3;
-  border-radius: 16px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 3px dashed #f87171;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
+  min-height: 100px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.08);
 }
 .a4-stock-expired:hover {
-  background: linear-gradient(135deg, #ffe4e6, #fecdd3);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.15);
+  background: linear-gradient(135deg, #fee2e2, #fca5a5);
+  border-style: solid;
 }
-.a4-stock-expired svg { color: #e11d48; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(225, 29, 72, 0.2)); }
+.a4-stock-expired svg { color: #ef4444; margin-bottom: 8px; }
 .a4-stock-expired .text { 
-  font-size: 18px; 
-  color: #9f1239; 
-  font-weight: 900; 
+  font-size: 14px; 
+  color: #ef4444; 
+  font-weight: 800; 
   letter-spacing: 1px; 
   text-transform: uppercase; 
-}
-.a4-stock-expired .hint {
-  font-size: 12px;
-  color: #be123c;
-  font-weight: 700;
-  margin-top: 6px;
-  opacity: 0.9;
 }
 
 /* Problem box */
@@ -600,15 +578,13 @@ export default function RepairEntry() {
               >
                 {formData.isWarranty ? (
                   <>
-                    <ShieldCheck size={52} />
-                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อยู่ในประกัน</div>
-                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                    <ShieldCheck size={36} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>STOCK อยู่ในประกัน</div>
                   </>
                 ) : (
                   <>
-                    <ShieldX size={52} />
+                    <ShieldCheck size={36} />
                     <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>หมดประกัน</div>
-                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
                   </>
                 )}
               </div>
@@ -823,20 +799,18 @@ export default function RepairEntry() {
                 </div>
                 <div style={
                   formData.isWarranty 
-                  ? { background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '2px solid #bbf7d0', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
-                  : { background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)', border: '2px solid #fecdd3', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
+                  ? { background: 'linear-gradient(135deg, #eff6ff, #f0f9ff)', border: '2px dashed #bfdbfe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
+                  : { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', border: '3px dashed #f87171', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100px' }
                 }>
                   {formData.isWarranty ? (
                     <>
-                      <ShieldCheck size={42} color="#22c55e" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '18px', color: '#166534', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อยู่ในประกัน</div>
-                      <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                      <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>STOCK อยู่ในประกัน</div>
                     </>
                   ) : (
                     <>
-                      <ShieldX size={42} color="#e11d48" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '18px', color: '#9f1239', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>หมดประกัน</div>
-                      <div style={{ fontSize: '11px', color: '#be123c', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                      <ShieldCheck size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>หมดประกัน</div>
                     </>
                   )}
                 </div>
