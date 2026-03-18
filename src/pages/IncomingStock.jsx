@@ -678,11 +678,20 @@ export default function IncomingStock() {
                                             </span>
                                             <button
                                                 type="button"
-                                                className="btn btn-success btn-sm px-4 shadow-sm"
-                                                style={{ borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}
+                                                className="btn btn-success shadow-sm"
+                                                style={{ 
+                                                    borderRadius: '20px', 
+                                                    fontWeight: '700', 
+                                                    fontSize: '0.73rem',
+                                                    padding: '0.26rem 0.9rem',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.42rem',
+                                                    letterSpacing: '1.1px'
+                                                }}
                                                 onClick={saveSignatureLocally}
                                             >
-                                                <FaSave className="me-1" /> บันทึกลายเซ็น
+                                                <FaSave /> เพิ่มลายเซ็น
                                             </button>
                                         </div>
                                         <button
