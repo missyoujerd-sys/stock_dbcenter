@@ -612,7 +612,7 @@ export default function IncomingStock() {
                             {/* Photo capture */}
                             <Col md={6}>
                                 <div className="inc-media-label">
-                                    <FaCamera className="me-2" /> ให้ถ่ายรูปได้เฉพาะเลขครุภัณฑ์/ยี่ห้อ เท่านั้น
+                                    <FaCamera className="me-2" /> เลือกหมวดหมู่ก่อนเสมอและค่อยถ่ายรูปเลขครุภัณฑ์
                                 </div>
                                 <div
                                     className="inc-photo-box"
@@ -681,8 +681,8 @@ export default function IncomingStock() {
                                                 className="btn btn-success shadow-sm"
                                                 style={{ 
                                                     borderRadius: '20px', 
-                                                    fontWeight: '700', 
-                                                    fontSize: '0.73rem',
+                                                    fontWeight: '400', 
+                                                    fontSize: '0.83rem',
                                                     padding: '0.26rem 0.9rem',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
