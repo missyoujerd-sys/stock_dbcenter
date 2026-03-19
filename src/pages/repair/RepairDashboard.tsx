@@ -9,7 +9,8 @@ import {
   Printer,
   Plus,
   Trash2,
-  Pencil
+  Pencil,
+  ArrowLeft
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
@@ -93,21 +94,43 @@ export default function RepairDashboard() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Dashboard งานซ่อม</h1>
-          <p className="text-slate-500">ติดตามสถานะและประวัติการซ่อมบำรุงคอมพิวเตอร์</p>
-        </div>
-        <Link 
-          to="/repair/entry"
-          className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl transition-all shadow-xl shadow-slate-200"
-        >
-          <Plus size={20} />
-          เพิ่มรายการซ่อมใหม่
-        </Link>
+    <div className="p-4 md:p-8 relative min-h-screen overflow-hidden">
+      {/* Premium Background Decorative Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute top-[20%] right-[-5%] w-[30%] h-[30%] bg-indigo-400/10 blur-[100px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[40%] bg-slate-400/5 blur-[130px] rounded-full"></div>
       </div>
+
+      <div className="relative z-10 space-y-8">
+        {/* Back Button and Header */}
+        <div>
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-800 transition-all mb-6 group font-bold"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:bg-slate-50 transition-all">
+              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            </div>
+            <span className="text-sm uppercase tracking-[0.2em] font-black">Back to Menu</span>
+          </Link>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                Dashboard <span className="text-blue-600">งานซ่อม</span>
+              </h1>
+              <p className="text-slate-500 font-medium">ติดตามสถานะและประวัติการซ่อมบำรุงคอมพิวเตอร์อย่างเป็นระบบ</p>
+            </div>
+            <Link 
+              to="/repair/entry"
+              className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl transition-all shadow-2xl shadow-slate-200 group font-bold"
+            >
+              <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+              เพิ่มรายการซ่อมใหม่
+            </Link>
+          </div>
+        </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -259,6 +282,7 @@ export default function RepairDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );
