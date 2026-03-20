@@ -45,8 +45,8 @@ export default function RepairDashboard() {
   const stats = useMemo(() => {
     return {
       total: repairs.length,
-      repairing: repairs.filter(r => r.status === 'repairing' || r.status === 'pending').length,
-      completed: repairs.filter(r => r.status === 'completed' || r.status === 'returned').length,
+      repairing: repairs.filter(r => r.status === 'การซ่อมแซม' || r.status === 'รอดำเนินการ').length,
+      completed: repairs.filter(r => r.status === 'สมบูรณ์' || r.status === 'กลับมาแล้ว').length,
     };
   }, [repairs]);
 
@@ -80,15 +80,37 @@ export default function RepairDashboard() {
   };
 
   const getStatusBadge = (status: RepairStatus) => {
-    const styles = {
-      pending: 'bg-amber-100 text-amber-700 border-amber-200',
-      repairing: 'bg-blue-100 text-blue-700 border-blue-200',
-      completed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      returned: 'bg-slate-100 text-slate-700 border-slate-200',
+    // กำหนดค่าสไตล์สำหรับแต่ละสถานะ
+    const styles: Record<string, string> = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-200/60 shadow-inner',
+      repairing: 'bg-blue-50 text-blue-700 border-blue-200/60 shadow-inner',
+      completed: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 shadow-inner',
+      returned: 'bg-slate-50 text-slate-600 border-slate-200/60 shadow-inner',
     };
+    
+    const dotColors: Record<string, string> = {
+      pending: 'bg-amber-500',
+      repairing: 'bg-blue-500',
+      completed: 'bg-emerald-500',
+      returned: 'bg-slate-400',
+    };
+
+    const labels: Record<string, string> = {
+      pending: 'รอดำเนินการตรวจสอบ',
+      repairing: 'อยู่ระหว่างดำเนินการซ่อม',
+      completed: 'ซ่อมบำรุงเสร็จสิ้น',
+      returned: 'ส่งคืนอุปกรณ์เรียบร้อยแล้ว',
+    };
+
+    // ใช้ fallback เป็นค่าว่างหากไม่พบสถานะ (เพื่อป้องกัน runtime error แม้ TS จะดักไว้แล้ว)
+    const currentStyle = styles[status] || styles.pending;
+    const currentDot = dotColors[status] || dotColors.pending;
+    const currentLabel = labels[status] || labels.pending;
+
     return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${styles[status]}`}>
-        {status.toUpperCase()}
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border tracking-tight shadow-sm transition-all hover:brightness-95 ${currentStyle}`}>
+        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentDot}`} />
+        {currentLabel}
       </span>
     );
   };
@@ -112,22 +134,22 @@ export default function RepairDashboard() {
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:bg-slate-50 transition-all">
               <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             </div>
-            <span className="text-sm uppercase tracking-[0.2em] font-black">Back to Menu</span>
+            <span className="text-sm uppercase tracking-[0.2em] font-black">ย้อนกลับสู่หน้าหลัก</span>
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                Dashboard <span className="text-blue-600">งานซ่อม</span>
+                ระบบบริหารจัดการ <span className="text-blue-600">งานซ่อมบำรุง</span>
               </h1>
-              <p className="text-slate-500 font-medium">ติดตามสถานะและประวัติการซ่อมบำรุงคอมพิวเตอร์อย่างเป็นระบบ</p>
+              <p className="text-slate-500 font-medium">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
             </div>
             <Link 
               to="/repair/entry"
               className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl transition-all shadow-2xl shadow-slate-200 group font-bold"
             >
               <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
-              เพิ่มรายการซ่อมใหม่
+              เพิ่มรายการแจ้งซ่อมใหม่
             </Link>
           </div>
         </div>
@@ -139,7 +161,7 @@ export default function RepairDashboard() {
             <Database size={28} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">รายการทั้งหมด</p>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">จำนวนรายการทั้งหมด</p>
             <h3 className="text-3xl font-black text-slate-800">{stats.total}</h3>
           </div>
         </div>
@@ -148,7 +170,7 @@ export default function RepairDashboard() {
             <Clock size={28} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">กำลังดำเนินการ</p>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">อยู่ระหว่างดำเนินการ</p>
             <h3 className="text-3xl font-black text-slate-800">{stats.repairing}</h3>
           </div>
         </div>
@@ -157,7 +179,7 @@ export default function RepairDashboard() {
             <CheckCircle size={28} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">ซ่อมเสร็จสิ้น</p>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">ดำเนินการเสร็จสิ้น</p>
             <h3 className="text-3xl font-black text-slate-800">{stats.completed}</h3>
           </div>
         </div>
@@ -169,7 +191,7 @@ export default function RepairDashboard() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
-            placeholder="ค้นหา รุ่น, เลขครุภัณฑ์, หรือ Serial Number..."
+            placeholder="ค้นหาตามรุ่น, หมายเลขครุภัณฑ์ หรือหมายเลขซีเรียล..."
             className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
@@ -182,11 +204,11 @@ export default function RepairDashboard() {
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as any)}
           >
-            <option value="all">สถานะทั้งหมด</option>
-            <option value="pending">รอดำเนินการ</option>
-            <option value="repairing">กำลังดำเนินการ</option>
-            <option value="completed">ซ่อมเสร็จสิ้น</option>
-            <option value="returned">ส่งกลับ</option>
+            <option value="all">แสดงสถานะทั้งหมด</option>
+            <option value="pending">รอดำเนินการตรวจสอบ</option>
+            <option value="repairing">อยู่ระหว่างดำเนินการซ่อม</option>
+            <option value="completed">ซ่อมบำรุงเสร็จสิ้น</option>
+            <option value="returned">ส่งคืนอุปกรณ์เรียบร้อยแล้ว</option>
           </select>
         </div>
       </div>
@@ -197,12 +219,12 @@ export default function RepairDashboard() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">อุปกรณ์ / เลขครุภัณฑ์</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">อาการเสีย</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">สถานะ</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">ผู้รับซ่อม / วันที่</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">รายละเอียดอุปกรณ์ / หมายเลขครุภัณฑ์</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">รายละเอียดอาการเสีย / ข้อขัดข้อง</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">สถานะการดำเนินการ</th>
+                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">เจ้าหน้าที่รับซ่อม / วันที่รับรายการ</th>
                 <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider text-right">
-                  {isAdmin && "จัดการ"}
+                  {isAdmin && "การจัดการ"}
                 </th>
               </tr>
             </thead>
@@ -212,7 +234,7 @@ export default function RepairDashboard() {
                   <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                      <p className="text-sm font-bold text-slate-400 animate-pulse">กำลังโหลดข้อมูล...</p>
+                      <p className="text-sm font-bold text-slate-400 animate-pulse">กำลังประมวลผลข้อมูล...</p>
                     </div>
                   </td>
                 </tr>
@@ -243,11 +265,11 @@ export default function RepairDashboard() {
                   <td className="px-6 py-5 text-right">
                     {isAdmin && (
                       <div className="flex items-center justify-end gap-1">
-                        <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ดูรายละเอียด">
+                        <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ตรวจสอบรายละเอียด">
                           <Eye size={18} />
                         </Link>
                         {isAdmin && (
-                          <Link to={`/repair/edit/${repair.id}`} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="แก้ไขข้อมูล">
+                          <Link to={`/repair/edit/${repair.id}`} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="แก้ไขข้อมูลรายการ">
                             <Pencil size={18} />
                           </Link>
                         )}
@@ -255,12 +277,12 @@ export default function RepairDashboard() {
                           <button 
                             onClick={() => handleDelete(repair.id)}
                             className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                            title="ลบข้อมูล"
+                            title="ลบข้อมูลรายการ"
                           >
                             <Trash2 size={18} />
                           </button>
                         )}
-                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="พิมพ์/ส่งออกเอกสาร">
+                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="พิมพ์/ส่งออกเอกสารราชการ">
                           <Printer size={18} />
                         </Link>
                       </div>
@@ -274,7 +296,7 @@ export default function RepairDashboard() {
                       <div className="p-6 bg-slate-50 rounded-full text-slate-200">
                         <Database size={64} />
                       </div>
-                      <p className="text-lg font-bold text-slate-400">ไม่พบรายการซ่อม</p>
+                      <p className="text-lg font-bold text-slate-400">ไม่พบข้อมูลรายการซ่อมในระบบ</p>
                     </div>
                   </td>
                 </tr>
