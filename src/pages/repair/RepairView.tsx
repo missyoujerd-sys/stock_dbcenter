@@ -307,8 +307,8 @@ export default function RepairView() {
   if (!data) {
     return (
       <div className="flex flex-col justify-center items-center h-screen gap-4 text-slate-500 font-['Prompt']">
-        <h2 className="text-2xl font-bold">ไม่พบข้อมูลการแจ้งซ่อม</h2>
-        <Link to="/repair" className="text-blue-600 hover:underline">กลับไปหน้ารายการแจ้งซ่อม</Link>
+        <h2 className="text-2xl font-bold">ไม่พบข้อมูลรายละเอียดการแจ้งซ่อมในระบบ</h2>
+        <Link to="/repair" className="text-blue-600 hover:underline">ย้อนกลับสู่ระบบบริหารจัดการหลัก</Link>
       </div>
     );
   }
@@ -321,9 +321,9 @@ export default function RepairView() {
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
               <ShieldCheck className="w-8 h-8 text-blue-600" />
-              รายละเอียดแจ้งซ่อม
+              รายละเอียดข้อมูลการแจ้งซ่อมบำรุงอุปกรณ์
             </h1>
-            <p className="text-slate-500 mt-1 text-sm">เลขที่เอกสาร: {data.id}</p>
+            <p className="text-slate-500 mt-1 text-sm">หมายเลขการอ้างอิงเอกสาร: {data.id}</p>
           </div>
         </div>
         <button
@@ -332,7 +332,7 @@ export default function RepairView() {
           className="flex items-center gap-2 bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-indigo-200 font-bold text-sm"
         >
           <Download size={18} />
-          {exporting ? 'กำลังสร้าง...' : 'Export PDF'}
+          {exporting ? 'กำลังประมวลผล...' : 'พิมพ์เอกสารการซ่อม (PDF)'}
         </button>
       </div>
 
@@ -349,13 +349,13 @@ export default function RepairView() {
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
             </div>
             <div className="a4-header-title">
-              <h1>เอกสารบันทึกการแจ้งซ่อม</h1>
-              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</p>
+              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</h1>
+              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Management System)</p>
             </div>
           </div>
 
           <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
-            วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date(data.createdAt).toLocaleString('th-TH')}</strong>
+            วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date(data.createdAt).toLocaleString('th-TH')}</strong>
           </p>
 
           {/* Section 1 */}
@@ -366,21 +366,21 @@ export default function RepairView() {
           <div className="a4-info-grid">
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">เลขครุภัณฑ์ (Asset Number)</div>
+                <div className="label">หมายเลขครุภัณฑ์ (Asset Number)</div>
                 <div className="a4-static-box">{data.assetNumber || '-'}</div>
               </div>
             </div>
 
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">รุ่นของอุปกรณ์ (Model)</div>
+                <div className="label">รุ่น/รูปแบบอุปกรณ์ (Model)</div>
                 <div className="a4-static-box">{data.equipmentModel || '-'}</div>
               </div>
             </div>
 
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">Serial Number (S/N)</div>
+                <div className="label">หมายเลขซีเรียล (Serial Number)</div>
                 <div className="a4-static-box">{data.serialNumber || '-'}</div>
               </div>
             </div>
@@ -390,12 +390,12 @@ export default function RepairView() {
                 {data.isWarranty !== false ? (
                   <>
                     <ShieldCheck size={36} />
-                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>STOCK อยู่ในประกัน</div>
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
                   </>
                 ) : (
                   <>
                     <ShieldCheck size={36} />
-                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>หมดประกัน</div>
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
                   </>
                 )}
               </div>
@@ -418,7 +418,7 @@ export default function RepairView() {
           <div className="a4-sig-grid">
             {/* Reporter */}
             <div className="a4-sig-card blue">
-              <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
+              <div className="sig-header">เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
                 <div className="a4-sig-static">{data.reporterName || '-'}</div>
@@ -428,12 +428,12 @@ export default function RepairView() {
                 <div className="a4-sig-static">{data.reportedDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Receiver */}
             <div className="a4-sig-card blue">
-              <div className="sig-header">ผู้รับเครื่องซ่อม</div>
+              <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
                 <div className="a4-sig-static">{data.receiverName || '-'}</div>
@@ -443,12 +443,12 @@ export default function RepairView() {
                 <div className="a4-sig-static">{data.receivedDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Staff Receipt */}
             <div className="a4-sig-card green">
-              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
                 <div className="a4-sig-static">{data.staffReceiptName || '-'}</div>
@@ -458,12 +458,12 @@ export default function RepairView() {
                 <div className="a4-sig-static">{data.staffReceiptDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Returner */}
             <div className="a4-sig-card green">
-              <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ:</div>
                 <div className="a4-sig-static">{data.returnerName || '-'}</div>
@@ -473,13 +473,13 @@ export default function RepairView() {
                 <div className="a4-sig-static">{data.returnDate || '-'}</div>
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
           </div>
 
           {/* Footer */}
           <div className="a4-footer" style={{ marginTop: '6mm' }}>
-            เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ Google Forms &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+            เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
           </div>
         </div>
       </div>
@@ -540,11 +540,11 @@ export default function RepairView() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>เอกสารบันทึกการแจ้งซ่อม</div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Management System)</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
-                <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
+                <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
                 <div style={{ fontWeight: 400 }}>{new Date(data.createdAt).toLocaleString('th-TH')}</div>
               </div>
             </div>
@@ -553,19 +553,19 @@ export default function RepairView() {
 
               {/* Info grid */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Barcode size={18} /> ข้อมูลตัวเครื่อง
+                <Barcode size={18} /> รายละเอียดข้อมูลอุปกรณ์
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>เลขครุภัณฑ์ (Asset Number)</div>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>หมายเลขครุภัณฑ์ (Asset Number)</div>
                   <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.assetNumber || '-'}</div>
                 </div>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>รุ่นของอุปกรณ์ (Model)</div>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>รุ่น/รูปแบบอุปกรณ์ (Model)</div>
                   <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.equipmentModel || '-'}</div>
                 </div>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Serial Number (S/N)</div>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>หมายเลขซีเรียล (Serial Number)</div>
                   <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{data.serialNumber || '-'}</div>
                 </div>
                 <div style={
@@ -576,12 +576,12 @@ export default function RepairView() {
                   {data.isWarranty !== false ? (
                     <>
                       <ShieldCheck size={36} color="#60a5fa" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>STOCK อยู่ในประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
                     </>
                   ) : (
                     <>
                       <ShieldCheck size={36} color="#ef4444" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>หมดประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
                     </>
                   )}
                 </div>
@@ -589,7 +589,7 @@ export default function RepairView() {
 
               {/* Problem */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-                อาการเสีย / รายละเอียดปัญหา
+                รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
               </div>
               <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '30px' }}>
                 <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{data.problemDescription || '-'}</div>
@@ -597,14 +597,14 @@ export default function RepairView() {
 
               {/* Signatures */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
+                <User size={18} /> รายละเอียดผู้รับผิดชอบและลงนาม
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {[
-                  { label: 'เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง', name: data.reporterName, date: data.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'ผู้รับเครื่องซ่อม', name: data.receiverName, date: data.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้รับเครื่องคืน', name: data.staffReceiptName, date: data.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
-                  { label: 'ผู้ส่งมอบเครื่องคืน', name: data.returnerName, date: data.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: data.reporterName, date: data.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: data.receiverName, date: data.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: data.staffReceiptName, date: data.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: data.returnerName, date: data.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
                 ].map((sig, i) => (
                   <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
@@ -618,7 +618,7 @@ export default function RepairView() {
                     </div>
                     <div style={{ marginTop: 'auto' }}>
                       <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px' }} />
-                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>ลายมือชื่อ</div>
+                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ)......................................................................</div>
                     </div>
                   </div>
                 ))}
@@ -626,7 +626,7 @@ export default function RepairView() {
 
               {/* PDF Footer */}
               <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
-                เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ (Google Forms) &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+                เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
               </div>
             </div>
           </div>

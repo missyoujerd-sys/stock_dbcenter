@@ -270,7 +270,7 @@ export default function RepairEntry() {
     returnerName: '',
     returnDate: '',
     isWarranty: true,
-    status: 'pending'
+    status: 'รอดำเนินการ'
   });
 
   const { id } = useParams<{ id: string }>();
@@ -481,9 +481,9 @@ export default function RepairEntry() {
         <div>
           <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2" style={{ fontFamily: 'Prompt, sans-serif' }}>
             <ShieldCheck className="w-8 h-8 text-blue-600" />
-            ข้อมูลการแจ้งซ่อม
+            ข้อมูลการแจ้งซ่อมบำรุง
           </h1>
-          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและรับเครื่องคืน</p>
+          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและติดตามการรับคืนเครื่องคอมพิวเตอร์อย่างเป็นระบบ</p>
         </div>
         <button
           onClick={exportPDF}
@@ -492,7 +492,7 @@ export default function RepairEntry() {
           style={{ fontFamily: 'Prompt, sans-serif' }}
         >
           <Download size={18} />
-          {exporting ? 'กำลังสร้าง...' : 'Export PDF'}
+          {exporting ? 'กำลังประมวลผล...' : 'พิมพ์เอกสารการซ่อม (PDF)'}
         </button>
       </div>
 
@@ -522,14 +522,14 @@ export default function RepairEntry() {
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
             </div>
             <div className="a4-header-title">
-              <h1>เอกสารบันทึกการแจ้งซ่อม</h1>
-              <p>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</p>
+              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</h1>
+              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Repair Management)</p>
             </div>
           </div>
 
           {/* ── Intro line ── */}
           <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
-            วันที่สร้างเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+            วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
           </p>
 
           {/* ── Section 1: Equipment ── */}
@@ -540,7 +540,7 @@ export default function RepairEntry() {
           <div className="a4-info-grid">
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">เลขครุภัณฑ์ (Asset Number)</div>
+                <div className="label">หมายเลขครุภัณฑ์ (Asset Number)</div>
                 <div className="a4-input-box">
                   <input
                     type="text"
@@ -548,7 +548,7 @@ export default function RepairEntry() {
                     readOnly={!isAdmin}
                     value={formData.assetNumber}
                     onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
-                    placeholder="เช่น 7440-006-1009/..-69"
+                    placeholder="ระบุหมายเลขครุภัณฑ์ เช่น 7440-006-1009/..."
                   />
                 </div>
                 <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin}>
@@ -559,7 +559,7 @@ export default function RepairEntry() {
 
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">รุ่นของอุปกรณ์ (Model)</div>
+                <div className="label">รุ่น/รูปแบบอุปกรณ์ (Model)</div>
                 <div className="a4-input-box">
                   <input
                     type="text"
@@ -567,7 +567,7 @@ export default function RepairEntry() {
                     readOnly={!isAdmin}
                     value={formData.equipmentModel}
                     onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
-                    placeholder="เช่น Acer X4690G"
+                    placeholder="ระบุรุ่นอุปกรณ์ เช่น Acer X4690G"
                   />
                 </div>
               </div>
@@ -575,7 +575,7 @@ export default function RepairEntry() {
 
             <div className="a4-card">
               <div className="a4-card-inner">
-                <div className="label">Serial Number (S/N)</div>
+                <div className="label">หมายเลขซีเรียล (Serial Number)</div>
                 <div className="a4-input-box">
                   <input
                     type="text"
@@ -601,14 +601,14 @@ export default function RepairEntry() {
                 {formData.isWarranty ? (
                   <>
                     <ShieldCheck size={52} />
-                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อยู่ในประกัน</div>
-                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
                   </>
                 ) : (
                   <>
                     <ShieldX size={52} />
-                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>หมดประกัน</div>
-                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
                   </>
                 )}
               </div>
@@ -638,62 +638,62 @@ export default function RepairEntry() {
           <div className="a4-sig-grid">
             {/* Reporter */}
             <div className="a4-sig-card blue">
-              <div className="sig-header">เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง</div>
+              <div className="sig-header">เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์</div>
               <div className="a4-sig-row">
-                <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้แจ้ง" className="a4-sig-input" readOnly={!isAdmin} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Receiver */}
             <div className="a4-sig-card blue">
-              <div className="sig-header">ผู้รับเครื่องซ่อม</div>
+              <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
               <div className="a4-sig-row">
-                <div className="k">ชื่อ:</div>
-                <input type="text" required placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Staff receipt */}
             <div className="a4-sig-card green">
-              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับเครื่องคืน</div>
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน</div>
               <div className="a4-sig-row">
-                <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามสกุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้รับคืน" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
 
             {/* Returner */}
             <div className="a4-sig-card green">
-              <div className="sig-header" style={{ color: '#22c55e' }}>ผู้ส่งมอบเครื่องคืน</div>
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน</div>
               <div className="a4-sig-row">
-                <div className="k">ชื่อ:</div>
-                <input type="text" placeholder="ชื่อ-นามุล" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้ส่งมอบ" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
               </div>
               <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">ลายมือชื่อ</div>
+              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
             </div>
           </div>
 
@@ -723,14 +723,14 @@ export default function RepairEntry() {
               className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{ fontFamily: 'Prompt, sans-serif' }}
             >
-              {id ? 'บันทึกการแก้ไขข้อมูล' : 'บันทึกข้อมูลการแจ้งซ่อม'}
+              {id ? 'ยืนยันการบันทึกแก้ไขข้อมูล' : 'ยืนยันการบันทึกแจ้งซ่อม'}
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
             </button>
           </div>
 
           {/* ── Footer ── */}
           <div className="a4-footer" style={{ marginTop: '6mm' }}>
-            เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ Google Forms &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+            เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
           </div>
         </div>
       </div>
@@ -793,11 +793,11 @@ export default function RepairEntry() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>เอกสารบันทึกการแจ้งซ่อม</div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · Stock Guaranteed System Google Forms</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Repair Management)</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
-                <div style={{ fontWeight: 700 }}>วันที่สร้างเอกสาร</div>
+                <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
                 <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
               </div>
             </div>
@@ -806,7 +806,7 @@ export default function RepairEntry() {
 
               {/* Info grid */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Barcode size={18} /> ข้อมูลตัวเครื่อง
+                <Barcode size={18} /> รายละเอียดข้อมูลอุปกรณ์
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
@@ -829,14 +829,14 @@ export default function RepairEntry() {
                   {formData.isWarranty ? (
                     <>
                       <ShieldCheck size={42} color="#22c55e" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '18px', color: '#166534', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อยู่ในประกัน</div>
-                      <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                      <div style={{ fontSize: '18px', color: '#166534', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์อยู่ในความคุ้มครอง)</div>
                     </>
                   ) : (
                     <>
                       <ShieldX size={42} color="#e11d48" style={{ marginBottom: '8px' }} />
-                      <div style={{ fontSize: '18px', color: '#9f1239', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>หมดประกัน</div>
-                      <div style={{ fontSize: '11px', color: '#be123c', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>ปุ่มนี้สามารถกดเลือกสถานะได้</div>
+                      <div style={{ fontSize: '18px', color: '#9f1239', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#be123c', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์สิ้นสุดการรับประกัน)</div>
                     </>
                   )}
                 </div>
@@ -844,7 +844,7 @@ export default function RepairEntry() {
 
               {/* Problem */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-                อาการเสีย / รายละเอียดปัญหา
+                รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
               </div>
               <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '30px' }}>
                 <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
@@ -852,14 +852,14 @@ export default function RepairEntry() {
 
               {/* Signatures */}
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
+                <User size={18} /> รายละเอียดผู้รับผิดชอบและลงนาม
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {[
-                  { label: 'เจ้าหน้าที่แจ้งซ่อม / ผู้ส่งเครื่อง', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'ผู้รับเครื่องซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้รับเครื่องคืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
-                  { label: 'ผู้ส่งมอบเครื่องคืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
                 ].map((sig, i) => (
                   <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
@@ -873,7 +873,7 @@ export default function RepairEntry() {
                     </div>
                     <div style={{ marginTop: 'auto' }}>
                       <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px' }} />
-                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>ลายมือชื่อ</div>
+                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ)......................................................................</div>
                     </div>
                   </div>
                 ))}
@@ -881,7 +881,7 @@ export default function RepairEntry() {
 
               {/* PDF Footer */}
               <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
-                เอกสารนี้สร้างขึ้นโดยระบบอัตโนมัติ (Google Forms) &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+                เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
               </div>
             </div>
           </div>

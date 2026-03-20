@@ -1,4 +1,4 @@
-export type RepairStatus = 'pending' | 'repairing' | 'completed' | 'returned';
+export type RepairStatus = 'รอดำเนินการ' | 'การซ่อมแซม' | 'สมบูรณ์' | 'กลับมาแล้ว';
 
 export interface RepairRecord {
   id: string;
