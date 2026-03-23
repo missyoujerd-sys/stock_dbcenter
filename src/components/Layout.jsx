@@ -13,7 +13,9 @@ import {
   Menu,
   X,
   User,
-  Package
+  Package,
+  Eye,
+  Activity
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -208,15 +210,54 @@ export default function Layout({ children }) {
         
         {/* Desktop Quick Header */}
         <div className="hidden lg:flex h-20 items-center justify-between px-10 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center">
+          <div className="flex items-center gap-6">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-10 object-contain drop-shadow-sm transition-transform hover:scale-105 duration-300" />
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
+            <span className="hidden md:inline-block text-[22px] font-[900] bg-gradient-to-r from-rose-600 to-rose-900 dark:from-rose-400 dark:to-rose-700 bg-clip-text text-transparent font-['Prompt'] tracking-tight drop-shadow-sm">
+              ห้องซ่อมบำรุงคอมพิวเตอร์
+            </span>
+            
+            {/* Online Status Section */}
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
+            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+              <div className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+              </div>
+              <span className="text-[13px] font-bold text-slate-600 dark:text-slate-300 font-['Prompt'] tracking-tight">สถานะออนไลน์</span>
+            </div>
+
+            {/* View Count Section */}
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
+            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+              <div className="bg-blue-500/10 p-1 rounded-md">
+                <Eye size={16} className="text-blue-500" />
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">ยอดดูวันนี้</span>
+                <span className="text-[14px] font-black text-slate-700 dark:text-slate-200 font-mono tracking-tight">1,284</span>
+              </div>
+            </div>
           </div>
           <ThemeToggle />
         </div>
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center">
-            <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-8 object-contain drop-shadow-sm" />
+          <div className="flex flex-col">
+            <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-7 object-contain drop-shadow-sm mb-0.5" />
+            <span className="text-[10px] font-black bg-gradient-to-r from-rose-500 to-rose-800 dark:from-rose-400 dark:to-rose-600 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none">
+              ห้องซ่อมบำรุงคอมพิวเตอร์
+            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-[8px] font-bold text-green-600 dark:text-green-400 font-['Prompt']">ONLINE</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                <Eye size={8} className="text-blue-500" />
+                <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 font-mono">1.2K</span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
