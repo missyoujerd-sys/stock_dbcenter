@@ -217,29 +217,48 @@ export default function Layout({ children }) {
               ห้องซ่อมบำรุงคอมพิวเตอร์
             </span>
             
-            {/* Online Status Section */}
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
-            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm">
-              <div className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-              </div>
-              <span className="text-[13px] font-bold text-slate-600 dark:text-slate-300 font-['Prompt'] tracking-tight">สถานะออนไลน์</span>
-            </div>
-
             {/* View Count Section */}
             <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
-            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm">
-              <div className="bg-blue-500/10 p-1 rounded-md">
+            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm transition-all hover:bg-slate-100 dark:hover:bg-slate-800">
+              <div className="bg-blue-500/10 p-1.5 rounded-lg border border-blue-500/20 shadow-sm">
                 <Eye size={16} className="text-blue-500" />
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">ยอดดูวันนี้</span>
-                <span className="text-[14px] font-black text-slate-700 dark:text-slate-200 font-mono tracking-tight">1,284</span>
+                <span className="text-[14px] font-[800] text-slate-700 dark:text-slate-200 font-mono tracking-tight">1,284</span>
               </div>
             </div>
+
+            {/* Online Status Section */}
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
+            <div className="hidden xl:flex items-center gap-3 px-4 py-2 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm transition-all hover:shadow-md">
+              <div className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.8)] border-2 border-white/30"></span>
+              </div>
+              <span className="text-[14px] font-black text-slate-700 dark:text-slate-200 font-['Prompt'] tracking-tight">สถานะออนไลน์</span>
+            </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-5">
+            {currentUser && (
+              <div className="hidden sm:flex items-center gap-3.5 px-5 py-2 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 shadow-sm transition-all hover:shadow-md hover:border-slate-300/50 dark:hover:border-white/10 group">
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur-[4px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center border border-white/20 shadow-lg text-white">
+                    <User size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-[#0f172a] rounded-full"></div>
+                </div>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-0.5">ADMIN USER</span>
+                  <span className="text-[15px] font-[800] text-slate-800 dark:text-white font-['Prompt'] tracking-tight">
+                    {currentUser.email.split('@')[0]}
+                  </span>
+                </div>
+              </div>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
@@ -249,17 +268,22 @@ export default function Layout({ children }) {
               ห้องซ่อมบำรุงคอมพิวเตอร์
             </span>
             <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-[8px] font-bold text-green-600 dark:text-green-400 font-['Prompt']">ONLINE</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm transition-all active:scale-95">
+                <Eye size={10} className="text-blue-500" />
+                <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">1.2K</span>
               </div>
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                <Eye size={8} className="text-blue-500" />
-                <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 font-mono">1.2K</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                <span className="text-[9px] font-black text-green-600 dark:text-green-400 font-['Prompt'] tracking-wider">ONLINE</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {currentUser && (
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <User size={18} className="text-slate-600 dark:text-slate-300" />
+              </div>
+            )}
             <ThemeToggle />
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
