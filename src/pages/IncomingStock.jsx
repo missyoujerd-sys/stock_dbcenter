@@ -10,6 +10,8 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { th, enUS } from 'date-fns/locale';
 import { format } from 'date-fns';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList, FaCamera, FaSignature, FaTrash, FaEraser } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
@@ -262,6 +264,88 @@ export default function IncomingStock() {
         }
     };
 
+    const generateExcelLabel = async (stockData) => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Label');
+
+        // Page Setup for Zebra Sticker (4" x 3")
+        worksheet.pageSetup = {
+            paperSize: 256,
+            orientation: 'landscape',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 1,
+            margins: { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0, footer: 0 }
+        };
+
+        worksheet.columns = [
+            { width: 18 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, 
+            { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
+        ];
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('th-TH');
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} น.`;
+
+        // Top Right: Date & Time
+        worksheet.mergeCells('I1:J1');
+        worksheet.getCell('I1').value = `วันที่: ${dateStr}`;
+        worksheet.getCell('I1').font = { size: 10 };
+        worksheet.getCell('I1').alignment = { horizontal: 'right' };
+
+        worksheet.mergeCells('I2:J2');
+        worksheet.getCell('I2').value = `เวลา: ${timeStr}`;
+        worksheet.getCell('I2').font = { size: 10 };
+        worksheet.getCell('I2').alignment = { horizontal: 'right' };
+
+        // Header: รับเข้า
+        worksheet.mergeCells('A2:H3');
+        const titleCell = worksheet.getCell('A2');
+        titleCell.value = 'รับเข้า';
+        titleCell.font = { size: 20, bold: true, underline: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Detail
+        const fields = [
+            { label: 'หน่วยงาน:', value: `${decryptData(stockData.department)}  เบอร์โทร. 2299` },
+            { label: 'ประเภทครุภัณฑ์:', value: decryptData(stockData.category) || '-' },
+            { label: 'Serial Number:', value: decryptData(stockData.serialNumber) || '-' },
+            { label: 'เลขครุภัณฑ์:', value: decryptData(stockData.assetId) || '-' },
+            { label: 'ยี่ห้อ/รุ่น:', value: decryptData(stockData.brandModel) || '-' },
+            { label: 'หมายเหตุ:', value: decryptData(stockData.remarks) || '-' }
+        ];
+
+        fields.forEach((f, i) => {
+            const r = 5 + (i * 1.5);
+            worksheet.getCell(`A${Math.floor(r)}`).value = f.label;
+            worksheet.getCell(`A${Math.floor(r)}`).font = { size: 11, bold: true };
+            worksheet.mergeCells(`C${Math.floor(r)}:J${Math.floor(r)}`);
+            const vCell = worksheet.getCell(`C${Math.floor(r)}`);
+            vCell.value = f.value;
+            vCell.font = { size: 11 };
+            vCell.alignment = { horizontal: 'left' };
+            vCell.border = { bottom: { style: 'dotted' } };
+        });
+
+        // Signature
+        const fRow = 15;
+        worksheet.mergeCells(`F${fRow}:J${fRow}`);
+        worksheet.getCell(`F${fRow}`).value = `(..........................................)`;
+        worksheet.getCell(`F${fRow}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 1}:J${fRow + 1}`);
+        worksheet.getCell(`F${fRow + 1}`).value = `${stockData.officerName || '................................'}`;
+        worksheet.getCell(`F${fRow + 1}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 2}:J${fRow + 2}`);
+        worksheet.getCell(`F${fRow + 2}`).value = `${dateStr}`;
+        worksheet.getCell(`F${fRow + 2}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 3}:J${fRow + 3}`);
+        worksheet.getCell(`F${fRow + 3}`).value = `เจ้าหน้าที่คอมพิวเตอร์`;
+        worksheet.getCell(`F${fRow + 3}`).alignment = { horizontal: 'center' };
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `Label_Incoming_${decryptData(stockData.assetId)}.xlsx`);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -300,7 +384,11 @@ export default function IncomingStock() {
             };
 
             await set(newStockRef, stockData);
-            setSuccess('บันทึกข้อมูลสำเร็จ!');
+            
+            // Auto Print Label
+            await generateExcelLabel(stockData);
+
+            setSuccess('บันทึกข้อมูลและพิมพ์สติกเกอร์สำเร็จ!');
             setFormData({
                 surveyDate: new Date().toISOString().split('T')[0],
                 building: '',

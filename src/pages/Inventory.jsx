@@ -3,7 +3,9 @@ import { db } from '../firebase';
 import { ref, onValue, remove, update } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
-import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash, FaUndo } from 'react-icons/fa';
+import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash, FaUndo, FaPrint } from 'react-icons/fa';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -106,6 +108,88 @@ export default function Inventory() {
         }
     };
 
+    const generateExcelLabel = async (stock) => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Label');
+
+        // Page Setup for Zebra Sticker (4" x 3")
+        worksheet.pageSetup = {
+            paperSize: 256,
+            orientation: 'landscape',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 1,
+            margins: { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0, footer: 0 }
+        };
+
+        worksheet.columns = [
+            { width: 18 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, 
+            { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
+        ];
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('th-TH');
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} น.`;
+
+        // Top Right: Date & Time
+        worksheet.mergeCells('I1:J1');
+        worksheet.getCell('I1').value = `วันที่: ${dateStr}`;
+        worksheet.getCell('I1').font = { size: 10 };
+        worksheet.getCell('I1').alignment = { horizontal: 'right' };
+
+        worksheet.mergeCells('I2:J2');
+        worksheet.getCell('I2').value = `เวลา: ${timeStr}`;
+        worksheet.getCell('I2').font = { size: 10 };
+        worksheet.getCell('I2').alignment = { horizontal: 'right' };
+
+        // Header: คลังพัสดุ
+        worksheet.mergeCells('A2:H3');
+        const titleCell = worksheet.getCell('A2');
+        titleCell.value = stock.status === 'จำหน่าย' ? 'จำหน่าย' : 'คลังพัสดุ';
+        titleCell.font = { size: 20, bold: true, underline: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Detail
+        const fields = [
+            { label: 'หน่วยงาน:', value: `${stock.department}  เบอร์โทร. 2299` },
+            { label: 'ประเภทครุภัณฑ์:', value: stock.category || '-' },
+            { label: 'Serial Number:', value: stock.serialNumber || '-' },
+            { label: 'เลขครุภัณฑ์:', value: stock.assetId || '-' },
+            { label: 'ยี่ห้อ/รุ่น:', value: stock.brandModel || '-' },
+            { label: 'หมายเหตุ:', value: stock.remarks || '-' }
+        ];
+
+        fields.forEach((f, i) => {
+            const r = 5 + (i * 1.5);
+            worksheet.getCell(`A${Math.floor(r)}`).value = f.label;
+            worksheet.getCell(`A${Math.floor(r)}`).font = { size: 11, bold: true };
+            worksheet.mergeCells(`C${Math.floor(r)}:J${Math.floor(r)}`);
+            const vCell = worksheet.getCell(`C${Math.floor(r)}`);
+            vCell.value = f.value;
+            vCell.font = { size: 11 };
+            vCell.alignment = { horizontal: 'left' };
+            vCell.border = { bottom: { style: 'dotted' } };
+        });
+
+        // Signature
+        const fRow = 15;
+        worksheet.mergeCells(`F${fRow}:J${fRow}`);
+        worksheet.getCell(`F${fRow}`).value = `(..........................................)`;
+        worksheet.getCell(`F${fRow}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 1}:J${fRow + 1}`);
+        worksheet.getCell(`F${fRow + 1}`).value = `${stock.officerName || '................................'}`;
+        worksheet.getCell(`F${fRow + 1}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 2}:J${fRow + 2}`);
+        worksheet.getCell(`F${fRow + 2}`).value = `${dateStr}`;
+        worksheet.getCell(`F${fRow + 2}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 3}:J${fRow + 3}`);
+        worksheet.getCell(`F${fRow + 3}`).value = `เจ้าหน้าที่คอมพิวเตอร์`;
+        worksheet.getCell(`F${fRow + 3}`).alignment = { horizontal: 'center' };
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `Label_Inventory_${stock.assetId}.xlsx`);
+    };
+
     const handleRevertStatus = async (e, stockId) => {
         e.stopPropagation();
         if (!isAdmin_2) {
@@ -184,6 +268,7 @@ export default function Inventory() {
                                 <th>S/N</th>
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
+                                <th>Print</th>
                                  {isAdmin_2 && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
                                  {isAdmin_2 && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
@@ -220,6 +305,16 @@ export default function Inventory() {
                                             {stock.status}
                                         </span>
                                     </td>
+                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                         <button
+                                             className="inv-del-btn"
+                                             title="พิมพ์สติกเกอร์"
+                                             style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
+                                             onClick={() => generateExcelLabel(stock)}
+                                         >
+                                             <FaPrint />
+                                         </button>
+                                     </td>
                                      {isAdmin_2 && (
                                          <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                              <button

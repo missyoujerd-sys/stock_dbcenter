@@ -163,260 +163,93 @@ export default function Distribution() {
 
     const generateExcel = async (selectedStocks, date) => {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('ใบเบิกหรือใบส่งคืน');
-
-        // Page Setup for A4 Printing
-        worksheet.pageSetup = {
-            paperSize: 9, // A4
-            orientation: 'landscape',
-            fitToPage: true,
-            fitToWidth: 1,
-            fitToHeight: 0, // Auto
-            margins: {
-                left: 0.3, right: 0.3,
-                top: 0.3, bottom: 0.3,
-                header: 0, footer: 0
-            }
-        };
-
-        // Set column widths
-        worksheet.columns = [
-            { width: 8.5 },   // A: ลำดับ
-            { width: 25 },    // B: หมายเลขครุภัณฑ์ / SN
-            { width: 25 },    // C: รายการ
-            { width: 8.5 },   // D: รหัส
-            { width: 10 },    // E: หน่วยนับ
-            { width: 10 },    // F: จำนวน
-            { width: 10 },    // G: จ่าย
-            { width: 10 },    // H: ค้างจ่าย
-            { width: 12 },    // I: ราคา หน่วยละ
-            { width: 12 },    // J: ราคารวม
-            { width: 15 }     // K: ลงชื่อผู้จำหน่าย (extra col for layout)
-        ];
-
-        // Helper for borders
-        const borderStyle = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-        };
-
-        const applyBorders = (rowStart, colStart, rowEnd, colEnd) => {
-            for (let r = rowStart; r <= rowEnd; r++) {
-                for (let c = colStart; c <= colEnd; c++) {
-                    worksheet.getRow(r).getCell(c).border = borderStyle;
-                }
-            }
-        };
-
-        // Unicode Checkboxes
-        const CHECKED = '\u2611';
-        const UNCHECKED = '\u2610';
-
-        // 1-2: Title
-        worksheet.mergeCells('A1:I2');
-        const titleCell = worksheet.getCell('A1');
-        titleCell.value = 'ใบเบิกหรือใบส่งคืน';
-        titleCell.font = { size: 18, bold: true };
-        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
-        worksheet.getCell('J1').value = 'แบบ พ.3101';
-        worksheet.getCell('J2').value = 'รพ.นครพิงค์';
-        worksheet.getCell('J1').alignment = { horizontal: 'right' };
-        worksheet.getCell('J2').alignment = { horizontal: 'right' };
-
-        // 3: Sheet info
-        worksheet.getCell('A3').value = 'แผ่นที่ ............... ของจำนวน ............... แผ่น';
-        worksheet.mergeCells('E3:J3');
-        worksheet.getCell('E3').value = 'เลขที่ใบเบิกหรือใบส่งคืน ..............................';
-
-        // 4: From / Requisition
-        worksheet.mergeCells('A4:D4');
-        worksheet.getCell('A4').value = 'จาก ....................................................................';
-        worksheet.getCell('E4').value = UNCHECKED;
-        worksheet.getCell('F4').value = 'เบิก';
-        worksheet.mergeCells('G4:J4');
-        worksheet.getCell('G4').value = 'ทะเบียนเอกสาร ..............................';
-        worksheet.getCell('E4').alignment = { horizontal: 'center' };
-
-        // 5: Dept / Return
-        worksheet.mergeCells('A5:D5');
-        worksheet.getCell('A5').value = 'ศูนย์คอมพิวเตอร์';
-        worksheet.getCell('E5').value = CHECKED; // Distribution page is usually for return/dispatch
-        worksheet.getCell('F5').value = 'ส่งคืน';
-        worksheet.getCell('E5').alignment = { horizontal: 'center' };
-
-        // 6: To / Date / Fund type
-        worksheet.mergeCells('A6:D6');
-        worksheet.getCell('A6').value = 'ถึง ....................................................................';
-        worksheet.mergeCells('E6:G6');
-        worksheet.getCell('E6').value = `วันที่ต้องการ   ${date}`;
-        worksheet.mergeCells('H6:J6');
-        worksheet.getCell('H6').value = 'ประเภทเงิน .........................';
-
-        // 7: Store
-        worksheet.mergeCells('A7:D7');
-        worksheet.getCell('A7').value = 'คลังพัสดุ';
-
-        // 8-9: Type of asset
-        worksheet.mergeCells('A8:F8');
-        worksheet.getCell('A8').value = 'ประเภทพัสดุและ/หรือครุภัณฑ์ที่เกี่ยวข้อง';
-        worksheet.getCell('A8').font = { bold: true };
-
-        worksheet.getCell('G8').value = 'ขั้นต้น';
-        worksheet.getCell('H8').value = 'ทดแทน';
-        worksheet.getCell('I8').value = 'ยืม';
-        worksheet.getCell('J8').value = 'หมายเหตุ';
-
-        worksheet.mergeCells('A9:F9');
-        worksheet.getCell('A9').value = 'คอมพิวเตอร์และอุปกรณ์ต่อพ่วง';
-
-        worksheet.getCell('G9').value = CHECKED;
-        worksheet.getCell('H9').value = UNCHECKED;
-        worksheet.getCell('I9').value = UNCHECKED;
-        worksheet.getCell('G9').alignment = { horizontal: 'center' };
-        worksheet.getCell('H9').alignment = { horizontal: 'center' };
-        worksheet.getCell('I9').alignment = { horizontal: 'center' };
-
-        // Apply borders for header area boxes if needed, but per image only table and some boxes
-        applyBorders(4, 5, 5, 5); // Box for เบิก/ส่งคืน
-        applyBorders(8, 7, 9, 9); // Boxes for ขั้นต้น/ทดแทน/ยืม
-        applyBorders(8, 10, 9, 10); // Box for หมายเหตุ
-
-        // Table Header
-        const headerIndex = 10;
-        const headers = [
-            "ลำดับ", "หมายเลขครุภัณฑ์ / SN", "รายการ", "รหัส", "หน่วยนับ", "จำนวน", "จ่ายหรือคืน", "ค้างจ่าย", "ราคา หน่วยละ", "ราคารวม", "ลงชื่อผู้จำหน่าย"
-        ];
-        const hRow = worksheet.getRow(headerIndex);
-        headers.forEach((h, i) => {
-            const cell = hRow.getCell(i + 1);
-            cell.value = h;
-            cell.font = { bold: true };
-            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-            cell.border = borderStyle;
-
-            // Set orange background for the last header as in the image
-            if (i === 10) {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFFFA500' } // Orange
-                };
-            }
-        });
-        hRow.height = 30;
-
-        // Data Rows
+        
         selectedStocks.forEach((stock, index) => {
-            const rowNumber = headerIndex + 1 + index;
-            const row = worksheet.getRow(rowNumber);
-            row.getCell(1).value = index + 1;
+            const worksheet = workbook.addWorksheet(`Label ${index + 1}`);
 
-            // Clean up SN and Brand/Model
-            const cleanSN = stock.serialNumber ? stock.serialNumber.trim().replace(/[\s-]+$/, '') : '';
-            const cleanBrandModel = stock.brandModel ? stock.brandModel.trim().replace(/[\s\d-]+$/, '') : '';
+            // Page Setup for Zebra Sticker (101.6mm x 72.4mm / 4" x 3")
+            worksheet.pageSetup = {
+                paperSize: 256, // Custom
+                orientation: 'landscape',
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 1,
+                margins: { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0, footer: 0 }
+            };
 
-            row.getCell(2).value = `${stock.assetId}${cleanSN && cleanSN !== '-' ? '\n' + cleanSN : ''}`;
-            row.getCell(3).value = cleanBrandModel;
-            row.getCell(4).value = "ชม.";
-            row.getCell(5).value = "เครื่อง";
-            row.getCell(6).value = 1;
-            row.getCell(7).value = 1; // จ่ายหรือคืน
-            row.getCell(8).value = ""; // ค้างจ่าย
-            row.getCell(9).value = "";
-            row.getCell(10).value = "";
-            row.getCell(11).value = "บรรเจิด";
+            // Set column widths
+            worksheet.columns = [
+                { width: 18 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, 
+                { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
+            ];
 
-            row.eachCell((cell) => {
-                cell.border = borderStyle;
-                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} น.`;
+
+            // Top Right: Date & Time
+            worksheet.mergeCells('I1:J1');
+            worksheet.getCell('I1').value = `วันที่: ${date}`;
+            worksheet.getCell('I1').font = { size: 10 };
+            worksheet.getCell('I1').alignment = { horizontal: 'right' };
+
+            worksheet.mergeCells('I2:J2');
+            worksheet.getCell('I2').value = `เวลา: ${timeStr}`;
+            worksheet.getCell('I2').font = { size: 10 };
+            worksheet.getCell('I2').alignment = { horizontal: 'right' };
+
+            // Header: จำหน่าย
+            worksheet.mergeCells('A2:H3');
+            const titleCell = worksheet.getCell('A2');
+            titleCell.value = 'จำหน่าย';
+            titleCell.font = { size: 20, bold: true, underline: true };
+            titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+            // List information
+            const startRow = 5;
+            const fields = [
+                { label: 'หน่วยงาน:', value: `${stock.department}  เบอร์โทร. 2299` },
+                { label: 'ประเภทครุภัณฑ์:', value: stock.category || '-' },
+                { label: 'Serial Number:', value: stock.serialNumber || '-' },
+                { label: 'เลขครุภัณฑ์:', value: stock.assetId || '-' },
+                { label: 'ยี่ห้อ/รุ่น:', value: stock.brandModel || '-' },
+                { label: 'หมายเหตุ:', value: stock.remarks || '-' }
+            ];
+
+            fields.forEach((f, i) => {
+                const r = startRow + (i * 1.5); // Spacing
+                worksheet.getCell(`A${Math.floor(r)}`).value = f.label;
+                worksheet.getCell(`A${Math.floor(r)}`).font = { size: 11, bold: true };
+                
+                worksheet.mergeCells(`C${Math.floor(r)}:J${Math.floor(r)}`);
+                const valCell = worksheet.getCell(`C${Math.floor(r)}`);
+                valCell.value = f.value;
+                valCell.font = { size: 11 };
+                valCell.alignment = { horizontal: 'left' };
+                // Add dotted line effect under value
+                valCell.border = { bottom: { style: 'dotted' } };
             });
+
+            // Footer: Signature
+            const footerRow = 15;
+            worksheet.mergeCells(`F${footerRow}:J${footerRow}`);
+            worksheet.getCell(`F${footerRow}`).value = `(..........................................)`;
+            worksheet.getCell(`F${footerRow}`).alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells(`F${footerRow + 1}:J${footerRow + 1}`);
+            worksheet.getCell(`F${footerRow + 1}`).value = `${stock.officerName || '................................'}`;
+            worksheet.getCell(`F${footerRow + 1}`).alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells(`F${footerRow + 2}:J${footerRow + 2}`);
+            worksheet.getCell(`F${footerRow + 2}`).value = `${date}`;
+            worksheet.getCell(`F${footerRow + 2}`).alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells(`F${footerRow + 3}:J${footerRow + 3}`);
+            worksheet.getCell(`F${footerRow + 3}`).value = `เจ้าหน้าที่คอมพิวเตอร์`;
+            worksheet.getCell(`F${footerRow + 3}`).alignment = { horizontal: 'center' };
         });
 
-        // Footer Sections
-        let currentFooterRow = headerIndex + selectedStocks.length + 1;
-
-        // Sum rows
-        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
-        worksheet.getCell(`A${currentFooterRow}`).value = 'หลักฐานที่ใช้ในการเบิก/ส่งคืน';
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
-
-        worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
-        worksheet.getCell(`H${currentFooterRow}`).value = 'รวมแผ่นนี้';
-        applyBorders(currentFooterRow, 1, currentFooterRow + 1, 11);
-
-        currentFooterRow++;
-        worksheet.mergeCells(`H${currentFooterRow}:I${currentFooterRow}`);
-        worksheet.getCell(`H${currentFooterRow}`).value = 'รวมทั้งสิ้น';
-        // Borders already applied by merged range above
-
-        currentFooterRow++;
-        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
-        worksheet.getCell(`A${currentFooterRow}`).value = 'ให้บุคคลต่อไปนี้เป็นผู้รับพัสดุแทนได้';
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
-
-        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
-        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้ตรวจสอบ ..............................................................';
-
-        currentFooterRow++;
-        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow}`);
-        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้อนุมัติจ่าย/รับคืน .....................................................';
-
-        currentFooterRow++;
-        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 1}`);
-        worksheet.getCell(`A${currentFooterRow}`).value = `ผู้มีสิทธิเบิก/ส่งคืน   นาย ณรงค์ รวมสุข`;
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
-
-        worksheet.mergeCells(`H${currentFooterRow}:K${currentFooterRow + 1}`);
-        worksheet.getCell(`H${currentFooterRow}`).value = 'ผู้จ่าย .....................................................................';
-        worksheet.getCell(`H${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
-
-        currentFooterRow += 2;
-        worksheet.mergeCells(`A${currentFooterRow}:G${currentFooterRow + 2}`);
-        worksheet.getCell(`A${currentFooterRow}`).value = 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว';
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'top', horizontal: 'left' };
-
-        // Codes legend area
-        const legendStartRow = currentFooterRow;
-        worksheet.getCell(`H${legendStartRow}`).value = 'รหัสจ่าย';
-        worksheet.getCell(`J${legendStartRow}`).value = 'ค.  ครั้งคราว';
-        worksheet.getCell(`H${legendStartRow}`).border = borderStyle;
-        worksheet.getCell(`I${legendStartRow}`).border = borderStyle;
-
-        worksheet.getCell(`J${legendStartRow + 1}`).value = 'ป.  ประจำ';
-
-        worksheet.getCell(`H${legendStartRow + 2}`).value = 'รหัสคืน';
-        worksheet.getCell(`J${legendStartRow + 2}`).value = 'ช.  ใช้การได้';
-        worksheet.getCell(`H${legendStartRow + 2}`).border = borderStyle;
-        worksheet.getCell(`I${legendStartRow + 2}`).border = borderStyle;
-
-        worksheet.getCell(`J${legendStartRow + 3}`).value = 'ชม.  ใช้การไม่ได้';
-
-        currentFooterRow += 4;
-        worksheet.mergeCells(`A${currentFooterRow}:A${currentFooterRow + 1}`);
-        worksheet.getCell(`A${currentFooterRow}`).value = 'ผู้รับพัสดุ';
-        worksheet.getCell(`A${currentFooterRow}`).alignment = { vertical: 'middle', horizontal: 'left' };
-
-        // Ensure all cells in specific footer ranges have some alignment
-        applyBorders(headerIndex + selectedStocks.length + 1, 1, currentFooterRow + 1, 11);
-
-        // Fix for specific merged cells alignment
-        worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber > headerIndex + selectedStocks.length) {
-                row.eachCell((cell) => {
-                    if (!cell.alignment) {
-                        cell.alignment = { vertical: 'middle', horizontal: 'left' };
-                    }
-                });
-            }
-        });
-
-        // Generate and Save
         const buffer = await workbook.xlsx.writeBuffer();
-        const fileName = `ใบเบิกหรือใบส่งคืน_${date}.xlsx`;
-        saveAs(new Blob([buffer]), fileName);
+        saveAs(new Blob([buffer]), `Labels_Distribution_${date}.xlsx`);
     };
 
     const filteredStocks = stocks.filter(stock =>
