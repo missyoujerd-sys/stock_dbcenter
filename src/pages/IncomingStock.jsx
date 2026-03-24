@@ -17,12 +17,21 @@ import ItemDetailModal from '../components/ItemDetailModal';
 
 registerLocale('th', th);
 
+const REMARK_OPTIONS = [
+    'เครื่องเกิดการซ็อตไฟไม่เข้า',
+    'เมนบอร์ดไหม้ใช้งานไม่ได้',
+    'จอลายเป็นเส้นซ่อมไม่ได้',
+    'เครื่องอายุมากไม่มีอะไหล่ขายแล้ว',
+    'ซ่อมไม่คุ้มเพราะอะไหล่แพงพอๆกับซื้อเครื่องใหม่',
+];
+
 export default function IncomingStock() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const [remarkError, setRemarkError] = useState(false);
 
     const [stocksLoading, setStocksLoading] = useState(true);
     const [stocks, setStocks] = useState([]);
@@ -108,6 +117,13 @@ export default function IncomingStock() {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleRemarksChange = (value) => {
+        // กรองอักขระต้องห้าม: ตัวเลข 0-9, - * / \ .
+        const filtered = value.replace(/[0-9\-\*\/\\\.]/g, '');
+        setFormData(prev => ({ ...prev, remarks: filtered }));
+        if (filtered.trim()) setRemarkError(false);
     };
 
     /* ── Photo capture + OCR ── */
@@ -348,6 +364,12 @@ export default function IncomingStock() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!formData.remarks.trim()) {
+            setRemarkError(true);
+            const el = document.getElementById('remarks');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
         setLoading(true);
         setError('');
         setSuccess('');
@@ -677,19 +699,44 @@ export default function IncomingStock() {
                                 <Form.Group controlId="remarks">
                                     <Form.Label className="inc-label">
                                         <FaStickyNote className="me-2" /> หมายเหตุ
+                                        <span style={{ color: '#ef4444', marginLeft: '6px' }}>*</span>
                                     </Form.Label>
-                                    <div className="inc-input-group" style={{ alignItems: 'flex-start' }}>
-                                        <span className="inc-input-icon" style={{ paddingTop: '0.55rem' }}><FaStickyNote /></span>
-                                        <Form.Control
-                                            as="textarea"
-                                            rows={2}
-                                            name="remarks"
-                                            value={formData.remarks}
-                                            onChange={handleChange}
-                                            className="inc-input"
-                                            placeholder="บันทึกหมายเหตุ (ถ้ามี)"
-                                            style={{ resize: 'none' }}
-                                        />
+                                    <div className="inc-input-group" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '6px' }}>
+                                        {/* Dropdown ตัวเลือกสำเร็จรูป */}
+                                        <div style={{ width: '100%' }}>
+                                            <Form.Select
+                                                size="sm"
+                                                className={`inc-select${remarkError ? ' border-danger' : ''}`}
+                                                value={REMARK_OPTIONS.includes(formData.remarks) ? formData.remarks : ''}
+                                                onChange={(e) => handleRemarksChange(e.target.value)}
+                                            >
+                                                <option value="">-- เลือกหมายเหตุ --</option>
+                                                {REMARK_OPTIONS.map((opt, i) => (
+                                                    <option key={i} value={opt}>{opt}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </div>
+                                        {/* Input พิมพ์เพิ่มเติม */}
+                                        <div className="inc-input-group" style={{ width: '100%', marginBottom: 0 }}>
+                                            <span className="inc-input-icon" style={{ paddingTop: '0.55rem' }}><FaStickyNote /></span>
+                                            <Form.Control
+                                                as="textarea"
+                                                rows={2}
+                                                id="remarks"
+                                                name="remarks"
+                                                value={formData.remarks}
+                                                onChange={(e) => handleRemarksChange(e.target.value)}
+                                                className={`inc-input${remarkError ? ' border-danger' : ''}`}
+                                                placeholder={remarkError ? '⚠ ช่องนี้หัวหน้า IT ให้กรอกด้วย!' : 'หรือพิมพ์หมายเหตุอื่นๆ...'}
+                                                style={{ resize: 'none' }}
+                                            />
+                                        </div>
+                                        {/* ข้อความแจ้งเตือน */}
+                                        {remarkError && (
+                                            <div style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold', paddingLeft: '6px' }}>
+                                                ⚠ หัวหน้า IT ให้กรอกด้วย!
+                                            </div>
+                                        )}
                                     </div>
                                 </Form.Group>
                             </Col>
