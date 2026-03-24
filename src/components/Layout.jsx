@@ -15,18 +15,42 @@ import {
   User,
   Package,
   Eye,
-  Activity
+  Activity,
+  Calendar,
+  Clock
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
 
 
 export default function Layout({ children }) {
-  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentUser, isAdmin, isAdmin_2, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [currentTime, setCurrentTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('th-TH', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(date);
+  };
+
+  const formatTime = (date) => {
+    return new Intl.DateTimeFormat('th-TH', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(date);
+  };
 
 
   async function handleLogout() {
@@ -47,10 +71,10 @@ export default function Layout({ children }) {
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList },
   ];
 
-  const SidebarContent = ({ collapsible = false }) => (
-    <div className={`flex flex-col h-full bg-[#030712] dark:bg-[#02040a] text-white transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-white-[0.03] dark:border-white/[0.05] select-none ${collapsible && isCollapsed ? 'w-24' : 'w-72 shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.9)]'}`}>
+  const SidebarContent = () => (
+    <div className={`flex flex-col h-full bg-[#030712] dark:bg-[#02040a] text-white transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-white-[0.03] dark:border-white/[0.05] select-none w-72 shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.9)]`}>
       {/* Moving Glass Shine Effect */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full ${!isCollapsed ? 'animate-[shine_4s_infinite]' : ''} pointer-events-none`}></div>
+      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
       <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-blue-600/[0.08] dark:bg-blue-600/[0.12] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
@@ -59,30 +83,39 @@ export default function Layout({ children }) {
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
 
-      <div className={`p-6 flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${collapsible && isCollapsed ? 'px-3' : 'px-6'}`}>
+      <div className={`p-6 flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] px-6`}>
         {/* Elite Branding Section */}
-        <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] ${collapsible && isCollapsed ? 'justify-center' : 'px-1'}`}>
+        <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] px-1`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`relative bg-transparent p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'scale-90' : 'scale-100 group-hover:scale-105'}`}>
+            <div className={`relative bg-transparent p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
               <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
-          {(!collapsible || !isCollapsed) && (
-            <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
-              <div className="flex flex-col">
+          <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-1">
                 <span className="text-[16px] font-bold text-slate-300 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
-                <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-white font-['Prompt'] drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -mt-1 mb-1.5">
-                  จัดการ
-                </h1>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
-                  <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
+                
+                {/* Online Status Pill - Sidebar Version */}
+                <div className="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-sm shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50 opacity-100"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-tr from-green-600 via-green-500 to-emerald-400 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span>
+                  </div>
+                  <span className="text-[9px] font-black text-green-400 font-['Prompt'] tracking-[0.15em] uppercase leading-none">สถานะระบบ</span>
                 </div>
               </div>
-              <p className="text-[11px] text-blue-300/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-blue-400 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-white font-['Prompt'] drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -mt-1 mb-1.5">
+                จัดการ
+              </h1>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
+              </div>
             </div>
-          )}
+            <p className="text-[11px] text-blue-300/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-blue-400 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+          </div>
         </div>
 
         {/* Elite Glass Navigation */}
@@ -95,12 +128,11 @@ export default function Layout({ children }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                title={collapsible && isCollapsed ? item.name : ''}
                 className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                   isActive 
                     ? "text-white bg-white/[0.04] dark:bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-100 dark:hover:text-slate-200"
-                } ${collapsible && isCollapsed ? 'justify-center px-0 mx-1' : ''}`}
+                }`}
               >
                 {/* Icon Wrapper Circle */}
                 <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
@@ -121,16 +153,14 @@ export default function Layout({ children }) {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
                 </div>
                 
-                {(!collapsible || !isCollapsed) && (
-                  <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                    <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-white translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
-                      {item.name}
-                    </span>
-                    {isActive && (
-                      <div className="h-[2px] w-6 bg-blue-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
-                    )}
-                  </div>
-                )}
+                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-white translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                    {item.name}
+                  </span>
+                  {isActive && (
+                    <div className="h-[2px] w-6 bg-blue-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                  )}
+                </div>
               </Link>
             );
           })}
@@ -140,35 +170,30 @@ export default function Layout({ children }) {
         <div className="mt-auto pt-6 border-t border-white/[0.06] dark:border-white/[0.1] space-y-5">
           {currentUser && (
             <div className="space-y-5">
-              <div className={`flex items-center gap-4 group/avatar transition-all duration-[600ms] ${collapsible && isCollapsed ? 'justify-center border border-white/5 p-2 rounded-2xl bg-white/[0.02]' : 'px-2'}`}>
+              <div className={`flex items-center gap-4 group/avatar transition-all duration-[600ms] px-2`}>
                 <div className="relative shrink-0">
                   {/* Luxury Avatar Ring */}
-                  <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] ${isCollapsed ? 'opacity-[0.05]' : 'opacity-25 group-hover/avatar:opacity-60'}`}></div>
-                  <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden ${isCollapsed ? 'w-9 h-9' : 'w-11 h-11 group-hover/avatar:scale-105'}`}>
+                  <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
+                  <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden w-11 h-11 group-hover/avatar:scale-105`}>
                     <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-transparent to-indigo-500/20"></div>
-                    <User size={isCollapsed ? 18 : 22} className="text-blue-400 relative z-10 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                    <User size={22} className="text-blue-400 relative z-10 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
                   </div>
                 </div>
-                {(!collapsible || !isCollapsed) && (
-                  <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">ยินดีต้อนรับ</p>
-                    <p className="text-[14px] font-bold text-slate-200 truncate tracking-tight group-hover/avatar:text-white transition-colors duration-[300ms]">
-                      {currentUser.email.split('@')[0]}
-                    </p>
-                  </div>
-                )}
+                <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">ยินดีต้อนรับ</p>
+                  <p className="text-[14px] font-bold text-slate-200 truncate tracking-tight group-hover/avatar:text-white transition-colors duration-[300ms]">
+                    {currentUser.email.split('@')[0]}
+                  </p>
+                </div>
               </div>
               
-              <div className={`${isCollapsed ? 'px-0' : 'px-1'}`}>
+              <div className="px-1">
                 <button
                   onClick={handleLogout}
-                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-white/[0.02] text-slate-500 hover:bg-rose-500/[0.1] hover:text-rose-400 transition-all duration-[600ms] font-black text-[13px] border border-white/[0.06] hover:border-rose-500/30 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] ${collapsible && isCollapsed ? 'justify-center px-0' : 'justify-center px-4'}`}
-                  title={collapsible && isCollapsed ? 'ออกจากระบบ' : ''}
+                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-white/[0.02] text-slate-500 hover:bg-rose-500/[0.1] hover:text-rose-400 transition-all duration-[600ms] font-black text-[13px] border border-white/[0.06] hover:border-rose-500/30 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
                 >
                   <LogOut size={18} className="shrink-0 transition-transform duration-[500ms] group-hover/logout:rotate-[-8deg] group-hover/logout:scale-110" />
-                  {(!collapsible || !isCollapsed) && (
-                    <span className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[700ms] font-['Prompt'] tracking-widest">SIGN OUT</span>
-                  )}
+                  <span className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[700ms] font-['Prompt'] tracking-widest">SIGN OUT</span>
                 </button>
               </div>
             </div>
@@ -180,13 +205,8 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#fcfcfd] dark:bg-[#060a12] flex overflow-x-hidden font-['Prompt'] transition-colors duration-500">
-      {/* Desktop Sidebar */}
-      <aside 
-        className={`hidden lg:block min-h-screen shrink-0 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'w-24' : 'w-72'}`}
-        onMouseEnter={() => setIsCollapsed(false)}
-        onMouseLeave={() => setIsCollapsed(true)}
-      >
-        <SidebarContent collapsible={true} />
+      <aside className={`hidden lg:block min-h-screen shrink-0 w-72 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]`}>
+        <SidebarContent />
       </aside>
 
       {/* Mobile Sidebar Overlay */}
@@ -209,50 +229,74 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
         
         {/* Desktop Quick Header */}
-        <div className="hidden lg:flex h-20 items-center justify-between px-10 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center gap-6">
+        <div className="hidden lg:flex h-20 items-center justify-between pl-8 pr-6 sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center gap-4 xl:gap-6">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-10 object-contain drop-shadow-sm transition-transform hover:scale-105 duration-300" />
             <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
-            <span className="hidden md:inline-block text-[22px] font-[900] bg-gradient-to-r from-rose-600 to-rose-900 dark:from-rose-400 dark:to-rose-700 bg-clip-text text-transparent font-['Prompt'] tracking-tight drop-shadow-sm">
-              ห้องซ่อมบำรุงคอมพิวเตอร์
-            </span>
-            
-            {/* View Count Section */}
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
-            <div className="hidden xl:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm transition-all hover:bg-slate-100 dark:hover:bg-slate-800">
-              <div className="bg-blue-500/10 p-1.5 rounded-lg border border-blue-500/20 shadow-sm">
-                <Eye size={16} className="text-blue-500" />
+            <div className="hidden md:flex flex-col justify-center gap-1.5">
+              <span className="whitespace-nowrap text-[20px] lg:text-[24px] font-[900] bg-gradient-to-r from-slate-800 via-rose-700 to-rose-900 dark:from-white dark:via-rose-400 dark:to-rose-600 bg-clip-text text-transparent font-['Prompt'] tracking-tight leading-none drop-shadow-sm">
+                ห้องซ่อมบำรุงคอมพิวเตอร์
+              </span>
+              <div className="flex items-center gap-2 px-0.5">
+                <div className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500/40 opacity-100"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] leading-none">
+                  ระบบพร้อมใช้งาน • NAKORNPING HOSPITAL
+                </span>
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">ยอดดูวันนี้</span>
-                <span className="text-[14px] font-[800] text-slate-700 dark:text-slate-200 font-mono tracking-tight">1,284</span>
+            </div>
+            
+            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block opacity-50"></div>
+
+            {/* Header Grand Date Pill - Compacted to prevent overlap */}
+            <div className="hidden xl:flex items-center shrink-0 p-1 rounded-full bg-slate-50 dark:bg-[#0f172a]/40 border border-slate-200 dark:border-white/5 shadow-sm transition-all hover:bg-slate-100 dark:hover:bg-slate-800/60 group/date cursor-default">
+              <div className="flex items-center gap-3 pl-2.5 pr-4 py-1">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 border border-white/20 transition-transform group-hover/date:scale-105 duration-500">
+                  <Calendar className="text-white" size={20} />
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-[17px] font-[900] text-slate-800 dark:text-white font-['Prompt'] tracking-tight leading-none">
+                    {formatDate(currentTime)}
+                  </span>
+                  <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm transition-all group-hover/date:bg-blue-500/20">
+                    <Clock size={11} className="text-blue-500" />
+                    <span className="text-[14px] font-[900] tabular-nums text-blue-600 dark:text-blue-400 font-mono tracking-tighter leading-none">
+                      {formatTime(currentTime)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Online Status Section */}
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden xl:block"></div>
-            <div className="hidden xl:flex items-center gap-3 px-4 py-2 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm transition-all hover:shadow-md">
-              <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.8)] border-2 border-white/30"></span>
-              </div>
-              <span className="text-[14px] font-black text-slate-700 dark:text-slate-200 font-['Prompt'] tracking-tight">สถานะออนไลน์</span>
-            </div>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             {currentUser && (
               <div className="hidden sm:flex items-center gap-3.5 px-5 py-2 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 shadow-sm transition-all hover:shadow-md hover:border-slate-300/50 dark:hover:border-white/10 group">
-                <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur-[4px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center border border-white/20 shadow-lg text-white">
-                    <User size={18} strokeWidth={2.5} />
+                <div className="relative shrink-0">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/20 shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-600">
+                    {currentUser?.photoURL ? (
+                      <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white">
+                        <User size={20} strokeWidth={2.5} />
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-[#0f172a] rounded-full"></div>
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-0.5">ADMIN USER</span>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <div className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/60 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-tr from-green-500 to-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
+                    </div>
+                    <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-[0.15em]">
+                      {isAdmin_2 ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน'}
+                    </span>
+                  </div>
                   <span className="text-[15px] font-[800] text-slate-800 dark:text-white font-['Prompt'] tracking-tight">
-                    {currentUser.email.split('@')[0]}
+                    {currentUser.displayName || currentUser.email.split('@')[0]}
                   </span>
                 </div>
               </div>
@@ -264,7 +308,7 @@ export default function Layout({ children }) {
         <header className="lg:hidden h-16 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-7 object-contain drop-shadow-sm mb-0.5" />
-            <span className="text-[10px] font-black bg-gradient-to-r from-rose-500 to-rose-800 dark:from-rose-400 dark:to-rose-600 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none">
+            <span className="text-[11px] font-black bg-gradient-to-r from-rose-500 via-rose-700 to-rose-900 dark:from-rose-400 dark:via-rose-300 dark:to-rose-500 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none whitespace-nowrap">
               ห้องซ่อมบำรุงคอมพิวเตอร์
             </span>
             <div className="flex items-center gap-2 mt-1">
@@ -280,9 +324,13 @@ export default function Layout({ children }) {
           </div>
           <div className="flex items-center gap-3">
             {currentUser && (
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <User size={18} className="text-slate-600 dark:text-slate-300" />
-              </div>
+               <div className="flex flex-col items-end mr-1">
+                 <div className="flex items-center gap-1.5 mb-0.5">
+                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,0.8)]"></div>
+                   <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none">ยินดีต้อนรับ</span>
+                 </div>
+                 <span className="text-[12px] font-bold text-slate-800 dark:text-white leading-none">{currentUser.email.split('@')[0]}</span>
+               </div>
             )}
             <ThemeToggle />
             <button 
@@ -294,8 +342,9 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        <main className="flex-grow p-4 lg:p-10 w-full max-w-[1720px] mx-auto transition-all duration-[600ms]">
-          <div className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'scale-[0.992] opacity-[0.97]' : 'scale-100 opacity-100'}`}>
+        <main className="flex-grow p-4 lg:p-10 w-full max-w-[1720px] mx-auto transition-all duration-500">
+
+          <div className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 opacity-100`}>
             {children}
           </div>
         </main>
