@@ -14,7 +14,7 @@ const ItemDetailModal = ({ show, onHide, item }) => {
     const now = new Date();
     const formattedDate = new Intl.DateTimeFormat('th-TH', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric',
     }).format(now);
     const formattedTime = new Intl.DateTimeFormat('th-TH', {
@@ -29,90 +29,71 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 <Modal.Title className="fw-bold">รายละเอียดพัสดุ</Modal.Title>
             </Modal.Header>
             <Modal.Body className="p-0">
-                <div ref={printRef} className="document-container p-4 bg-white mx-auto shadow-sm position-relative" style={{ maxWidth: '800px', minHeight: '500px' }}>
+                <div ref={printRef} className="document-container bg-white mx-auto shadow-sm position-relative"
+                    style={{ width: '101.6mm', minHeight: '72.4mm', padding: '4mm 5mm', boxSizing: 'border-box' }}>
                     {/* Watermark for UI and printing */}
                     <div className="watermark">
                         จำหน่าย
                     </div>
-                    {/* Date/Time Section */}
-                    <div className="text-end mb-2 small">
-                        <div>วันที่: {formattedDate}</div>
-                        <div>เวลา: {formattedTime} น.</div>
-                    </div>
 
-                    {/* Header Section */}
-                    <div className="text-center mb-5">
-                        <h1 className="document-title fw-bold text-decoration-underline mb-4">
+                    {/* Header: title + date/time on same row */}
+                    <div className="d-flex justify-content-between align-items-start mb-1">
+                        <div style={{ flex: 1 }}></div>
+                        <h1 className="document-title fw-bold text-decoration-underline mb-0 text-center" style={{ flex: 2, fontSize: '1rem' }}>
                             จำหน่าย
                         </h1>
+                        <div className="text-end" style={{ flex: 1, fontSize: '0.65rem', lineHeight: '1.4' }}>
+                            <div>วันที่: {formattedDate}</div>
+                            <div>เวลา: {formattedTime} น.</div>
+                        </div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="document-content ps-2" style={{ fontSize: '1.1rem', lineHeight: '2.2' }}>
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>หน่วยงาน:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.department || '-'} {item.building && `(${item.building})`}</span>
-                            <span className="ms-3 fw-bold">เบอร์โทร.</span>
-                            <span className="ms-2 border-bottom-dotted px-2" style={{ minWidth: '150px' }}>{item.phoneNumber || '2299'}</span>
+                    <div className="document-content" style={{ fontSize: '0.72rem', lineHeight: '1.7' }}>
+                        <div className="d-flex mb-1">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>หน่วยงาน:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.department || '-'}{item.building && ` (${item.building})`}</span>
+                            <span className="border-bottom-dotted px-1" style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}><strong>เบอร์โทร.</strong>&nbsp;{item.phoneNumber || '2299'}</span>
                         </div>
 
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>ประเภทครุภัณฑ์:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.category || '-'}</span>
+                        <div className="d-flex mb-1">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>ประเภทครุภัณฑ์:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.category || '-'}</span>
                         </div>
 
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>Serial Number:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.serialNumber || '-'}</span>
+                        <div className="d-flex mb-1">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>Serial Number:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.serialNumber || '-'}</span>
                         </div>
 
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>เลขครุภัณฑ์:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.assetId || '-'}</span>
+                        <div className="d-flex mb-1">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>เลขครุภัณฑ์:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.assetId || '-'}</span>
                         </div>
 
-                        <div className="d-flex mb-2">
-                            <span className="fw-bold" style={{ minWidth: '150px' }}>ยี่ห้อ/รุ่น:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-2">{item.brandModel || '-'}</span>
+                        <div className="d-flex mb-1">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>ยี่ห้อ/รุ่น:</span>
+                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.brandModel || '-'}</span>
                         </div>
 
-
-
-                        {/* Remarks Section */}
-                        <div className="d-flex mb-5">
-                            <span className="fw-bold" style={{ minWidth: '100px' }}>หมายเหตุ:</span>
-                            <div className="flex-grow-1 border-bottom-dotted min-height-dotted px-2">
+                        <div className="d-flex mb-0 align-items-start">
+                            <span className="fw-bold" style={{ minWidth: '80px' }}>หมายเหตุ:</span>
+                            <div className="flex-grow-1 border-bottom-dotted px-1" style={{ minHeight: '1.2em' }}>
                                 {item.remarks || ''}
                             </div>
-                        </div>
-
-                        {/* Signature Section */}
-                        <Row className="mt-5 text-center">
-                            <Col xs={6}>
-                                {/* Signature image if available, else blank dotted line */}
-                                <div className="mx-auto mb-1" style={{ width: '250px', height: '70px', borderBottom: '1px dotted #000', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
+                            {/* Signature inline at remarks level */}
+                            <div className="text-center ms-2" style={{ width: '115px', flexShrink: 0 }}>
+                                <div style={{ width: '115px', height: '30px', borderBottom: '1px dotted #000', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
                                     {item.signatureData ? (
-                                        <img
-                                            src={item.signatureData}
-                                            alt="ลายเซ็น"
-                                            style={{ maxHeight: '68px', maxWidth: '240px', objectFit: 'contain', marginBottom: '2px', filter: 'invert(1) brightness(0)' }}
+                                        <img src={item.signatureData} alt="ลายเซ็น"
+                                            style={{ maxHeight: '28px', maxWidth: '110px', objectFit: 'contain', marginBottom: '2px', filter: 'invert(1) brightness(0)' }}
                                         />
                                     ) : null}
                                 </div>
-                                <div className="mb-1 small">({item.officerName || '............................................'})</div>
-                                <div className="mb-1 small">{item.officerDate || '........./............./............'}</div>
-                                <div className="fw-bold">เจ้าหน้าที่คอมพิวเตอร์</div>
-                            </Col>
-                            <Col xs={6}>
-                                <div className="mx-auto mb-2" style={{ width: '250px', borderBottom: '1px dotted #000' }}></div>
-                                <div className="mb-2">......../................/............</div>
-                                <div className="fw-bold">ผู้รับอุปกรณ์</div>
-                            </Col>
-                        </Row>
-
-                        {/* Footer Text */}
-                        <div className="text-end mt-5 small fw-bold">
-                            **กรอกชื่อ-นามสกุลตัวบรรจงเท่านั้น**
+                                <div style={{ fontSize: '0.55rem' }}>({item.officerName || '.....................'})</div>
+                                <div style={{ fontSize: '0.55rem' }}>{item.officerDate || '..../....../..........'}</div>
+                                <div className="fw-bold" style={{ fontSize: '0.6rem' }}>เจ้าหน้าที่คอมพิวเตอร์</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -156,15 +137,15 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%) rotate(-30deg);
-                    font-size: 5rem;
+                    font-size: 1.2rem;
                     font-weight: 900;
-                    color: rgba(220, 53, 69, 0.1); /* Reddish for UI visibility */
+                    color: rgba(220, 53, 69, 0.08);
                     white-space: nowrap;
                     pointer-events: none;
                     z-index: 0;
-                    border: 8px solid rgba(220, 53, 69, 0.1);
-                    padding: 15px 30px;
-                    border-radius: 20px;
+                    border: 4px solid rgba(220, 53, 69, 0.08);
+                    padding: 4px 12px;
+                    border-radius: 8px;
                     text-transform: uppercase;
                 }
 
@@ -180,8 +161,8 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                 
                 @media print {
                     @page {
-                        margin: 0.3cm;
-                        size: A5 portrait;
+                        margin: 0;
+                        size: 101.6mm 72.4mm landscape;
                     }
                     html, body {
                         height: 100%;
@@ -219,20 +200,22 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                     }
                     .document-container {
                         box-shadow: none !important;
-                        padding: 1cm !important;
-                        width: 100% !important;
-                        max-width: 100% !important;
-                        height: auto !important;
+                        padding: 3mm 4mm !important;
+                        width: 101.6mm !important;
+                        min-height: 72.4mm !important;
+                        max-height: 72.4mm !important;
                         page-break-after: avoid;
                         page-break-before: avoid;
-                        margin: 0 auto !important;
+                        margin: 0 !important;
+                        overflow: hidden !important;
                     }
                     .document-title {
-                        margin-bottom: 1rem !important;
-                        font-size: 1.3rem !important;
+                        margin-bottom: 0.5rem !important;
+                        font-size: 1.2rem !important;
                     }
                     .document-content {
-                        line-height: 1.8 !important;
+                        line-height: 1.5 !important;
+                        font-size: 0.9rem !important;
                     }
                     .mt-5 {
                         margin-top: 1.5rem !important;
@@ -246,7 +229,7 @@ const ItemDetailModal = ({ show, onHide, item }) => {
                     .watermark {
                         color: rgba(0, 0, 0, 0.05) !important; /* Lighter/Gray for actual printing */
                         border-color: rgba(0, 0, 0, 0.05) !important;
-                        font-size: 5rem !important;
+                        font-size: 3.5rem !important;
                     }
                 }
             `}</style>
