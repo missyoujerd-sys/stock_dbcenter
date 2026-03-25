@@ -32,6 +32,7 @@ export default function IncomingStock() {
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [remarkError, setRemarkError] = useState(false);
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     const [stocksLoading, setStocksLoading] = useState(true);
@@ -367,6 +368,7 @@ export default function IncomingStock() {
         e.preventDefault();
         if (!formData.remarks.trim()) {
             setRemarkError(true);
+            setShowErrorPopup(true);
             const el = document.getElementById('remarks');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
@@ -1000,6 +1002,114 @@ export default function IncomingStock() {
                             @keyframes fadeIn { from{opacity:0} to{opacity:1} }
                             @keyframes popIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
                             @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+                        `}</style>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Error Popup (Scary Warning) ── */}
+            {showErrorPopup && (
+                <div style={{
+                    position: 'fixed', inset: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(8px)',
+                    zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'fadeIn 0.2s ease'
+                }}>
+                    <div className="alert-shake" style={{
+                        background: 'linear-gradient(145deg, #2a0a0a 0%, #1a0505 100%)',
+                        border: '2px solid rgba(255, 77, 79, 0.6)',
+                        borderRadius: '24px',
+                        boxShadow: '0 8px 60px rgba(255, 77, 79, 0.4), 0 2px 20px rgba(0,0,0,0.8)',
+                        padding: '40px 48px',
+                        maxWidth: '420px',
+                        width: '90%',
+                        textAlign: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #ff4d4f, #820014, #ff4d4f)', backgroundSize: '200% 100%', animation: 'gradientMove 2s infinite linear' }}></div>
+                        
+                        {/* Icon */}
+                        <div style={{
+                            width: '88px', height: '88px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            boxShadow: '0 0 0 14px rgba(239,68,68,0.15), 0 4px 24px rgba(239,68,68,0.5)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 24px',
+                            fontSize: '2.8rem',
+                            animation: 'bounceIn 0.4s 0.1s both',
+                            color: '#fff'
+                        }}>
+                            ⚠️
+                        </div>
+
+                        {/* Title */}
+                        <div style={{
+                            fontSize: '1.45rem',
+                            fontWeight: '800',
+                            color: '#ff4d4f',
+                            letterSpacing: '0.5px',
+                            marginBottom: '12px',
+                            textShadow: '0 2px 12px rgba(239,68,68,0.5)',
+                            lineHeight: '1.4'
+                        }}>
+                            หัวหน้า ณรงค์ รวมสุข<br/>ให้กรอกทุกครั้ง!
+                        </div>
+
+                        {/* Sub */}
+                        <div style={{
+                            color: '#fca5a5',
+                            fontSize: '0.95rem',
+                            marginBottom: '32px',
+                            lineHeight: 1.5
+                        }}>
+                            กรุณาระบุหมายเหตุการรับเข้าพัสดุในช่อง<br/>
+                            <strong className="text-white">"-- เลือกหมายเหตุ --"</strong> หรือพิมพ์เพิ่มเติม
+                        </div>
+
+                        {/* Button */}
+                        <button
+                            onClick={() => {
+                                setShowErrorPopup(false);
+                                const el = document.getElementById('remarks');
+                                if (el) {
+                                    el.focus();
+                                }
+                            }}
+                            style={{
+                                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                border: 'none',
+                                borderRadius: '50px',
+                                color: '#fff',
+                                fontWeight: '700',
+                                fontSize: '1.05rem',
+                                padding: '12px 48px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 20px rgba(239,68,68,0.5)',
+                                transition: 'all 0.2s',
+                                letterSpacing: '0.5px',
+                                width: '100%'
+                            }}
+                            onMouseOver={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 6px 28px rgba(239,68,68,0.6)'; }}
+                            onMouseOut={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 4px 20px rgba(239,68,68,0.5)'; }}
+                        >รับทราบ</button>
+
+                        <style>{`
+                            @keyframes hardShake {
+                                0%, 100% { transform: translateX(0); }
+                                20%, 60% { transform: translateX(-10px); }
+                                40%, 80% { transform: translateX(10px); }
+                            }
+                            .alert-shake {
+                                animation: hardShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+                            }
+                            @keyframes gradientMove {
+                                0% { background-position: 100% 0; }
+                                100% { background-position: -100% 0; }
+                            }
                         `}</style>
                     </div>
                 </div>
