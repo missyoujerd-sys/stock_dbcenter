@@ -32,6 +32,7 @@ export default function IncomingStock() {
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [remarkError, setRemarkError] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     const [stocksLoading, setStocksLoading] = useState(true);
     const [stocks, setStocks] = useState([]);
@@ -406,11 +407,8 @@ export default function IncomingStock() {
             };
 
             await set(newStockRef, stockData);
-            
-            // Auto Print Label
-            await generateExcelLabel(stockData);
 
-            setSuccess('บันทึกข้อมูลและพิมพ์สติกเกอร์สำเร็จ!');
+            setShowSuccessPopup(true);
             setFormData({
                 surveyDate: new Date().toISOString().split('T')[0],
                 building: '',
@@ -924,6 +922,88 @@ export default function IncomingStock() {
                 onHide={() => setShowDetailModal(false)}
                 item={selectedItem}
             />
+
+            {/* ── Success Popup ── */}
+            {showSuccessPopup && (
+                <div style={{
+                    position: 'fixed', inset: 0,
+                    background: 'rgba(0,0,0,0.55)',
+                    backdropFilter: 'blur(6px)',
+                    zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'fadeIn 0.25s ease'
+                }}>
+                    <div style={{
+                        background: 'linear-gradient(145deg, #0f2b4a 0%, #1a3a5c 60%, #0d2137 100%)',
+                        border: '1.5px solid rgba(56,189,248,0.35)',
+                        borderRadius: '24px',
+                        boxShadow: '0 8px 60px rgba(56,189,248,0.25), 0 2px 20px rgba(0,0,0,0.6)',
+                        padding: '48px 52px 40px',
+                        maxWidth: '420px',
+                        width: '90%',
+                        textAlign: 'center',
+                        animation: 'popIn 0.35s cubic-bezier(0.34,1.56,0.64,1)'
+                    }}>
+                        {/* Icon */}
+                        <div style={{
+                            width: '88px', height: '88px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            boxShadow: '0 0 0 14px rgba(34,197,94,0.15), 0 4px 24px rgba(34,197,94,0.4)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 24px',
+                            fontSize: '2.6rem',
+                            animation: 'bounceIn 0.5s 0.15s both'
+                        }}>
+                            ✓
+                        </div>
+
+                        {/* Title */}
+                        <div style={{
+                            fontSize: '1.65rem',
+                            fontWeight: '800',
+                            color: '#f0f9ff',
+                            letterSpacing: '0.5px',
+                            marginBottom: '10px',
+                            textShadow: '0 2px 12px rgba(56,189,248,0.3)'
+                        }}>บันทึกข้อมูลสำเร็จ!</div>
+
+                        {/* Sub */}
+                        <div style={{
+                            color: '#94d1f5',
+                            fontSize: '0.97rem',
+                            marginBottom: '32px',
+                            lineHeight: 1.6
+                        }}>ข้อมูลพัสดุรับเข้าได้ถูกบันทึก<br/>เข้าระบบเรียบร้อยแล้ว</div>
+
+                        {/* Button */}
+                        <button
+                            onClick={() => setShowSuccessPopup(false)}
+                            style={{
+                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                border: 'none',
+                                borderRadius: '50px',
+                                color: '#fff',
+                                fontWeight: '700',
+                                fontSize: '1.05rem',
+                                padding: '12px 48px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 20px rgba(34,197,94,0.45)',
+                                transition: 'transform 0.15s, box-shadow 0.15s',
+                                letterSpacing: '0.5px'
+                            }}
+                            onMouseOver={e => { e.currentTarget.style.transform='scale(1.06)'; e.currentTarget.style.boxShadow='0 6px 28px rgba(34,197,94,0.6)'; }}
+                            onMouseOut={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 4px 20px rgba(34,197,94,0.45)'; }}
+                        >ตกลง</button>
+
+                        <style>{`
+                            @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+                            @keyframes popIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+                            @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+                        `}</style>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
