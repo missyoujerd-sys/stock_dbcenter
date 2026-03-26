@@ -9,6 +9,13 @@ import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
+
+const cleanDuplicateWords = (text) => {
+    if (!text) return text;
+    const words = text.toString().trim().split(/\s+/);
+    return words.filter((word, pos, arr) => pos === 0 || word !== arr[pos - 1]).join(' ');
+};
+
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,7 +47,7 @@ export default function Inventory() {
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
-                        brandModel: decryptData(item.brandModel),
+                        brandModel: cleanDuplicateWords(decryptData(item.brandModel)),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });

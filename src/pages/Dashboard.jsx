@@ -14,6 +14,12 @@ import qmIncomingSvg from '../assets/qm-incoming.svg';
 import qmDistributionSvg from '../assets/qm-distribution.svg';
 import qmInventorySvg from '../assets/qm-inventory.svg';
 
+const cleanDuplicateWords = (text) => {
+    if (!text) return text;
+    const words = text.toString().trim().split(/\s+/);
+    return words.filter((word, pos, arr) => pos === 0 || word !== arr[pos - 1]).join(' ');
+};
+
 export default function Dashboard() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -50,7 +56,7 @@ export default function Dashboard() {
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
-                        brandModel: decryptData(item.brandModel),
+                        brandModel: cleanDuplicateWords(decryptData(item.brandModel)),
                         computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status

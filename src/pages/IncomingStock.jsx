@@ -15,6 +15,12 @@ import { saveAs } from 'file-saver';
 import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList, FaCamera, FaSignature, FaTrash, FaEraser } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
+const cleanDuplicateWords = (text) => {
+    if (!text) return text;
+    const words = text.toString().trim().split(/\s+/);
+    return words.filter((word, pos, arr) => pos === 0 || word !== arr[pos - 1]).join(' ');
+};
+
 registerLocale('th', th);
 
 const REMARK_OPTIONS = [
@@ -71,38 +77,38 @@ export default function IncomingStock() {
         "คอมพิวเตอร์ PC-Notebook":
             ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
         "จอคอมพิวเตอร์": [
-            "จอคอมพิวเตอร์ Acer",
-            "จอคอมพิวเตอร์ Asus",
-            "จอคอมพิวเตอร์ AOC ",
-            "จอคอมพิวเตอร์ ZOWIE",
-            "จอคอมพิวเตอร์ BenQ ",
-            "จอคอมพิวเตอร์ Xiaomi ",
-            "จอคอมพิวเตอร์ Viewsonic ",
-            "จอคอมพิวเตอร์ SAMSUNG ",
-            "จอคอมพิวเตอร์ MSI ",
-            "จอคอมพิวเตอร์ Alienware ",
-            "จอคอมพิวเตอร์ LG "
+            "Acer",
+            "Asus",
+            "AOC ",
+            "ZOWIE",
+            "BenQ ",
+            "Xiaomi ",
+            "Viewsonic ",
+            "SAMSUNG ",
+            "MSI ",
+            "Alienware ",
+            "LG "
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
         "Printer": [
-            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
-            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
-            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
-            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
-            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+            "Dot Matrix Printer",
+            "Inkjet Printer",
+            "Laser Printer",
+            "Thermal Printer",
+            "Plotter Printer"
         ],
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
 
         "สแกนเนอร์": [
-            "สแกนเนอร์ Canon PIXMA ",
-            "สแกนเนอร์ Epson Scaner ",
-            "สแกนเนอร์ FUJITSU ",
-            "สแกนเนอร์ Brother ",
-            "สแกนเนอร์ Aibecy ",
-            "สแกนเนอร์ Canon Laserjet",
-            "สแกนเนอร์ HP Laserjet ",
-            "สแกนเนอร์ Brother Scanner ",],
+            "Canon PIXMA ",
+            "Epson Scaner ",
+            "FUJITSU ",
+            "Brother ",
+            "Aibecy ",
+            "Canon Laserjet",
+            "HP Laserjet ",
+            "Brother Scanner ",],
 
         "Switc Hub": [
             "TP-Link",
@@ -388,7 +394,7 @@ export default function IncomingStock() {
                 serialNumber: encryptData(formData.serialNumber),
                 assetId: encryptData(formData.assetId),
                 category: encryptData(formData.category),
-                brandModel: encryptData(`${formData.category} ${formData.brand} ${formData.model}`.trim().replace(/-$/, '').trim()),
+                brandModel: encryptData(cleanDuplicateWords(`${formData.category} ${formData.brand} ${formData.model}`.trim().replace(/-$/, '').trim())),
                 computerName: encryptData(formData.computerName),
                 remarks: encryptData(formData.remarks),
                 photoData: photoData || '',
@@ -453,7 +459,7 @@ export default function IncomingStock() {
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
-                        brandModel: decryptData(item.brandModel).trim().replace(/-$/, '').trim(),
+                        brandModel: cleanDuplicateWords(decryptData(item.brandModel).trim().replace(/-$/, '').trim()),
                         computerName: decryptData(item.computerName || ''),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
