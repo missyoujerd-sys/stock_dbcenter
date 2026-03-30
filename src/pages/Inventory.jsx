@@ -22,6 +22,7 @@ export default function Inventory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [autoPrintModal, setAutoPrintModal] = useState(false);
     const navigate = useNavigate();
     const { currentUser, isAdmin, isAdmin_2 } = useAuth();
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
@@ -96,7 +97,15 @@ export default function Inventory() {
     );
 
     const handleRowClick = (item) => {
+        setAutoPrintModal(false);
         setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handlePrintClick = (e, item) => {
+        e.stopPropagation();
+        setSelectedItem(item);
+        setAutoPrintModal(true);
         setShowDetailModal(true);
     };
 
@@ -312,16 +321,16 @@ export default function Inventory() {
                                             {stock.status}
                                         </span>
                                     </td>
-                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-                                         <button
-                                             className="inv-del-btn"
-                                             title="พิมพ์สติกเกอร์"
-                                             style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
-                                             onClick={() => generateExcelLabel(stock)}
-                                         >
-                                             <FaPrint />
-                                         </button>
-                                     </td>
+                                     <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                          <button
+                                              className="inv-del-btn"
+                                              title="พิมพ์ใบจำหน่าย / รายละเอียดพัสดุ"
+                                              style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
+                                              onClick={(e) => handlePrintClick(e, stock)}
+                                          >
+                                              <FaPrint />
+                                          </button>
+                                      </td>
                                      {isAdmin_2 && (
                                          <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                              <button
@@ -362,8 +371,12 @@ export default function Inventory() {
 
             <ItemDetailModal
                 show={showDetailModal}
-                onHide={() => setShowDetailModal(false)}
+                onHide={() => {
+                    setShowDetailModal(false);
+                    setAutoPrintModal(false);
+                }}
                 item={selectedItem}
+                autoPrint={autoPrintModal}
             />
 
             {/* Floating Back Button */}

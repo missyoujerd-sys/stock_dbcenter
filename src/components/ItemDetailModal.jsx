@@ -1,9 +1,19 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Modal, Button, Row, Col } from 'react-bootstrap';
 import { FaPrint, FaTimes } from 'react-icons/fa';
 
-const ItemDetailModal = ({ show, onHide, item }) => {
+const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
     const printRef = useRef();
+
+    useEffect(() => {
+        if (show && autoPrint && item) {
+            // Give a small delay for signatures and images to load
+            const timer = setTimeout(() => {
+                window.print();
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [show, autoPrint, item]);
 
     if (!item) return null;
 
