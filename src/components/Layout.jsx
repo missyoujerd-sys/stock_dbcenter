@@ -121,7 +121,7 @@ export default function Layout({ children }) {
         </div>
 
         {/* Elite Glass Navigation */}
-        <nav className="space-y-2.5 flex-1 overflow-y-auto no-scrollbar py-2">
+        <nav className="space-y-2.5 flex-1 overflow-y-auto sidebar-scrollbar py-2 pr-1 mr-[-4px]">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
