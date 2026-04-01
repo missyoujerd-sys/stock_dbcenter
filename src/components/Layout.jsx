@@ -130,37 +130,42 @@ export default function Layout({ children }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+                className={`flex items-center gap-3.5 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ease-out cursor-pointer w-full select-none ${
                   isActive 
-                    ? "text-white bg-white/[0.04] dark:bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-100 dark:hover:text-slate-200"
+                    ? "text-white bg-gradient-to-b from-[#1e293b] to-[#020617] shadow-[0_6px_15px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.15),inset_0_-2px_4px_rgba(0,0,0,0.6)] border border-[#3b82f6]/40" 
+                    : "text-slate-300 dark:text-slate-400 bg-gradient-to-b from-[#1e293b]/40 to-[#020617]/60 shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.08),inset_0_-1px_3px_rgba(0,0,0,0.5)] border border-slate-700/50 hover:text-white dark:hover:text-white hover:from-[#1e293b]/70 hover:to-[#020617]/80 hover:shadow-[0_4px_15px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15),inset_0_-1px_4px_rgba(0,0,0,0.6)] hover:border-slate-500/60"
                 }`}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
+                {/* 3D Glass Highlight overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-t from-transparent ${isActive ? 'via-white/[0.04] to-white/[0.1]' : 'via-transparent to-white/[0.03] group-hover:to-white/[0.06]'} pointer-events-none rounded-xl`}></div>
+                <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${isActive ? 'via-blue-400/60' : 'via-slate-400/30 group-hover:via-slate-300/50'} to-transparent pointer-events-none`}></div>
+                
                 {/* Icon Wrapper Circle */}
-                <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
+                <div className={`relative shrink-0 flex items-center justify-center w-[2.6rem] h-[2.6rem] rounded-full transition-all duration-200 border-2 overflow-hidden ${
                   isActive 
-                    ? "bg-[#1e293b] dark:bg-blue-900/30 border-blue-500/50 shadow-[0_4px_15px_rgba(59,130,246,0.2)] dark:shadow-[0_4px_20px_rgba(59,130,246,0.3)] scale-105" 
-                    : "bg-white/[0.02] dark:bg-white/[0.03] border-white/[0.05] dark:border-white/[0.08] group-hover:bg-white/[0.06] dark:group-hover:bg-white/[0.08] group-hover:border-white/10 dark:group-hover:border-white/15 group-hover:scale-110"
+                    ? "bg-gradient-to-b from-[#2563eb] to-[#1e3a8a] border-[#93c5fd] shadow-[0_0_15px_rgba(59,130,246,0.6),inset_0_2px_4px_rgba(255,255,255,0.4)]" 
+                    : "bg-gradient-to-b from-[#1f2937] to-[#111827] border-slate-600 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1)] group-hover:border-slate-400 group-hover:from-[#374151] group-hover:to-[#1f2937]"
                 }`}>
                   {/* Subtle Icon Glow */}
                   {isActive && (
-                    <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
+                    <div className="absolute inset-0 bg-blue-300 opacity-50 blur-[6px] animate-pulse pointer-events-none"></div>
                   )}
                   
-                  <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
-                    <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                  <div className={`relative z-10 transition-all duration-200 ${isActive ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]" : "text-slate-400 group-hover:text-white"}`}>
+                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
 
                   {/* Glass Shine on Circle */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${isActive ? 'from-white/[0.2]' : 'from-white/[0.05] group-hover:from-white/[0.15]'} to-transparent pointer-events-none transition-opacity duration-200`}></div>
                 </div>
                 
-                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-white translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                <div className="flex flex-col flex-1 overflow-visible min-w-0 z-10 justify-center h-full">
+                   <span className={`font-bold text-[0.88rem] xl:text-[0.92rem] whitespace-nowrap font-['Prompt'] transition-all duration-200 ${isActive ? 'text-[#e0f2fe] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]' : 'group-hover:text-white drop-shadow-sm'}`}>
                     {item.name}
                   </span>
                   {isActive && (
-                    <div className="h-[2px] w-6 bg-blue-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                    <div className="h-[2px] w-8 bg-gradient-to-r from-[#38bdf8] to-[#818cf8] rounded-full mt-1.5 shadow-[0_0_10px_rgba(56,189,248,0.9)]"></div>
                   )}
                 </div>
               </Link>
