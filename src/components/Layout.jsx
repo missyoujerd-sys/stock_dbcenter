@@ -17,7 +17,8 @@ import {
   Eye,
   Activity,
   Calendar,
-  Clock
+  Clock,
+  ArrowLeftRight
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -67,6 +68,7 @@ export default function Layout({ children }) {
     { name: "รับเข้า Stock", path: "/incoming", icon: Package },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck },
     ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box }] : []),
+    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight },
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList },
   ];
