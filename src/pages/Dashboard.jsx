@@ -32,6 +32,30 @@ export default function Dashboard() {
         distributed: 0
     });
 
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const formatDate = (date) => {
+        return new Intl.DateTimeFormat('th-TH', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        }).format(date);
+    };
+
+    const formatTime = (date) => {
+        return new Intl.DateTimeFormat('th-TH', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).format(date);
+    };
+
     useEffect(() => {
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
@@ -104,6 +128,14 @@ export default function Dashboard() {
 
                 {/* Stat chips */}
                 <div className="db-hero-chips">
+                    <div className="db-chip" style={{ borderLeft: '4px solid #60a5fa' }}>
+                        <div className="db-chip-top">
+                            <div className="db-chip-dot" style={{ backgroundColor: '#60a5fa', boxShadow: '0 0 10px rgba(96,165,250,0.8)' }}></div>
+                            <span className="db-chip-label" style={{ color: '#93c5fd' }}>วัน/เวลาปัจจุบัน</span>
+                        </div>
+                        <div className="db-chip-value" style={{ fontSize: '1.4rem' }}>{formatDate(currentTime)}</div>
+                        <div className="db-chip-sub" style={{ fontFamily: 'monospace', fontSize: '1.1rem', color: '#bfdbfe', letterSpacing: '1.5px', marginTop: '2px' }}>{formatTime(currentTime)}</div>
+                    </div>
                     <div className="db-chip db-chip--total">
                         <div className="db-chip-top">
                             <div className="db-chip-dot db-chip-dot--total"></div>
@@ -215,6 +247,7 @@ export default function Dashboard() {
                     <table className="latest-table">
                         <thead>
                             <tr>
+                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
                                 <th>วันที่</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ / รุ่น</th>
@@ -224,9 +257,9 @@ export default function Dashboard() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : stocks.length === 0 ? (
-                                <tr><td colSpan="5" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ</td></tr>
+                                <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ</td></tr>
                             ) : stocks.slice(0, 10).map((stock, idx) => (
                                 <tr
                                     key={stock.id}
@@ -234,6 +267,7 @@ export default function Dashboard() {
                                     className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
                                     title="คลิกเพื่อดูรายละเอียด"
                                 >
+                                    <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
                                     <td>
                                         <div className="latest-date">{stock.importDate}</div>
                                         {stock.timestamp && (
