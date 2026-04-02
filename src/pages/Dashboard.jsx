@@ -6,7 +6,7 @@ import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     FaWarehouse, FaBox, FaCheckCircle,
-    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight
+    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 import logoSvg from '../assets/logo.svg';
@@ -19,6 +19,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [summary, setSummary] = useState({
         total: 0,
@@ -93,6 +94,16 @@ export default function Dashboard() {
         setSelectedItem(item);
         setShowDetailModal(true);
     };
+
+    const filteredStocks = stocks.filter(stock => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        const assetMatch = stock.assetId ? stock.assetId.toLowerCase().includes(term) : false;
+        const snMatch = stock.serialNumber ? stock.serialNumber.toLowerCase().includes(term) : false;
+        return assetMatch || snMatch;
+    });
+
+    const displayStocks = filteredStocks.slice(0, 50);
 
     return (
         <div>
@@ -229,13 +240,41 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel">
-                <div className="latest-panel-header">
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                     <div className="latest-panel-title-wrap">
                         <div className="latest-panel-dot"></div>
                         <span className="latest-panel-title">รายการพัสดุล่าสุด</span>
                         <span className="latest-panel-badge">LATEST ITEMS</span>
                     </div>
-                    <span className="latest-panel-count">{loading ? '...' : `${stocks.slice(0, 50).length} รายการ`}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+                        <div style={{ position: 'relative' }}>
+                            <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input
+                                type="text"
+                                placeholder="ค้นหา ครุภัณฑ์ / SN..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    padding: '6px 12px 6px 35px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    background: 'rgba(15, 23, 42, 0.6)',
+                                    color: '#f8fafc',
+                                    outline: 'none',
+                                    width: '260px',
+                                    fontSize: '0.9rem',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.border = '1px solid #60a5fa';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                                }}
+                            />
+                        </div>
+                        <span className="latest-panel-count">{loading ? '...' : `${displayStocks.length} รายการ`}</span>
+                    </div>
                 </div>
                 <div className="latest-table-wrap">
                     <table className="latest-table">
@@ -252,9 +291,9 @@ export default function Dashboard() {
                         <tbody>
                             {loading ? (
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
-                            ) : stocks.length === 0 ? (
-                                <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ</td></tr>
-                            ) : stocks.slice(0, 50).map((stock, idx) => (
+                            ) : displayStocks.length === 0 ? (
+                                <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ หรือ ไม่พบข้อมูลที่ค้นหา</td></tr>
+                            ) : displayStocks.map((stock, idx) => (
                                 <tr
                                     key={stock.id}
                                     onClick={() => handleRowClick(stock)}
