@@ -81,7 +81,8 @@ export default function IncomingStock() {
             "จอคอมพิวเตอร์ SAMSUNG ",
             "จอคอมพิวเตอร์ MSI ",
             "จอคอมพิวเตอร์ Alienware ",
-            "จอคอมพิวเตอร์ LG "
+            "จอคอมพิวเตอร์ LG ",
+            "จอคอมพิวเตอร์ Lenovo ",
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
