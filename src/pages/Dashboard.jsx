@@ -318,16 +318,19 @@ export default function Dashboard() {
                     <table className="latest-table">
                         <thead>
                             <tr>
-                                <th style={{ width: '80px', textAlign: 'center' }}>
-                                    <div className="d-flex align-items-center justify-content-center gap-2">
-                                        <input 
-                                            type="checkbox" 
-                                            className="form-check-input"
-                                            style={{ cursor: 'pointer' }}
-                                            onChange={handleSelectAll}
-                                            checked={displayStocks.length > 0 && selectedStocks.length === displayStocks.length}
-                                        />
-                                        <span>ลำดับ</span>
+                                <th style={{ width: '90px', textAlign: 'center' }}>
+                                    <div className="d-flex flex-column align-items-center justify-content-center gap-1">
+                                        <label className="d-flex align-items-center gap-1 mb-0" style={{ cursor: 'pointer' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-check-input m-0"
+                                                style={{ cursor: 'pointer' }}
+                                                onChange={handleSelectAll}
+                                                checked={displayStocks.length > 0 && selectedStocks.length === displayStocks.length}
+                                            />
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 'normal', whiteSpace: 'nowrap' }}>เลือกทั้งหมด</span>
+                                        </label>
+                                        <span style={{ fontSize: '0.85rem' }}>ลำดับ</span>
                                     </div>
                                 </th>
                                 <th>วันที่</th>
