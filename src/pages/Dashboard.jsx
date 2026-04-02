@@ -9,6 +9,7 @@ import {
     FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
+import MultiPrintModal from '../components/MultiPrintModal';
 import logoSvg from '../assets/logo.svg';
 import qmIncomingSvg from '../assets/qm-incoming.svg';
 import qmDistributionSvg from '../assets/qm-distribution.svg';
@@ -26,8 +27,9 @@ export default function Dashboard() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    
     const [selectedStocks, setSelectedStocks] = useState([]);
-    const [showMultiPrint, setShowMultiPrint] = useState(false);
+    const [showMultiPrintModal, setShowMultiPrintModal] = useState(false);
 
     const [summary, setSummary] = useState({
         total: 0,
@@ -112,6 +114,27 @@ export default function Dashboard() {
     });
 
     const displayStocks = filteredStocks.slice(0, 50);
+
+    const handleSelectStock = (e, stock) => {
+        e.stopPropagation();
+        if (e.target.checked) {
+            setSelectedStocks(prev => [...prev, stock]);
+        } else {
+            setSelectedStocks(prev => prev.filter(s => s.id !== stock.id));
+        }
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedStocks(displayStocks);
+        } else {
+            setSelectedStocks([]);
+        }
+    };
+
+    const handlePrintSelected = () => {
+        setShowMultiPrintModal(true);
+    };
 
     return (
         <div>
@@ -248,24 +271,20 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel">
-                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                     <div className="latest-panel-title-wrap">
                         <div className="latest-panel-dot"></div>
                         <span className="latest-panel-title">รายการพัสดุล่าสุด</span>
                         <span className="latest-panel-badge">LATEST ITEMS</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
-                        {selectedStocks.length > 0 && (
-                            <Button 
-                                variant="primary" 
-                                size="sm" 
-                                className="shadow-sm d-flex align-items-center"
-                                onClick={() => setShowMultiPrint(true)}
-                                style={{ borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
-                            >
-                                <FaPrint className="me-2" /> <span>พิมพ์ที่เลือก ({selectedStocks.length})</span>
+                    {selectedStocks.length > 0 && (
+                        <div style={{ marginLeft: '15px' }}>
+                            <Button variant="primary" size="sm" onClick={handlePrintSelected} className="d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: '8px' }}>
+                                <FaPrint /> พิมพ์ที่เลือก ({selectedStocks.length})
                             </Button>
-                        )}
+                        </div>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -299,25 +318,18 @@ export default function Dashboard() {
                     <table className="latest-table">
                         <thead>
                             <tr>
-                                <th style={{ width: '90px', textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                <th style={{ width: '80px', textAlign: 'center' }}>
+                                    <div className="d-flex align-items-center justify-content-center gap-2">
                                         <input 
                                             type="checkbox" 
+                                            className="form-check-input"
+                                            style={{ cursor: 'pointer' }}
+                                            onChange={handleSelectAll}
                                             checked={displayStocks.length > 0 && selectedStocks.length === displayStocks.length}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedStocks(displayStocks);
-                                                } else {
-                                                    setSelectedStocks([]);
-                                                }
-                                            }}
-                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
-                                            title="เลือกทั้งหมด"
                                         />
-                                        <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#94a3b8' }}>เลือกทั้งหมด</span>
+                                        <span>ลำดับ</span>
                                     </div>
                                 </th>
-                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
                                 <th>วันที่</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ / รุ่น</th>
@@ -327,9 +339,9 @@ export default function Dashboard() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="7" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : displayStocks.length === 0 ? (
-                                <tr><td colSpan="7" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ หรือ ไม่พบข้อมูลที่ค้นหา</td></tr>
+                                <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ หรือ ไม่พบข้อมูลที่ค้นหา</td></tr>
                             ) : displayStocks.map((stock, idx) => (
                                 <tr
                                     key={stock.id}
@@ -337,22 +349,19 @@ export default function Dashboard() {
                                     className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
                                     title="คลิกเพื่อดูรายละเอียด"
                                 >
-                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-                                        <input 
-                                            type="checkbox" 
-                                            checked={selectedStocks.some(s => s.id === stock.id)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedStocks([...selectedStocks, stock]);
-                                                } else {
-                                                    setSelectedStocks(selectedStocks.filter(s => s.id !== stock.id));
-                                                }
-                                            }}
-                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
-                                            title="เลือกพัสดุนี้"
-                                        />
+                                    <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>
+                                        <div className="d-flex align-items-center justify-content-center gap-2">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-check-input"
+                                                style={{ cursor: 'pointer' }}
+                                                checked={selectedStocks.some(s => s.id === stock.id)}
+                                                onChange={(e) => handleSelectStock(e, stock)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <span>{idx + 1}</span>
+                                        </div>
                                     </td>
-                                    <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
                                     <td>
                                         <div className="latest-date">{stock.importDate}</div>
                                         {stock.timestamp && (
@@ -382,9 +391,9 @@ export default function Dashboard() {
                 item={selectedItem}
             />
 
-            <ItemDetailModal
-                show={showMultiPrint}
-                onHide={() => setShowMultiPrint(false)}
+            <MultiPrintModal
+                show={showMultiPrintModal}
+                onHide={() => setShowMultiPrintModal(false)}
                 items={selectedStocks}
             />
         </div>
