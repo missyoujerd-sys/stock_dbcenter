@@ -6,7 +6,7 @@ import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     FaWarehouse, FaBox, FaCheckCircle,
-    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch
+    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 import logoSvg from '../assets/logo.svg';
@@ -26,6 +26,8 @@ export default function Dashboard() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedStocks, setSelectedStocks] = useState([]);
+    const [showMultiPrint, setShowMultiPrint] = useState(false);
 
     const [summary, setSummary] = useState({
         total: 0,
@@ -253,6 +255,17 @@ export default function Dashboard() {
                         <span className="latest-panel-badge">LATEST ITEMS</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+                        {selectedStocks.length > 0 && (
+                            <Button 
+                                variant="primary" 
+                                size="sm" 
+                                className="shadow-sm d-flex align-items-center"
+                                onClick={() => setShowMultiPrint(true)}
+                                style={{ borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+                            >
+                                <FaPrint className="me-2" /> <span>พิมพ์ที่เลือก ({selectedStocks.length})</span>
+                            </Button>
+                        )}
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -286,6 +299,24 @@ export default function Dashboard() {
                     <table className="latest-table">
                         <thead>
                             <tr>
+                                <th style={{ width: '90px', textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={displayStocks.length > 0 && selectedStocks.length === displayStocks.length}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedStocks(displayStocks);
+                                                } else {
+                                                    setSelectedStocks([]);
+                                                }
+                                            }}
+                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
+                                            title="เลือกทั้งหมด"
+                                        />
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#94a3b8' }}>เลือกทั้งหมด</span>
+                                    </div>
+                                </th>
                                 <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
                                 <th>วันที่</th>
                                 <th>หมายเลขครุภัณฑ์</th>
@@ -296,9 +327,9 @@ export default function Dashboard() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="7" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : displayStocks.length === 0 ? (
-                                <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ หรือ ไม่พบข้อมูลที่ค้นหา</td></tr>
+                                <tr><td colSpan="7" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ หรือ ไม่พบข้อมูลที่ค้นหา</td></tr>
                             ) : displayStocks.map((stock, idx) => (
                                 <tr
                                     key={stock.id}
@@ -306,6 +337,21 @@ export default function Dashboard() {
                                     className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
                                     title="คลิกเพื่อดูรายละเอียด"
                                 >
+                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedStocks.some(s => s.id === stock.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedStocks([...selectedStocks, stock]);
+                                                } else {
+                                                    setSelectedStocks(selectedStocks.filter(s => s.id !== stock.id));
+                                                }
+                                            }}
+                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
+                                            title="เลือกพัสดุนี้"
+                                        />
+                                    </td>
                                     <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
                                     <td>
                                         <div className="latest-date">{stock.importDate}</div>
@@ -334,6 +380,12 @@ export default function Dashboard() {
                 show={showDetailModal}
                 onHide={() => setShowDetailModal(false)}
                 item={selectedItem}
+            />
+
+            <ItemDetailModal
+                show={showMultiPrint}
+                onHide={() => setShowMultiPrint(false)}
+                items={selectedStocks}
             />
         </div>
     );

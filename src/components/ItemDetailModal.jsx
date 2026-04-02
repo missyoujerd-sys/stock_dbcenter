@@ -2,6 +2,14 @@ import React, { useRef, useEffect } from 'react';
 import { Modal, Button, Row, Col } from 'react-bootstrap';
 import { FaPrint, FaTimes } from 'react-icons/fa';
 
+dev_
+const ItemDetailModal = ({ show, onHide, item, items = [] }) => {
+    const printRef = useRef();
+
+    const printItems = items.length > 0 ? items : (item ? [item] : []);
+
+    if (printItems.length === 0) return null;
+=======
 const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
     const printRef = useRef();
 
@@ -16,6 +24,7 @@ const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
     }, [show, autoPrint, item]);
 
     if (!item) return null;
+ main
 
     const handlePrint = () => {
         window.print();
@@ -38,74 +47,78 @@ const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
             <Modal.Header closeButton className="d-print-none border-0">
                 <Modal.Title className="fw-bold">รายละเอียดพัสดุ</Modal.Title>
             </Modal.Header>
-            <Modal.Body className="p-0">
-                <div ref={printRef} className="document-container bg-white mx-auto shadow-sm position-relative"
-                    style={{ width: '101.6mm', minHeight: '72.4mm', padding: '4mm 5mm', boxSizing: 'border-box' }}>
-                    {/* Watermark for UI and printing */}
-                    <div className="watermark">
-                        จำหน่าย
-                    </div>
-
-                    {/* Header: title + date/time on same row */}
-                    <div className="d-flex justify-content-between align-items-start mb-1">
-                        <div style={{ flex: 1 }}></div>
-                        <h1 className="document-title fw-bold text-decoration-underline mb-0 text-center" style={{ flex: 2, fontSize: '1rem' }}>
-                            จำหน่าย
-                        </h1>
-                        <div className="text-end" style={{ flex: 1, fontSize: '0.65rem', lineHeight: '1.4' }}>
-                            <div>วันที่: {formattedDate}</div>
-                            <div>เวลา: {formattedTime} น.</div>
-                        </div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="document-content" style={{ fontSize: '0.72rem', lineHeight: '1.7' }}>
-                        <div className="d-flex mb-1">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>หน่วยงาน:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.department || '-'}{item.building && ` (${item.building})`}</span>
-                            <span className="border-bottom-dotted px-1" style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}><strong>เบอร์โทร.</strong>&nbsp;{item.phoneNumber || '2299'}</span>
-                        </div>
-
-                        <div className="d-flex mb-1">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>ประเภทครุภัณฑ์:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.category || '-'}</span>
-                        </div>
-
-                        <div className="d-flex mb-1">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>Serial Number:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.serialNumber || '-'}</span>
-                        </div>
-
-                        <div className="d-flex mb-1">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>เลขครุภัณฑ์:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.assetId || '-'}</span>
-                        </div>
-
-                        <div className="d-flex mb-1">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>ยี่ห้อ/รุ่น:</span>
-                            <span className="flex-grow-1 border-bottom-dotted px-1">{item.brandModel || '-'}</span>
-                        </div>
-
-                        <div className="d-flex mb-0 align-items-start">
-                            <span className="fw-bold" style={{ minWidth: '80px' }}>หมายเหตุ:</span>
-                            <div className="flex-grow-1 border-bottom-dotted px-1" style={{ minHeight: '1.2em' }}>
-                                {item.remarks || ''}
+            <Modal.Body className="p-0" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div ref={printRef} className="print-wrapper d-flex flex-column align-items-center" style={{ gap: '10px', padding: '10px 0' }}>
+                    {printItems.map((currentItem, index) => (
+                        <div key={currentItem.id || index} className="document-container bg-white mx-auto shadow-sm position-relative"
+                            style={{ width: '101.6mm', minHeight: '72.4mm', padding: '4mm 5mm', boxSizing: 'border-box' }}>
+                            {/* Watermark for UI and printing */}
+                            <div className="watermark">
+                                จำหน่าย
                             </div>
-                            {/* Signature inline at remarks level */}
-                            <div className="text-center ms-2" style={{ width: '115px', flexShrink: 0 }}>
-                                <div style={{ width: '115px', height: '30px', borderBottom: '1px dotted #000', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
-                                    {item.signatureData ? (
-                                        <img src={item.signatureData} alt="ลายเซ็น"
-                                            style={{ maxHeight: '28px', maxWidth: '110px', objectFit: 'contain', marginBottom: '2px', filter: 'invert(1) brightness(0)' }}
-                                        />
-                                    ) : null}
+
+                            {/* Header: title + date/time on same row */}
+                            <div className="d-flex justify-content-between align-items-start mb-1">
+                                <div style={{ flex: 1 }}></div>
+                                <h1 className="document-title fw-bold text-decoration-underline mb-0 text-center" style={{ flex: 2, fontSize: '1rem' }}>
+                                    จำหน่าย
+                                </h1>
+                                <div className="text-end" style={{ flex: 1, fontSize: '0.65rem', lineHeight: '1.4' }}>
+                                    <div>วันที่: {formattedDate}</div>
+                                    <div>เวลา: {formattedTime} น.</div>
                                 </div>
-                                <div style={{ fontSize: '0.55rem' }}>({item.officerName || '.....................'})</div>
-                                <div style={{ fontSize: '0.55rem' }}>{item.officerDate || '..../....../..........'}</div>
-                                <div className="fw-bold" style={{ fontSize: '0.6rem' }}>เจ้าหน้าที่คอมพิวเตอร์</div>
+                            </div>
+
+                            {/* Content Section */}
+                            <div className="document-content" style={{ fontSize: '0.72rem', lineHeight: '1.7' }}>
+                                <div className="d-flex mb-1">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>หน่วยงาน:</span>
+                                    <span className="flex-grow-1 border-bottom-dotted px-1">{currentItem.department || '-'}{currentItem.building && ` (${currentItem.building})`}</span>
+                                    <span className="border-bottom-dotted px-1" style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}><strong>เบอร์โทร.</strong>&nbsp;{currentItem.phoneNumber || '2299'}</span>
+                                </div>
+
+                                <div className="d-flex mb-1">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>ประเภทครุภัณฑ์:</span>
+                                    <span className="flex-grow-1 border-bottom-dotted px-1">{currentItem.category || '-'}</span>
+                                </div>
+
+                                <div className="d-flex mb-1">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>Serial Number:</span>
+                                    <span className="flex-grow-1 border-bottom-dotted px-1">{currentItem.serialNumber || '-'}</span>
+                                </div>
+
+                                <div className="d-flex mb-1">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>เลขครุภัณฑ์:</span>
+                                    <span className="flex-grow-1 border-bottom-dotted px-1">{currentItem.assetId || '-'}</span>
+                                </div>
+
+                                <div className="d-flex mb-1">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>ยี่ห้อ/รุ่น:</span>
+                                    <span className="flex-grow-1 border-bottom-dotted px-1">{currentItem.brandModel || '-'}</span>
+                                </div>
+
+                                <div className="d-flex mb-0 align-items-start">
+                                    <span className="fw-bold" style={{ minWidth: '80px' }}>หมายเหตุ:</span>
+                                    <div className="flex-grow-1 border-bottom-dotted px-1" style={{ minHeight: '1.2em' }}>
+                                        {currentItem.remarks || ''}
+                                    </div>
+                                    {/* Signature inline at remarks level */}
+                                    <div className="text-center ms-2" style={{ width: '115px', flexShrink: 0 }}>
+                                        <div style={{ width: '115px', height: '30px', borderBottom: '1px dotted #000', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
+                                            {currentItem.signatureData ? (
+                                                <img src={currentItem.signatureData} alt="ลายเซ็น"
+                                                    style={{ maxHeight: '28px', maxWidth: '110px', objectFit: 'contain', marginBottom: '2px', filter: 'invert(1) brightness(0)' }}
+                                                />
+                                            ) : null}
+                                        </div>
+                                        <div style={{ fontSize: '0.55rem' }}>({currentItem.officerName || '.....................'})</div>
+                                        <div style={{ fontSize: '0.55rem' }}>{currentItem.officerDate || '..../....../..........'}</div>
+                                        <div className="fw-bold" style={{ fontSize: '0.6rem' }}>เจ้าหน้าที่คอมพิวเตอร์</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </Modal.Body>
             <Modal.Footer className="d-print-none border-0">
@@ -170,6 +183,11 @@ const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
                 }
                 
                 @media print {
+                    .print-wrapper {
+                        display: block !important;
+                        gap: 0 !important;
+                        padding: 0 !important;
+                    }
                     @page {
                         margin: 0;
                         size: 101.6mm 72.4mm landscape;
@@ -214,10 +232,13 @@ const ItemDetailModal = ({ show, onHide, item, autoPrint = false }) => {
                         width: 101.6mm !important;
                         min-height: 72.4mm !important;
                         max-height: 72.4mm !important;
-                        page-break-after: avoid;
+                        page-break-after: always;
                         page-break-before: avoid;
                         margin: 0 !important;
                         overflow: hidden !important;
+                    }
+                    .document-container:last-child {
+                        page-break-after: avoid;
                     }
                     .document-title {
                         margin-bottom: 0.5rem !important;

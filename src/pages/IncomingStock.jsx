@@ -77,6 +77,20 @@ export default function IncomingStock() {
         "คอมพิวเตอร์ PC-Notebook":
             ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
         "จอคอมพิวเตอร์": [
+ dev_
+            "จอคอมพิวเตอร์ Acer",
+            "จอคอมพิวเตอร์ Asus",
+            "จอคอมพิวเตอร์ AOC ",
+            "จอคอมพิวเตอร์ ZOWIE",
+            "จอคอมพิวเตอร์ BenQ ",
+            "จอคอมพิวเตอร์ Xiaomi ",
+            "จอคอมพิวเตอร์ Viewsonic ",
+            "จอคอมพิวเตอร์ SAMSUNG ",
+            "จอคอมพิวเตอร์ MSI ",
+            "จอคอมพิวเตอร์ Alienware ",
+            "จอคอมพิวเตอร์ LG ",
+            "จอคอมพิวเตอร์ Lenovo ",
+=======
             "Acer",
             "Asus",
             "AOC ",
@@ -88,6 +102,7 @@ export default function IncomingStock() {
             "MSI ",
             "Alienware ",
             "LG "
+ main
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
