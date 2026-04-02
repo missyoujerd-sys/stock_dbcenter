@@ -262,6 +262,7 @@ export default function Inventory() {
                     <table className="latest-table">
                         <thead>
                             <tr>
+                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
                                 <th>วันที่</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ / รุ่น</th>
@@ -275,9 +276,9 @@ export default function Inventory() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="7" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="10" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredStocks.length === 0 ? (
-                                <tr><td colSpan="7" className="latest-empty">ไม่พบข้อมูลพัสดุ</td></tr>
+                                <tr><td colSpan="10" className="latest-empty">ไม่พบข้อมูลพัสดุ</td></tr>
                             ) : filteredStocks.map((stock, idx) => (
                                 <tr
                                     key={stock.id}
@@ -285,6 +286,7 @@ export default function Inventory() {
                                     className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
                                     title="คลิกเพื่อดูรายละเอียด"
                                 >
+                                    <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
                                     <td>
                                         <div className="latest-date">{stock.importDate}</div>
                                         {stock.timestamp && (

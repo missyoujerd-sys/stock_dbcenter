@@ -476,6 +476,7 @@ export default function Distribution() {
                                         className="db-check-custom"
                                     />
                                 </th>
+                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
                                 <th>วันที่สำรวจ</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ/รุ่น</th>
@@ -488,9 +489,9 @@ export default function Distribution() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="9" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="10" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredStocks.length === 0 ? (
-                                <tr><td colSpan="9" className="latest-empty">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
+                                <tr><td colSpan="10" className="latest-empty">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
                             ) : (
                                 filteredStocks.map((stock, idx) => (
                                     <tr
@@ -504,6 +505,7 @@ export default function Distribution() {
                                                 onChange={() => toggleSelect(stock.id)}
                                             />
                                         </td>
+                                        <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
                                         <td>{stock.importDate}</td>
                                         <td className="latest-asset-id">{stock.assetId}</td>
                                         <td className="latest-brand">{stock.brandModel}</td>
