@@ -2222,7 +2222,24 @@ h6 {
 /* Table wrapper */
 .latest-table-wrap {
   overflow-x: auto;
-  padding: 0.5rem 0;
+  overflow-y: auto;
+  max-height: 420px;
+  padding: 0.5rem 0 0 0;
+}
+
+.latest-table-wrap::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.latest-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.latest-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+.latest-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Table */
@@ -2233,7 +2250,13 @@ h6 {
 }
 
 /* Table head */
-.latest-table thead tr th {
+.latest-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(14, 34, 85, 0.95); /* Deep dark blue to match header */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
   padding: 0.85rem 1.5rem;
   font-size: 0.68rem;
   font-weight: 700;
