@@ -9,12 +9,24 @@ import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
 import ItemDetailModal from '../components/ItemDetailModal';
 import { useAuth } from '../contexts/AuthContext';
+
+const cleanDuplicateWords = (text) => {
+    if (!text) return text;
+    const words = text.toString().trim().split(/\s+/);
+    return words.filter((word, pos, arr) => pos === 0 || word !== arr[pos - 1]).join(' ');
+};
+
 export default function Inventory() {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+< dev_
+    const [selectedStocks, setSelectedStocks] = useState([]);
+    const [showMultiPrint, setShowMultiPrint] = useState(false);
+    const [autoPrintModal, setAutoPrintModal] = useState(false);
+ main
     const navigate = useNavigate();
     const { currentUser, isAdmin, isAdmin_2 } = useAuth();
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
@@ -40,7 +52,7 @@ export default function Inventory() {
                         serialNumber: decryptData(item.serialNumber),
                         assetId: decryptData(item.assetId),
                         category: decryptData(item.category || ''),
-                        brandModel: decryptData(item.brandModel),
+                        brandModel: cleanDuplicateWords(decryptData(item.brandModel)),
                         remarks: decryptData(item.remarks || '-'),
                         status: item.status
                     });
@@ -89,7 +101,15 @@ export default function Inventory() {
     );
 
     const handleRowClick = (item) => {
+        setAutoPrintModal(false);
         setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handlePrintClick = (e, item) => {
+        e.stopPropagation();
+        setSelectedItem(item);
+        setAutoPrintModal(true);
         setShowDetailModal(true);
     };
 
@@ -307,16 +327,16 @@ export default function Inventory() {
                                             {stock.status}
                                         </span>
                                     </td>
-                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-                                         <button
-                                             className="inv-del-btn"
-                                             title="พิมพ์สติกเกอร์"
-                                             style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
-                                             onClick={() => generateExcelLabel(stock)}
-                                         >
-                                             <FaPrint />
-                                         </button>
-                                     </td>
+                                     <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                          <button
+                                              className="inv-del-btn"
+                                              title="พิมพ์ใบจำหน่าย / รายละเอียดพัสดุ"
+                                              style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
+                                              onClick={(e) => handlePrintClick(e, stock)}
+                                          >
+                                              <FaPrint />
+                                          </button>
+                                      </td>
                                      {isAdmin_2 && (
                                          <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                              <button
@@ -357,8 +377,12 @@ export default function Inventory() {
 
             <ItemDetailModal
                 show={showDetailModal}
-                onHide={() => setShowDetailModal(false)}
+                onHide={() => {
+                    setShowDetailModal(false);
+                    setAutoPrintModal(false);
+                }}
                 item={selectedItem}
+                autoPrint={autoPrintModal}
             />
 
             {/* Floating Back Button */}
