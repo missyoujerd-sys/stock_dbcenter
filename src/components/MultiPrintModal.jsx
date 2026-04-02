@@ -42,14 +42,14 @@ const MultiPrintModal = ({ show, onHide, items }) => {
                             }}>
                             {/* Watermark for UI and printing */}
                             <div className="watermark">
-                                จำหน่าย
+                                {item.status === 'จำหน่าย' ? 'จำหน่าย' : (item.status === 'รับเข้า' ? 'รับเข้า' : 'พัสดุ')}
                             </div>
 
                             {/* Header: title + date/time on same row */}
                             <div className="d-flex justify-content-between align-items-start mb-1">
                                 <div style={{ flex: 1 }}></div>
                                 <h1 className="document-title fw-bold text-decoration-underline mb-0 text-center" style={{ flex: 2, fontSize: '1rem' }}>
-                                    จำหน่าย
+                                    {item.status === 'จำหน่าย' ? 'จำหน่าย' : (item.status === 'รับเข้า' ? 'รับเข้า' : 'พัสดุ')}
                                 </h1>
                                 <div className="text-end" style={{ flex: 1, fontSize: '0.65rem', lineHeight: '1.4' }}>
                                     <div>วันที่: {formattedDate}</div>
@@ -168,9 +168,10 @@ const MultiPrintModal = ({ show, onHide, items }) => {
                         size: 101.6mm 72.4mm landscape;
                     }
                     html, body {
-                        height: 100%;
                         margin: 0 !important;
                         padding: 0 !important;
+                        height: auto !important;
+                        overflow: visible !important;
                     }
                     .modal {
                         position: absolute !important;
