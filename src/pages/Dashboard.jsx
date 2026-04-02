@@ -241,7 +241,7 @@ export default function Dashboard() {
                         <span className="latest-panel-title">รายการพัสดุล่าสุด</span>
                         <span className="latest-panel-badge">LATEST ITEMS</span>
                     </div>
-                    <span className="latest-panel-count">{loading ? '...' : `${stocks.slice(0, 10).length} รายการ`}</span>
+                    <span className="latest-panel-count">{loading ? '...' : `${stocks.slice(0, 50).length} รายการ`}</span>
                 </div>
                 <div className="latest-table-wrap">
                     <table className="latest-table">
@@ -260,7 +260,7 @@ export default function Dashboard() {
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : stocks.length === 0 ? (
                                 <tr><td colSpan="6" className="latest-empty">ยังไม่มีข้อมูลพัสดุในระบบ</td></tr>
-                            ) : stocks.slice(0, 10).map((stock, idx) => (
+                            ) : stocks.slice(0, 50).map((stock, idx) => (
                                 <tr
                                     key={stock.id}
                                     onClick={() => handleRowClick(stock)}
