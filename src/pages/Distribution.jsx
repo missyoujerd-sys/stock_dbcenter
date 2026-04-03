@@ -27,7 +27,6 @@ export default function Distribution() {
     const [selectedStock, setSelectedStock] = useState(null);
     const [distributeDate, setDistributeDate] = useState('');
     const [distributeError, setDistributeError] = useState('');
-
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
@@ -116,10 +115,15 @@ export default function Distribution() {
     };
 
     const toggleSelectAll = () => {
-        if (selectedIds.length === filteredStocks.length) {
-            setSelectedIds([]);
+        const filteredIds = filteredStocks.map(s => s.id);
+        const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+
+        if (allFilteredSelected) {
+            // Deselect visible items from selectedIds
+            setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
         } else {
-            setSelectedIds(filteredStocks.map(s => s.id));
+            // Select visible items (merge with existing selectedIds)
+            setSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
         }
     };
 
@@ -129,7 +133,6 @@ export default function Distribution() {
             setSelectedIds([stock.id]);
         }
         setDistributeDate(new Date().toISOString().split('T')[0]);
-
         setShowModal(true);
     };
 
@@ -154,7 +157,7 @@ export default function Distribution() {
                     distributionDate: distributeDate,
                     distributor: encryptData(currentUser.email),
                     qt_distributed: 1,
-                    qt_balance: 0,
+                    qt_balance: 0
                 });
             }
 
@@ -466,7 +469,7 @@ export default function Distribution() {
                                 <th style={{ width: '50px', paddingLeft: '1.5rem' }}>
                                     <Form.Check
                                         type="checkbox"
-                                        checked={selectedIds.length === filteredStocks.length && filteredStocks.length > 0}
+                                        checked={filteredStocks.length > 0 && filteredStocks.every(s => selectedIds.includes(s.id))}
                                         onChange={toggleSelectAll}
                                         className="db-check-custom"
                                     />
@@ -604,8 +607,6 @@ export default function Distribution() {
                         />
                     </Form.Group>
 
-
-
                     <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(25, 135, 84, 0.05)', border: '1px dashed rgba(25, 135, 84, 0.3)' }}>
                         <div className="d-flex align-items-start gap-3">
                             <div className="bg-success bg-opacity-10 p-2 rounded-circle mt-1">
@@ -657,22 +658,6 @@ export default function Distribution() {
                         0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
                         40% { transform: translateY(-5px); }
                         60% { transform: translateY(-3px); }
-                    }
-                    .alert-shake {
-                        animation: hardShake 0.4s ease-in-out forwards;
-                    }
-                    .error-shake {
-                        animation: softShake 0.4s ease-in-out forwards;
-                    }
-                    @keyframes hardShake {
-                        0%, 100% { transform: translateX(0); }
-                        20%, 60% { transform: translateX(-8px); }
-                        40%, 80% { transform: translateX(8px); }
-                    }
-                    @keyframes softShake {
-                        0%, 100% { transform: translateX(0); }
-                        20%, 60% { transform: translateX(-3px); }
-                        40%, 80% { transform: translateX(3px); }
                     }
                 `}</style>
             </Modal>
