@@ -10,6 +10,12 @@ import { useNavigate } from 'react-router-dom';
 import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
+const cleanDuplicateWords = (text) => {
+    if (!text) return text;
+    const words = text.toString().trim().split(/\s+/);
+    return words.filter((word, pos, arr) => pos === 0 || word !== arr[pos - 1]).join(' ');
+};
+
 export default function Distribution() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -79,7 +85,7 @@ export default function Distribution() {
                             serialNumber: decryptData(item.serialNumber),
                             assetId: decryptData(item.assetId),
                             category: decryptData(item.category || ''),
-                            brandModel: decryptData(item.brandModel),
+                            brandModel: cleanDuplicateWords(decryptData(item.brandModel)),
                             computerName: decryptData(item.computerName || ''),
                             remarks: decryptData(item.remarks || '-'),
                         });
@@ -174,26 +180,26 @@ export default function Distribution() {
         workbook.creator = 'StockDBCenter';
         const ws = workbook.addWorksheet('ใบเบิกหรือใบส่งคืน');
 
-        // A4 Portrait – fit to one page
+        // A4 Portrait – fit to one page perfectly
         ws.pageSetup = {
             paperSize: 9, orientation: 'portrait',
             fitToPage: true, fitToWidth: 1, fitToHeight: 1,
-            margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 },
+            margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
         };
 
-        // Column widths – ~105 chars total = A4 portrait with 0.3" margins
+        // Column widths for Portrait A4
         ws.columns = [
             { width: 5   }, // A ลำดับ
-            { width: 17  }, // B หมายเลขครุภัณฑ์/SN
+            { width: 16  }, // B หมายเลขครุภัณฑ์/SN
             { width: 22  }, // C รายการ
-            { width: 6   }, // D รหัส
-            { width: 7   }, // E หน่วยนับ
-            { width: 7   }, // F จำนวน
+            { width: 5   }, // D รหัส
+            { width: 6   }, // E หน่วยนับ
+            { width: 6   }, // F จำนวน
             { width: 8   }, // G จ่ายหรือคืน
             { width: 7   }, // H ค้างจ่าย
-            { width: 9   }, // I ราคาหน่วย
-            { width: 9   }, // J ราคารวม
-            { width: 12  }, // K ลงชื่อผู้จำหน่าย
+            { width: 8   }, // I ราคาหน่วย
+            { width: 8   }, // J ราคารวม
+            { width: 10  }, // K ลงชื่อผู้จำหน่าย
         ];
 
         const FN = 'TH SarabunPSK';
@@ -213,10 +219,11 @@ export default function Distribution() {
         };
 
         // ── mc: merge cells AND apply border to EVERY cell in the range ──
-        // This is critical because ExcelJS only sets border on the top-left cell
+        // This is critical because ExcelJS only sets border on the top-left cellvc
         const mc = (range, val, opts = {}) => {
             ws.mergeCells(range);
-            sc(range.split(':')[0], val, { border: AB, ...opts });
+            const borderToApply = opts.border !== undefined ? opts.border : AB;
+            sc(range.split(':')[0], val, { ...opts, border: borderToApply });
             // Apply border to all cells in merged range
             const [start, end] = range.split(':');
             const sc1 = start.replace(/[0-9]/g, '');
@@ -228,7 +235,7 @@ export default function Distribution() {
             for (let r = sr1; r <= er1; r++) {
                 for (let ci = ci1; ci <= ci2; ci++) {
                     const cell = ws.getCell(`${COLS[ci]}${r}`);
-                    cell.border = AB;
+                    cell.border = borderToApply;
                     if (opts.fill) cell.fill = opts.fill;
                 }
             }
@@ -249,10 +256,10 @@ export default function Distribution() {
 
         // ═══════ ROW 3 ═══════
         ws.getRow(3).height = 22;
-        mc('A3:E3', 'จาก ...................................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc('A3:E3', 'จาก ....................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
         sc('F3', '□', { font: { size: 14 }, align: { horizontal: 'center' } });
         sc('G3', 'เบิก', { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc('H3:K3', 'ทะเบียนเอกสาร ...............................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc('H3:K3', 'ทะเบียนเอกสาร .......................', { font: { size: 14 }, align: { horizontal: 'left' } });
 
         // ═══════ ROW 4 ═══════
         ws.getRow(4).height = 22;
@@ -263,9 +270,9 @@ export default function Distribution() {
 
         // ═══════ ROW 5 ═══════
         ws.getRow(5).height = 22;
-        mc('A5:E5', 'ถึง ...................................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc('A5:E5', 'ถึง ....................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
         mc('F5:H5', `วันที่ต้องการ  ${date}`, { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc('I5:K5', 'ประเภทเงิน ..............................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc('I5:K5', 'ประเภทเงิน .......................', { font: { size: 14 }, align: { horizontal: 'left' } });
 
         // ═══════ ROW 6 ═══════
         ws.getRow(6).height = 20;
@@ -312,7 +319,7 @@ export default function Distribution() {
             const assetAndSN = snLine ? `${assetLine}\n${snLine}` : assetLine;
             const catName = stock.category || 'จอคอมพิวเตอร์';
             const bModel = stock.brandModel || '-';
-            const itemDesc = `${catName} ${bModel}`;
+            const itemDesc = cleanDuplicateWords(`${catName} ${bModel}`);
 
             sc(`A${r}`, i + 1, { align: { horizontal: 'center' } });
             sc(`B${r}`, assetAndSN, { font: { size: 13 }, align: { horizontal: 'left', wrapText: true, vertical: 'top' } });
@@ -339,33 +346,31 @@ export default function Distribution() {
         // Row 1: หลักฐาน + รวมแผ่นนี้
         ws.getRow(R).height = 22;
         mc(`A${R}:F${R}`, 'หลักฐานที่ใช้ในการเบิก/ส่งคืน', { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc(`G${R}:H${R}`, 'รวมแผ่นนี้', { font: { size: 13 }, align: { horizontal: 'left' } });
-        mc(`I${R}:K${R}`, '');
+        mc(`G${R}:K${R}`, 'รวมแผ่นนี้', { font: { size: 13 }, align: { horizontal: 'left' } });
 
         // Row 2: ให้บุคคล + รวมทั้งสิ้น
         R++; ws.getRow(R).height = 22;
         mc(`A${R}:F${R}`, 'ให้บุคคลต่อไปนี้เป็นผู้รับพัสดุแทนได้', { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc(`G${R}:H${R}`, 'รวมทั้งสิ้น', { font: { size: 13 }, align: { horizontal: 'left' } });
-        mc(`I${R}:K${R}`, '');
+        mc(`G${R}:K${R}`, 'รวมทั้งสิ้น', { font: { size: 13 }, align: { horizontal: 'left' } });
 
         // Row 3: ผู้มีสิทธิ + ผู้ตรวจสอบ
-        R++; ws.getRow(R).height = 22;
-        mc(`A${R}:F${R}`, `ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข`, { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc(`G${R}:K${R}`, 'ผู้ตรวจสอบ ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        R++; ws.getRow(R).height = 45;
+        mc(`A${R}:F${R}`, `ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข`, { font: { size: 14 }, align: { horizontal: 'left', vertical: 'bottom' } });
+        mc(`G${R}:K${R}`, 'ผู้ตรวจสอบ ....................................', { font: { size: 14 }, align: { horizontal: 'left', vertical: 'bottom' } });
 
         // Row 4: ได้รับของ + ผู้อนุมัติ
-        R++; ws.getRow(R).height = 22;
-        mc(`A${R}:F${R}`, 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว', { font: { size: 14 }, align: { horizontal: 'left' } });
-        mc(`G${R}:K${R}`, 'ผู้อนุมัติจ่าย/รับคืน ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        R++; ws.getRow(R).height = 45;
+        mc(`A${R}:F${R}`, 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว', { font: { size: 14 }, align: { horizontal: 'left', vertical: 'bottom' } });
+        mc(`G${R}:K${R}`, 'ผู้อนุมัติจ่าย/รับคืน ................................', { font: { size: 14 }, align: { horizontal: 'left', vertical: 'bottom' } });
 
-        // --- Left side vertical blank block ---
+        // --- Left side vertical blank block merged with ผู้รับพัสดุ ---
         const blankTop = R + 1;
-        const blankBottom = R + 4;
-        mc(`A${blankTop}:F${blankBottom}`, ''); // Merge all 4 rows on the left into one clean box
+        const blankBottom = R + 5;
+        mc(`A${blankTop}:F${blankBottom}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left', vertical: 'top' } });
 
         // Row 5: ผู้จ่าย
-        R++; ws.getRow(R).height = 22;
-        mc(`G${R}:K${R}`, 'ผู้จ่าย ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        R++; ws.getRow(R).height = 40;
+        mc(`G${R}:K${R}`, 'ผู้จ่าย ........................................', { font: { size: 14 }, align: { horizontal: 'left', vertical: 'bottom' } });
 
         // Row 6: รหัสจ่าย + ค.ครึ่งคราว
         R++; ws.getRow(R).height = 22;
@@ -385,14 +390,14 @@ export default function Distribution() {
         mc(`I${R}:J${R}`, 'ช. ใช้การได้', { font: { size: 13 }, align: { horizontal: 'left' } });
         sc(`K${R}`, '');
 
-        // Row 9: ผู้รับพัสดุ + ชม.ใช้การไม่ได้
+        // Row 9: ชม.ใช้การไม่ได้ (Left side already merged)
         R++; ws.getRow(R).height = 22;
-        mc(`A${R}:F${R}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left' } });
         mc(`G${R}:H${R}`, '');
         mc(`I${R}:J${R}`, 'ชม. ใช้การไม่ได้', { font: { size: 13 }, align: { horizontal: 'left' } });
         sc(`K${R}`, '');
 
 
+        ws.pageSetup.printArea = `A1:K${R}`;
         const buffer = await workbook.xlsx.writeBuffer();
         saveAs(new Blob([buffer]), `ใบเบิกหรือใบส่งคืน_${date}.xlsx`);
     };

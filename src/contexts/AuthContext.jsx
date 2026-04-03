@@ -58,6 +58,31 @@ export function AuthProvider({ children }) {
         return unsubscribe;
     }, []);
 
+    useEffect(() => {
+        let timeoutId;
+
+        const handleActivity = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                if (currentUser && !isAdmin_2) {
+                    logout();
+                }
+            }, 15 * 60 * 1000); // 15 minutes
+        };
+
+        if (currentUser && !isAdmin_2) {
+            handleActivity(); // Start timer initially
+
+            const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+            events.forEach(event => window.addEventListener(event, handleActivity));
+
+            return () => {
+                if (timeoutId) clearTimeout(timeoutId);
+                events.forEach(event => window.removeEventListener(event, handleActivity));
+            };
+        }
+    }, [currentUser, isAdmin_2]);
+
     const value = {
         currentUser,
         isAdmin,
