@@ -21,8 +21,6 @@ export default function Distribution() {
     const [selectedStock, setSelectedStock] = useState(null);
     const [distributeDate, setDistributeDate] = useState('');
     const [distributeError, setDistributeError] = useState('');
-    const [remarks, setRemarks] = useState('');
-    const [showRemarksError, setShowRemarksError] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
@@ -111,10 +109,15 @@ export default function Distribution() {
     };
 
     const toggleSelectAll = () => {
-        if (selectedIds.length === filteredStocks.length) {
-            setSelectedIds([]);
+        const filteredIds = filteredStocks.map(s => s.id);
+        const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+
+        if (allFilteredSelected) {
+            // Deselect visible items from selectedIds
+            setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
         } else {
-            setSelectedIds(filteredStocks.map(s => s.id));
+            // Select visible items (merge with existing selectedIds)
+            setSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
         }
     };
 
@@ -124,8 +127,6 @@ export default function Distribution() {
             setSelectedIds([stock.id]);
         }
         setDistributeDate(new Date().toISOString().split('T')[0]);
-        setRemarks('');
-        setShowRemarksError(false);
         setShowModal(true);
     };
 
@@ -133,19 +134,12 @@ export default function Distribution() {
         if (selectedIds.length === 0) return;
         setSelectedStock(null);
         setDistributeDate(new Date().toISOString().split('T')[0]);
-        setRemarks('');
-        setShowRemarksError(false);
         setShowModal(true);
     };
 
     const handleDistribute = async () => {
         if (selectedIds.length === 0) return;
         setDistributeError('');
-
-        if (!remarks.trim()) {
-            setShowRemarksError(true);
-            return;
-        }
 
         try {
             const selectedStocks = stocks.filter(s => selectedIds.includes(s.id));
@@ -157,8 +151,7 @@ export default function Distribution() {
                     distributionDate: distributeDate,
                     distributor: encryptData(currentUser.email),
                     qt_distributed: 1,
-                    qt_balance: 0,
-                    remarks: encryptData(remarks)
+                    qt_balance: 0
                 });
             }
 
@@ -471,7 +464,7 @@ export default function Distribution() {
                                 <th style={{ width: '50px', paddingLeft: '1.5rem' }}>
                                     <Form.Check
                                         type="checkbox"
-                                        checked={selectedIds.length === filteredStocks.length && filteredStocks.length > 0}
+                                        checked={filteredStocks.length > 0 && filteredStocks.every(s => selectedIds.includes(s.id))}
                                         onChange={toggleSelectAll}
                                         className="db-check-custom"
                                     />
@@ -609,38 +602,6 @@ export default function Distribution() {
                         />
                     </Form.Group>
 
-                    <Form.Group className="mb-4">
-                        <Form.Label className="fw-semibold text-secondary" style={{ fontSize: '0.9rem' }}>
-                            หมายเหตุ (Remarks) <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            rows={2}
-                            value={remarks}
-                            onChange={(e) => {
-                                setRemarks(e.target.value);
-                                if (e.target.value.trim()) setShowRemarksError(false);
-                            }}
-                            className={`p-2 rounded-3 ${showRemarksError ? 'border-danger error-shake' : ''}`}
-                            style={{ 
-                                border: showRemarksError ? '2px solid #ff4d4f' : '1px solid #ced4da', 
-                                boxShadow: showRemarksError ? '0 0 10px rgba(255, 77, 79, 0.4)' : 'none', 
-                                transition: 'all 0.2s', backgroundColor: showRemarksError ? '#fff5f5' : '#fff',
-                                outline: 'none'
-                            }}
-                            placeholder="กรุณาระบุหมายเหตุการจำหน่าย..."
-                        />
-                        {showRemarksError && (
-                            <div className="mt-2 p-2 rounded-2 d-flex align-items-center gap-2 alert-shake position-relative overflow-hidden" style={{ backgroundColor: '#1a1d24', border: '1px solid rgba(255, 77, 79, 0.5)', borderLeft: '4px solid #ff4d4f', boxShadow: '0 4px 12px rgba(255, 77, 79, 0.2)' }}>
-                                <div className="position-absolute" style={{ top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(45deg, rgba(255,77,79,0.1), transparent)', pointerEvents: 'none' }}></div>
-                                <span style={{ color: '#ff4d4f', fontSize: '1.2rem', textShadow: '0 0 8px rgba(255, 77, 79, 0.5)' }}>⚠️</span> 
-                                <span className="fw-bold" style={{ color: '#ff4d4f', fontSize: '1rem', letterSpacing: '0.5px', textShadow: '0 0 8px rgba(255, 77, 79, 0.3)' }}>
-                                    หัวหน้า ณรงค์ รวมสุข ให้กรอกทุกครั้ง
-                                </span>
-                            </div>
-                        )}
-                    </Form.Group>
-
                     <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(25, 135, 84, 0.05)', border: '1px dashed rgba(25, 135, 84, 0.3)' }}>
                         <div className="d-flex align-items-start gap-3">
                             <div className="bg-success bg-opacity-10 p-2 rounded-circle mt-1">
@@ -692,22 +653,6 @@ export default function Distribution() {
                         0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
                         40% { transform: translateY(-5px); }
                         60% { transform: translateY(-3px); }
-                    }
-                    .alert-shake {
-                        animation: hardShake 0.4s ease-in-out forwards;
-                    }
-                    .error-shake {
-                        animation: softShake 0.4s ease-in-out forwards;
-                    }
-                    @keyframes hardShake {
-                        0%, 100% { transform: translateX(0); }
-                        20%, 60% { transform: translateX(-8px); }
-                        40%, 80% { transform: translateX(8px); }
-                    }
-                    @keyframes softShake {
-                        0%, 100% { transform: translateX(0); }
-                        20%, 60% { transform: translateX(-3px); }
-                        40%, 80% { transform: translateX(3px); }
                     }
                 `}</style>
             </Modal>
