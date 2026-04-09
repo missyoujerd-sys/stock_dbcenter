@@ -1,0 +1,125 @@
+import React, { useRef, useState } from 'react';
+import { Form, Button, Alert, Modal } from 'react-bootstrap';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation } from 'react-icons/fa';
+
+export default function Login() {
+    let userRef = useRef();
+    const passwordRef = useRef();
+    const { login } = useAuth();
+    const [error, setError] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        try {
+            setError('');
+            setLoading(true);
+            if (userRef.current.value.includes('@')) { userRef = userRef.current.value; } //เพิ่ม @nkp.com ถ้าไม่มี
+            else { userRef = userRef.current.value + '@nkp.com'; } //เพิ่ม @nkp.com ถ้าไม่มี
+
+            await login(userRef, passwordRef.current.value);
+            navigate('/');
+        } catch (err) {
+            console.error(err);
+            setError('ชื่อล็อกอินหรือรหัสผ่านไม่ถูกต้อง.');
+            setShowErrorModal(true);
+        }
+
+        setLoading(false);
+    }
+
+    return (
+        <div className="login-page">
+            {/* Dimensional Background Text */}
+            <div className="login-bg-text" aria-hidden="true">
+                <span className="login-bg-word login-bg-word--2">NKP</span>
+           </div>
+
+            <div className="login-card">
+                <h4 className="login-title">ระบบจัดการ Stock</h4>
+                <h4 className="login-subtitle"> ห้องซ่อมบำรุงคอมพิวเตอร์ </h4>
+
+                <Form onSubmit={handleSubmit}>
+                    <div className="login-input-group">
+                        <FaUser className="login-input-icon" />
+                        <Form.Control
+                            type="text"
+                            ref={userRef}
+                            required
+                            placeholder="User"
+                            className="login-input"
+                        />
+                    </div>
+
+                    <div className="login-input-group" style={{ position: 'relative' }}>
+                        <FaLock className="login-input-icon" />
+                        <Form.Control
+                            type={showPassword ? 'text' : 'password'}
+                            ref={passwordRef}
+                            required
+                            placeholder="Password"
+                            className="login-input"
+                            style={{ paddingRight: '40px' }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '15px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                cursor: 'pointer',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                    </div>
+
+                    <Button disabled={loading} className="login-submit-btn" type="submit">
+                        LOGIN
+                    </Button>
+                </Form>
+                <div className="login-footer-info">
+                    *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
+                </div>
+            </div>
+
+            {/* Error Popup Modal */}
+            <Modal 
+                show={showErrorModal} 
+                onHide={() => setShowErrorModal(false)} 
+                centered 
+                className="login-error-modal"
+            >
+                <Modal.Body className="text-center p-5">
+                    <div className="login-error-icon-wrap mb-4">
+                        <FaExclamation className="login-error-icon" />
+                    </div>
+                    <h3 className="login-error-title fw-bold mb-3">ผลการตรวจสอบ!</h3>
+                    <p className="login-error-message mb-4">{error}</p>
+                    <Button 
+                        variant="primary" 
+                        onClick={() => setShowErrorModal(false)}
+                        className="login-error-btn px-5 py-2"
+                    >
+                        ตกลง
+                    </Button>
+                </Modal.Body>
+            </Modal>
+        </div>
+    );
+}
+

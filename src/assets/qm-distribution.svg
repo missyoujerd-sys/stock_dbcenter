@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none">
+  <defs>
+    <filter id="sh" x="-5%" y="-5%" width="115%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(80,0,120,0.25)"/>
+    </filter>
+  </defs>
+
+  <!-- Truck body -->
+  <g filter="url(#sh)">
+    <!-- Cargo container -->
+    <rect x="10" y="60" width="110" height="60" rx="6" fill="#8b5cf6"/>
+    <!-- Container top highlight -->
+    <rect x="10" y="60" width="110" height="10" rx="4" fill="#a78bfa"/>
+    <!-- Container side detail -->
+    <line x1="35" y1="60" x2="35" y2="120" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <line x1="60" y1="60" x2="60" y2="120" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <line x1="85" y1="60" x2="85" y2="120" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+    <!-- Cab -->
+    <rect x="120" y="80" width="58" height="40" rx="6" fill="#7c3aed"/>
+    <!-- Cab window -->
+    <rect x="128" y="85" width="30" height="20" rx="4" fill="#c4b5fd" opacity="0.7"/>
+    <!-- windshield reflection -->
+    <line x1="132" y1="88" x2="140" y2="102" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Wheels -->
+    <circle cx="40" cy="125" r="15" fill="#4c1d95"/>
+    <circle cx="40" cy="125" r="9" fill="#6d28d9"/>
+    <circle cx="40" cy="125" r="4" fill="#c4b5fd"/>
+    <circle cx="100" cy="125" r="15" fill="#4c1d95"/>
+    <circle cx="100" cy="125" r="9" fill="#6d28d9"/>
+    <circle cx="100" cy="125" r="4" fill="#c4b5fd"/>
+    <circle cx="155" cy="125" r="12" fill="#4c1d95"/>
+    <circle cx="155" cy="125" r="7" fill="#6d28d9"/>
+    <circle cx="155" cy="125" r="3" fill="#c4b5fd"/>
+
+    <!-- Undercarriage -->
+    <rect x="10" y="122" width="168" height="8" rx="3" fill="#4c1d95"/>
+  </g>
+
+  <!-- Document with arrow (distribution document) -->
+  <g transform="translate(130, 20)">
+    <rect x="0" y="0" width="44" height="54" rx="5" fill="white" stroke="#ddd6fe" stroke-width="1.5"/>
+    <!-- Corner fold -->
+    <polygon points="30,0 44,14 30,14" fill="#ede9fe"/>
+    <line x1="30" y1="0" x2="44" y2="14" stroke="#ddd6fe" stroke-width="1"/>
+    <!-- Lines -->
+    <line x1="7" y1="20" x2="37" y2="20" stroke="#ddd6fe" stroke-width="2"/>
+    <line x1="7" y1="28" x2="37" y2="28" stroke="#ddd6fe" stroke-width="2"/>
+    <line x1="7" y1="36" x2="25" y2="36" stroke="#ddd6fe" stroke-width="2"/>
+    <!-- Arrow icon -->
+    <g transform="translate(7,43)">
+      <circle cx="8" cy="5" r="8" fill="#8b5cf6"/>
+      <polyline points="4,5 8,2 12,5" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" transform="rotate(90,8,5)"/>
+      <line x1="8" y1="2" x2="8" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round" transform="rotate(90,8,5)"/>
+    </g>
+  </g>
+
+  <!-- Speed lines -->
+  <line x1="5" y1="85" x2="18" y2="85" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="2" y1="95" x2="12" y2="95" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="5" y1="105" x2="16" y2="105" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+</svg>
