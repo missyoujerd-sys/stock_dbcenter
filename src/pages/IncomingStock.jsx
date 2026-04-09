@@ -74,8 +74,13 @@ export default function IncomingStock() {
     });
 
     const CATEGORY_OPTIONS = {
-        "คอมพิวเตอร์ PC-Notebook":
+        "คอมพิวเตอร์ PC":
             ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
+            
+        "Notebook":
+            ["HP", "Dell", "Lenovo", "Acer", "Asus", "Samsung", "MSI", "Apple"],
+       
+       
         "จอคอมพิวเตอร์": [
  dev_
             "จอคอมพิวเตอร์ Acer",
