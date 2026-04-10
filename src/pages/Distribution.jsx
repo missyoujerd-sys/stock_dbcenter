@@ -137,7 +137,7 @@ export default function Distribution() {
         setShowModal(true);
     };
 
-    const handleDistribute = async () => {
+    const handleDistribute = async (exportExcel = true) => {
         if (selectedIds.length === 0) return;
         setDistributeError('');
 
@@ -155,8 +155,10 @@ export default function Distribution() {
                 });
             }
 
-            // Generate Excel for all selected items
-            generateExcel(selectedStocks, distributeDate);
+            // Generate Excel if requested
+            if (exportExcel) {
+                generateExcel(selectedStocks, distributeDate);
+            }
 
             setSelectedIds([]);
             setShowModal(false);
@@ -602,15 +604,15 @@ export default function Distribution() {
                         />
                     </Form.Group>
 
-                    <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(25, 135, 84, 0.05)', border: '1px dashed rgba(25, 135, 84, 0.3)' }}>
+                    <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(13, 110, 253, 0.05)', border: '1px dashed rgba(13, 110, 253, 0.3)' }}>
                         <div className="d-flex align-items-start gap-3">
-                            <div className="bg-success bg-opacity-10 p-2 rounded-circle mt-1">
-                                <FaFileExcel className="text-success" size={20} />
+                            <div className="bg-primary bg-opacity-10 p-2 rounded-circle mt-1">
+                                <FaInfoCircle className="text-primary" size={20} />
                             </div>
                             <div>
-                                <h6 className="fw-bold text-success mb-1" style={{ fontSize: '0.95rem' }}>ดาวน์โหลดเอกสารอัตโนมัติ</h6>
+                                <h6 className="fw-bold text-primary mb-1" style={{ fontSize: '0.95rem' }}>ตัวเลือกการจำหน่าย</h6>
                                 <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
-                                    ระบบจะเปลี่ยนสถานะพัสดุเป็น <strong>"จำหน่าย"</strong> และจะดาวน์โหลดไฟล์ <strong className="text-success">Excel ใบเบิก/ส่งคืน</strong> ทันทีเมื่อกดยืนยัน
+                                    ระบบจะเปลี่ยนสถานะพัสดุเป็น <strong>"จำหน่าย"</strong> โดยท่านสามารถเลือกได้ว่าจะ <strong className="text-success">บันทึกและดาวน์โหลด Excel</strong> หรือ <strong className="text-primary">บันทึกจำหน่ายลงในรายการไว้ก่อน</strong>
                                 </p>
                             </div>
                         </div>
@@ -619,16 +621,21 @@ export default function Distribution() {
                 <Modal.Footer className="border-0 bg-light rounded-bottom px-4 py-3 d-flex flex-column align-items-center gap-3">
                     <div className="text-center w-100 bounce-animation">
                         <span className="fw-bold text-primary" style={{ fontSize: '1rem' }}>
-                            ✨ ถ้าเช็ครายละเอียดถูกต้องแล้วกดยืนยันได้เลยครับผม ✨
+                            ✨เลือกรูปแบบการจำหน่ายด้านล่างนี้ได้เลยครับ✨
                         </span>
                     </div>
-                    <div className="d-flex justify-content-end gap-2 w-100">
+                    <div className="d-flex justify-content-between align-items-center w-100">
                         <Button variant="outline-secondary" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-pill fw-semibold border-0 bg-white shadow-sm" style={{ transition: 'all 0.2s' }}>
                             ยกเลิก
                         </Button>
-                        <Button variant="primary" onClick={handleDistribute} className="px-4 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', background: 'linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%)', border: 'none' }}>
-                            <FaTruck /> ยืนยันการจำหน่าย
-                        </Button>
+                        <div className="d-flex gap-2 flex-wrap justify-content-end">
+                            <Button variant="primary" onClick={() => handleDistribute(false)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', border: 'none' }}>
+                                <FaTruck /> จำหน่ายลงรายการไว้ก่อน
+                            </Button>
+                            <Button variant="success" onClick={() => handleDistribute(true)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', border: 'none' }}>
+                                <FaFileExcel /> จำหน่าย & โหลด Excel
+                            </Button>
+                        </div>
                     </div>
                 </Modal.Footer>
                 <style>{`
