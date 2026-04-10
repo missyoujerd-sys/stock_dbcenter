@@ -51,13 +51,13 @@ export default function Layout({ children }) {
   ];
 
   const SidebarContent = () => (
-    <div className={`flex flex-col h-full bg-[#030712] dark:bg-[#02040a] text-white transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-white-[0.03] dark:border-white/[0.05] select-none w-full shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.9)]`}>
+    <div className={`flex flex-col h-full bg-[#f3e8ff] dark:bg-[#f3e8ff] text-slate-800 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-purple-200 select-none w-full shadow-[30px_0_70px_rgba(147,51,234,0.15)]`}>
       {/* Moving Glass Shine Effect */}
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
-      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-blue-600/[0.08] dark:bg-blue-600/[0.12] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
-      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-indigo-700/[0.06] dark:bg-indigo-700/[0.1] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-purple-400/[0.15] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-fuchsia-400/[0.15] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
       
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
@@ -74,7 +74,7 @@ export default function Layout({ children }) {
           <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
             <div className="flex flex-col">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-[16px] font-bold text-slate-300 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
+                <span className="text-[16px] font-bold text-slate-700 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
                 
                 {/* Online Status Pill - Sidebar Version */}
                 <div className="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-sm shadow-[0_0_15px_rgba(34,197,94,0.1)]">
@@ -85,7 +85,7 @@ export default function Layout({ children }) {
                   <span className="text-[9px] font-black text-green-400 font-['Prompt'] tracking-[0.15em] uppercase leading-none">สถานะระบบ</span>
                 </div>
               </div>
-              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-white font-['Prompt'] drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] -mt-1 mb-1.5">
+              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 font-['Prompt'] drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] -mt-1 mb-1.5">
                 จัดการ
               </h1>
               <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export default function Layout({ children }) {
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
               </div>
             </div>
-            <p className="text-[11px] text-blue-300/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-blue-400 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+            <p className="text-[11px] text-purple-600/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-purple-700 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
           </div>
         </div>
 
@@ -109,15 +109,15 @@ export default function Layout({ children }) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                   isActive 
-                    ? "text-white bg-white/[0.04] dark:bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-100 dark:hover:text-slate-200"
+                    ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
+                    : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
                 }`}
               >
                 {/* Icon Wrapper Circle */}
                 <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
                   isActive 
-                    ? "bg-[#1e293b] dark:bg-blue-900/30 border-blue-500/50 shadow-[0_4px_15px_rgba(59,130,246,0.2)] dark:shadow-[0_4px_20px_rgba(59,130,246,0.3)] scale-105" 
-                    : "bg-white/[0.02] dark:bg-white/[0.03] border-white/[0.05] dark:border-white/[0.08] group-hover:bg-white/[0.06] dark:group-hover:bg-white/[0.08] group-hover:border-white/10 dark:group-hover:border-white/15 group-hover:scale-110"
+                    ? "bg-purple-100 border-purple-300 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
+                    : "bg-white/50 border-purple-200/50 group-hover:bg-white/80 group-hover:border-purple-300 group-hover:scale-110"
                 }`}>
                   {/* Subtle Icon Glow */}
                   {isActive && (
@@ -133,11 +133,11 @@ export default function Layout({ children }) {
                 </div>
                 
                 <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-white translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
                     {item.name}
                   </span>
                   {isActive && (
-                    <div className="h-[2px] w-6 bg-blue-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                    <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
                   )}
                 </div>
               </Link>
@@ -160,7 +160,7 @@ export default function Layout({ children }) {
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">ยินดีต้อนรับ</p>
-                  <p className="text-[14px] font-bold text-slate-200 truncate tracking-tight group-hover/avatar:text-white transition-colors duration-[300ms]">
+                  <p className="text-[14px] font-bold text-slate-800 truncate tracking-tight group-hover/avatar:text-purple-900 transition-colors duration-[300ms]">
                     {currentUser.email.split('@')[0]}
                   </p>
                 </div>
@@ -169,7 +169,7 @@ export default function Layout({ children }) {
               <div className="px-1">
                 <button
                   onClick={handleLogout}
-                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-white/[0.02] text-slate-500 hover:bg-rose-500/[0.1] hover:text-rose-400 transition-all duration-[600ms] font-black text-[13px] border border-white/[0.06] hover:border-rose-500/30 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
+                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-white/50 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-[600ms] font-black text-[13px] border border-purple-200 hover:border-rose-300 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
                 >
                   <LogOut size={18} className="shrink-0 transition-transform duration-[500ms] group-hover/logout:rotate-[-8deg] group-hover/logout:scale-110" />
                   <span className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[700ms] font-['Prompt'] tracking-widest">SIGN OUT</span>
