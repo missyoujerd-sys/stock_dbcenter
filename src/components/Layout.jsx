@@ -107,13 +107,13 @@ export default function Layout({ children }) {
   // -----------------------------------------------------------------
 
   const navItems = [
-    { name: "หน้าหลัก", path: "/", icon: LayoutDashboard },
-    { name: "รับเข้า Stock", path: "/incoming", icon: Package },
-    { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck },
-    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box }] : []),
-    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight },
-    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench },
-    { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList },
+    { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/cat-png1.png" },
+    { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/cat-2.png" },
+    { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/cat-3-png.png" },
+    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/cat-4.png" }] : []),
+    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/cat-5.png" },
+    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/cat-6.png" },
+    { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/cat-tt.png" },
   ];
 
   const SidebarContent = () => (
@@ -190,7 +190,11 @@ export default function Layout({ children }) {
                   )}
                   
                   <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
-                    <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    {item.imgSrc ? (
+                      <img src={item.imgSrc} alt={item.name} className="w-7 h-7 object-contain drop-shadow" />
+                    ) : (
+                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    )}
                   </div>
 
                   {/* Glass Shine on Circle */}
