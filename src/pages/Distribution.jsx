@@ -438,11 +438,11 @@ export default function Distribution() {
             </div>
 
             <div className="latest-panel">
-                <div className="latest-panel-header">
+                <div className="latest-panel-header" style={{ backgroundColor: '#fca5a5' }}>
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot"></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                        <span className="latest-panel-badge">งานซ่อมบำรุงคอมพิวเตอร์</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>งานซ่อมบำรุงคอมพิวเตอร์</span>
                     </div>
                     <div className="d-flex align-items-center gap-3">
                         <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>

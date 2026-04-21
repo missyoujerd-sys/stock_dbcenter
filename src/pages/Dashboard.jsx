@@ -433,11 +433,11 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel">
-                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#fca5a5' }}>
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot" style={{ backgroundColor: '#4ade80' }}></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                        <span className="latest-panel-badge">AVAILABLE</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>AVAILABLE</span>
                     </div>
                     {selectedStocks.length > 0 && (
                         <div style={{ marginLeft: '15px' }}>
@@ -530,7 +530,7 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel">
-                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#ffb74d' }}>
                     <div className="latest-panel-title-wrap">
                         <div className="latest-panel-dot" style={{ backgroundColor: '#f87171' }}></div>
                         <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
