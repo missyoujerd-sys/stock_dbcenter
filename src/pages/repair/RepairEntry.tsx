@@ -517,13 +517,19 @@ export default function RepairEntry() {
 
         <div className="a4-content">
           {/* ── Header stripe ── */}
-          <div className="a4-header-stripe">
+          <div className="a4-header-stripe" style={{ position: 'relative' }}>
             <div className="logo-box">
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
             </div>
-            <div className="a4-header-title">
+            <div className="a4-header-title" style={{ paddingRight: '100px' }}>
               <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</h1>
               <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Repair Management)</p>
+            </div>
+            {/* QR Code for auto login on mobile */}
+            <div style={{ position: 'absolute', right: '16px', top: '16px', background: 'white', padding: '6px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.15)' }}>
+               {/* Use the current site origin and point to login with auto repair param */}
+               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/login?auto=repair_itt')}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
+               <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนเพื่อแจ้งซ่อม</div>
             </div>
           </div>
 
@@ -769,7 +775,8 @@ export default function RepairEntry() {
               alignItems: 'center',
               gap: '18px',
               marginBottom: '20px',
-              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.15)'
+              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.15)',
+              position: 'relative'
             }}>
               <div style={{
                 background: '#fff',
@@ -796,9 +803,15 @@ export default function RepairEntry() {
                 <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Repair Management)</div>
               </div>
-              <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
+              <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right', paddingRight: '120px' }}>
                 <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
                 <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+              </div>
+
+              {/* QR Code in PDF Layout */}
+              <div style={{ position: 'absolute', right: '40px', top: '50%', transform: 'translateY(-50%)', background: 'white', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(window.location.origin + '/login?auto=repair_itt')}`} alt="QR Code" style={{ width: '95px', height: '95px', display: 'block' }} />
+                 <div style={{ fontSize: '11px', textAlign: 'center', marginTop: '4px', fontWeight: 900, color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนเพื่อแจ้งซ่อม</div>
               </div>
             </div>
 
