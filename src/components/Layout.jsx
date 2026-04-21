@@ -76,16 +76,15 @@ export default function Layout({ children }) {
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-[16px] font-bold text-slate-700 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
                 
-                {/* Online Status Pill - Sidebar Version */}
-                <div className="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-sm shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50 opacity-100"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-tr from-green-600 via-green-500 to-emerald-400 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span>
-                  </div>
-                  <span className="text-[9px] font-black text-green-400 font-['Prompt'] tracking-[0.15em] uppercase leading-none">สถานะระบบ</span>
-                </div>
+                {/* IT NKP Logo in place of Status Pill */}
+                <img 
+                  src="/it nkp-transparent.png" 
+                  alt="IT NKP" 
+                  className="h-[28px] object-contain opacity-90 block" 
+                  style={{ clipPath: 'inset(2px)' }}
+                />
               </div>
-              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 font-['Prompt'] drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] -mt-1 mb-1.5">
+              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 font-['Prompt'] -mt-1 mb-1.5">
                 จัดการ
               </h1>
               <div className="flex items-center gap-2">
