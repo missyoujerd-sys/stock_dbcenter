@@ -235,11 +235,11 @@ export default function Inventory() {
 
             <div className="latest-panel">
                 {/* Panel Header */}
-                <div className="latest-panel-header">
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#fca5a5' }}>
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot"></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
                         <span className="latest-panel-title">ข้อมูลพัสดุในระบบ</span>
-                        <span className="latest-panel-badge">INVENTORY DATA</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>INVENTORY DATA</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
