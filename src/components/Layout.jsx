@@ -30,6 +30,13 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
+  // -- สำหรับ Auto Logout --
+  const [showLogoutWarning, setShowLogoutWarning] = React.useState(false);
+  const [logoutCountdown, setLogoutCountdown] = React.useState(10);
+  const showLogoutWarningRef = React.useRef(false);
+  const idleTimeoutRef = React.useRef(null);
+  const countdownIntervalRef = React.useRef(null);
+
 
   async function handleLogout() {
     try {
@@ -39,6 +46,65 @@ export default function Layout({ children }) {
       console.error("Failed to log out");
     }
   }
+
+  // --- ตั้งเวลาออกโปรแกรมอัตโนมัติเมื่อไม่มีการใช้งาน (Auto Logout) ---
+  const performAutoLogout = React.useCallback(async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Auto logout failed", err);
+    }
+  }, [logout, navigate]);
+
+  const resetTimer = React.useCallback(() => {
+    if (showLogoutWarningRef.current) return;
+    if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
+    idleTimeoutRef.current = setTimeout(() => {
+      setShowLogoutWarning(true);
+      showLogoutWarningRef.current = true;
+      setLogoutCountdown(10);
+      
+      let timeLeft = 10;
+      countdownIntervalRef.current = setInterval(() => {
+        timeLeft -= 1;
+        setLogoutCountdown(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(countdownIntervalRef.current);
+          performAutoLogout();
+        }
+      }, 1000);
+    }, 1 * 60 * 1000); // ตั้งค่า 1 นาที
+  }, [performAutoLogout]);
+
+  const extendSession = React.useCallback(() => {
+    setShowLogoutWarning(false);
+    showLogoutWarningRef.current = false;
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    resetTimer();
+  }, [resetTimer]);
+
+  React.useEffect(() => {
+    resetTimer();
+
+    const handleActivity = () => {
+      if (!showLogoutWarningRef.current) {
+        resetTimer();
+      }
+    };
+
+    const events = ["mousemove", "keydown", "scroll", "click", "touchstart"];
+    events.forEach((event) => window.addEventListener(event, handleActivity));
+
+    return () => {
+      if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      events.forEach((event) => window.removeEventListener(event, handleActivity));
+    };
+  }, [resetTimer]);
+  // -----------------------------------------------------------------
 
   const navItems = [
     { name: "หน้าหลัก", path: "/", icon: LayoutDashboard },
@@ -168,7 +234,7 @@ export default function Layout({ children }) {
               <div className="px-1">
                 <button
                   onClick={handleLogout}
-                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-white/50 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-[600ms] font-black text-[13px] border border-purple-200 hover:border-rose-300 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
+                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-700 transition-all duration-[600ms] font-black text-[13px] border border-rose-200 dark:border-rose-500/20 hover:border-rose-300 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
                 >
                   <LogOut size={18} className="shrink-0 transition-transform duration-[500ms] group-hover/logout:rotate-[-8deg] group-hover/logout:scale-110" />
                   <span className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[700ms] font-['Prompt'] tracking-widest">SIGN OUT</span>
@@ -259,7 +325,7 @@ export default function Layout({ children }) {
                 
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all flex items-center justify-center group/logout"
+                  className="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-700 hover:border-rose-300 transition-all flex items-center justify-center group/logout"
                   title="ออกจากระบบ"
                 >
                   <LogOut size={18} className="transition-transform duration-300 group-hover/logout:scale-110 group-hover/logout:-translate-x-0.5" />
@@ -321,6 +387,45 @@ export default function Layout({ children }) {
           </div>
         </footer>
       </div>
+
+      {/* -------------------- Auto Logout Warning Modal -------------------- */}
+      {showLogoutWarning && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300 w-full h-[100vh]">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform animate-in zoom-in-95 duration-300 relative overflow-hidden flex flex-col items-center text-center">
+            {/* Glowing warning ring */}
+            <div className="absolute inset-0 bg-gradient-to-t from-rose-500/10 to-transparent pointer-events-none"></div>
+            
+            <div className="w-20 h-20 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mb-6 relative shadow-inner">
+              <div className="absolute inset-0 bg-rose-500/20 blur-xl rounded-full animate-pulse"></div>
+              <Clock className="w-10 h-10 text-rose-600 dark:text-rose-400 relative z-10" />
+            </div>
+
+            <h3 className="text-2xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-2">หมดเวลาการใช้งาน</h3>
+            <p className="text-slate-600 dark:text-slate-400 font-['Prompt'] text-sm mb-6">
+              ระบบจะทำการออกจากระบบอัตโนมัติในอีก
+              <br/>
+              <span className="text-3xl font-black text-rose-500 block my-4">{logoutCountdown} วินาที</span>
+              คุณต้องการใช้งานต่อหรือไม่?
+            </p>
+
+            <div className="flex gap-3 w-full relative z-10">
+              <button
+                onClick={performAutoLogout}
+                className="flex-1 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm"
+               >
+                 ออกระบบ
+              </button>
+              <button
+                onClick={extendSession}
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/30 transition-transform active:scale-95"
+              >
+                ใช้งานต่อ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ----------------------------------------------------------------- */}
     </div>
   );
 }
