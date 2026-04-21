@@ -155,7 +155,7 @@ export default function Layout({ children }) {
                   <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
                   <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden w-11 h-11 group-hover/avatar:scale-105`}>
                     <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-transparent to-indigo-500/20"></div>
-                    <User size={22} className="text-blue-400 relative z-10 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                    <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover relative z-10 bg-white" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
@@ -237,13 +237,7 @@ export default function Layout({ children }) {
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
                     <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-600">
-                      {currentUser?.photoURL ? (
-                        <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white">
-                          <User size={18} strokeWidth={2.5} />
-                        </div>
-                      )}
+                      <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover bg-white" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">
