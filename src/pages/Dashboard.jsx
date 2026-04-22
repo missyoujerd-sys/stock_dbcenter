@@ -370,8 +370,8 @@ export default function Dashboard() {
             <div className="qm-grid mb-4">
                 <Link to="/incoming" className="text-decoration-none">
                     <div className="qm-card qm-card--incoming">
-                        <div className="qm-illu-wrap">
-                            <img src={qmIncomingSvg} alt="incoming" className="qm-illu-img" />
+                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'multiply' }}>
+                            <img src="/cat-tt.png" alt="incoming" className="qm-illu-img" style={{ filter: 'brightness(1.2) contrast(1.2)' }} />
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
@@ -388,8 +388,8 @@ export default function Dashboard() {
                 </Link>
                 <Link to="/distribution" className="text-decoration-none">
                     <div className="qm-card qm-card--distribution">
-                        <div className="qm-illu-wrap">
-                            <img src={qmDistributionSvg} alt="distribution" className="qm-illu-img" />
+                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'multiply' }}>
+                            <img src="/cat-5.png" alt="distribution" className="qm-illu-img" style={{ filter: 'brightness(1.1) contrast(1.1)' }} />
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
@@ -406,8 +406,8 @@ export default function Dashboard() {
                 </Link>
                 <Link to="/inventory" className="text-decoration-none">
                     <div className="qm-card qm-card--inventory">
-                        <div className="qm-illu-wrap">
-                            <img src={qmInventorySvg} alt="inventory" className="qm-illu-img" />
+                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'multiply' }}>
+                            <img src="/cat-6.png" alt="inventory" className="qm-illu-img" style={{ filter: 'brightness(1.1) contrast(1.1)' }} />
                         </div>
                         <div className="qm-card-inner">
                             <div className="qm-body">
