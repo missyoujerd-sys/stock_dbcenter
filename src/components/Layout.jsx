@@ -107,13 +107,13 @@ export default function Layout({ children }) {
   // -----------------------------------------------------------------
 
   const navItems = [
-    { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/cat-png1.png" },
-    { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/cat-2.png" },
-    { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/cat-3-png.png" },
-    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/cat-4.png" }] : []),
-    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/cat-5.png" },
-    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/cat-6.png" },
-    { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/cat-tt.png" },
+    { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/หน้าหลัก.png" },
+    { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
+    { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
+    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png" }] : []),
+    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
+    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อมบริษัท.png" },
+    { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
   ];
 
   const SidebarContent = () => (
