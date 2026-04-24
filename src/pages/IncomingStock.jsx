@@ -1062,7 +1062,7 @@ export default function IncomingStock() {
                             textShadow: '0 2px 12px rgba(239,68,68,0.5)',
                             lineHeight: '1.4'
                         }}>
-                            หัวหน้า ณรงค์ รวมสุข<br/>ให้กรอกทุกครั้ง!
+                            หัวหน้า IT<br/>ให้ใส่ทุกครั้งไม่งั้นจะบันทึกไม่ได้!
                         </div>
 
                         {/* Sub */}
