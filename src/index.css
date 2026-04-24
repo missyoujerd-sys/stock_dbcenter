@@ -2557,22 +2557,35 @@ h6 {
 
 .latest-panel--blue .inc-input,
 .latest-panel--blue .inc-datepicker-input {
-  color: #0f172a !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.latest-panel--blue .inc-input:focus,
+.latest-panel--blue .inc-datepicker-input:focus {
+  color: #000000 !important;
 }
 
 .latest-panel--blue .inc-input::placeholder,
 .latest-panel--blue .inc-datepicker-input::placeholder {
   color: rgba(0, 0, 0, 0.4) !important;
+  font-weight: 400 !important;
 }
 
 .latest-panel--blue .inc-select {
   background: rgba(255, 255, 255, 0.7) !important;
-  color: #0f172a !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.latest-panel--blue .inc-select:focus {
+  color: #000000 !important;
 }
 
 .latest-panel--blue .inc-select option {
   background: #ffffff;
-  color: #0f172a;
+  color: #000000;
+  font-weight: 600;
 }
 
 .latest-panel--blue .inc-media-label {
