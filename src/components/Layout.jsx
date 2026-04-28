@@ -223,8 +223,9 @@ export default function Layout({ children }) {
                   {/* Luxury Avatar Ring */}
                   <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
                   <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden w-11 h-11 group-hover/avatar:scale-105`}>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-transparent to-indigo-500/20"></div>
-                    <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover relative z-10 bg-white" />
+                    <div className="absolute inset-0 bg-black"></div>
+                    {/* Sidebar (ล่างซ้าย) */}  
+                    <img src="/cat-3.png" alt="Profile" className="w-full h-full object-cover relative z-10" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
@@ -305,8 +306,9 @@ export default function Layout({ children }) {
               <div className="hidden sm:flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 shadow-sm transition-all hover:shadow-md hover:border-slate-300/50 dark:hover:border-white/10 group">
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
-                    <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-600">
-                      <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover bg-white" />
+                    <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-black">
+                     {/*Header (บนขวา) * */}
+                      <img src="/cnkp-logo-transparent.png" alt="Profile" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">
