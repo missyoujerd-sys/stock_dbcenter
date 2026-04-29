@@ -444,6 +444,26 @@ export default function Distribution() {
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
                         <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>งานซ่อมบำรุงคอมพิวเตอร์</span>
                     </div>
+                    {/* ── ป้ายกลาง ── */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 18px',
+                        borderRadius: '10px',
+                        background: 'rgba(185,28,28,0.12)',
+                        border: '1.5px solid rgba(185,28,28,0.35)',
+                        marginLeft: '8px',
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#7f1d1d',
+                            fontFamily: 'Prompt, sans-serif',
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.02em',
+                        }}>🖨️ เลือกครุภัณฑ์ที่จะจำหน่ายและปริ้นเอกสารติดอุปกรณ์</span>
+                    </div>
                     <div className="d-flex align-items-center gap-3">
                         <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
                         <div className="inv-search-wrap">

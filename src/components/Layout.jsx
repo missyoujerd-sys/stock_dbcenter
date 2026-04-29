@@ -30,6 +30,35 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
+  // -- สำหรับ Password Lock (Admin Inventory) --
+  const [showPasswordModal, setShowPasswordModal] = React.useState(false);
+  const [passwordInput, setPasswordInput] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [passwordShake, setPasswordShake] = React.useState(false);
+  const ADMIN_PASSWORD = '101988';
+
+  const handleAdminNavClick = (e) => {
+    e.preventDefault();
+    setPasswordInput('');
+    setPasswordError(false);
+    setShowPasswordModal(true);
+  };
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === ADMIN_PASSWORD) {
+      setShowPasswordModal(false);
+      setPasswordInput('');
+      setPasswordError(false);
+      setIsMobileMenuOpen(false);
+      navigate('/inventory');
+    } else {
+      setPasswordError(true);
+      setPasswordShake(true);
+      setPasswordInput('');
+      setTimeout(() => setPasswordShake(false), 600);
+    }
+  };
+
   // -- สำหรับ Auto Logout --
   const [showLogoutWarning, setShowLogoutWarning] = React.useState(false);
   const [logoutCountdown, setLogoutCountdown] = React.useState(10);
@@ -110,7 +139,7 @@ export default function Layout({ children }) {
     { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/หน้าหลัก.png" },
     { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
-    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png" }] : []),
+    ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true }] : []),
     { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อมบริษัท.png" },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
@@ -133,7 +162,7 @@ export default function Layout({ children }) {
         <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] px-1`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`relative bg-transparent p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
+            <div className={`relative bg-[#f3e8ff] p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
               <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
@@ -167,6 +196,58 @@ export default function Layout({ children }) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const linkContent = (
+              <>
+                {/* Icon Wrapper Circle */}
+                <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
+                  isActive 
+                    ? "bg-purple-100 border-purple-300 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
+                    : "bg-white/50 border-purple-200/50 group-hover:bg-white/80 group-hover:border-purple-300 group-hover:scale-110"
+                }`}>
+                  {isActive && (
+                    <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
+                  )}
+                  <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
+                    {item.imgSrc ? (
+                      <img src={item.imgSrc} alt={item.name} className="w-7 h-7 object-contain drop-shadow" />
+                    ) : (
+                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    )}
+                  </div>
+                  {/* Glass Shine on Circle */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
+                </div>
+
+                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                    {item.name}
+                  </span>
+                  {isActive && (
+                    <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                  )}
+                </div>
+                {/* Lock icon badge */}
+                {item.locked && (
+                  <span className="text-amber-500 text-[16px] shrink-0">🔒</span>
+                )}
+              </>
+            );
+            if (item.locked) {
+              return (
+                <a
+                  key={item.path}
+                  href="#"
+                  onClick={handleAdminNavClick}
+                  className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
+                    isActive 
+                      ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
+                      : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
+                  }`}
+                >
+                  {linkContent}
+                </a>
+              );
+            }
             return (
               <Link
                 key={item.path}
@@ -178,37 +259,7 @@ export default function Layout({ children }) {
                     : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
                 }`}
               >
-                {/* Icon Wrapper Circle */}
-                <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
-                  isActive 
-                    ? "bg-purple-100 border-purple-300 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
-                    : "bg-white/50 border-purple-200/50 group-hover:bg-white/80 group-hover:border-purple-300 group-hover:scale-110"
-                }`}>
-                  {/* Subtle Icon Glow */}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
-                  )}
-                  
-                  <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
-                    {item.imgSrc ? (
-                      <img src={item.imgSrc} alt={item.name} className="w-7 h-7 object-contain drop-shadow" />
-                    ) : (
-                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                    )}
-                  </div>
-
-                  {/* Glass Shine on Circle */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
-                </div>
-                
-                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
-                    {item.name}
-                  </span>
-                  {isActive && (
-                    <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
-                  )}
-                </div>
+                {linkContent}
               </Link>
             );
           })}
@@ -393,6 +444,70 @@ export default function Layout({ children }) {
           </div>
         </footer>
       </div>
+
+      {/* -------------------- Password Lock Modal -------------------- */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden"
+            style={passwordShake ? { animation: 'shake 0.5s ease' } : {}}
+          >
+            {/* Glow top */}
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 rounded-t-3xl"></div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-4 shadow-inner">
+                <span className="text-3xl">🔒</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-1">คลังพัสดุ (Admin)</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-['Prompt'] mb-6">กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+
+              <input
+                type="password"
+                autoFocus
+                value={passwordInput}
+                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                placeholder="รหัสผ่าน"
+                className={`w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-2 ${
+                  passwordError
+                    ? 'border-red-400 text-red-600 bg-red-50 dark:bg-red-500/10 placeholder-red-300'
+                    : 'border-slate-200 dark:border-slate-600 text-slate-800 focus:border-amber-400'
+                }`}
+              />
+              {passwordError && (
+                <p className="text-red-500 text-sm font-bold font-['Prompt'] mb-3">❌ รหัสผ่านไม่ถูกต้อง</p>
+              )}
+
+              <div className="flex gap-3 w-full mt-3">
+                <button
+                  onClick={() => { setShowPasswordModal(false); setPasswordInput(''); setPasswordError(false); }}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors font-['Prompt']"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handlePasswordSubmit}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 transition-all active:scale-95 font-['Prompt']"
+                >
+                  เข้าใช้งาน
+                </button>
+              </div>
+            </div>
+
+            <style>{`
+              @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                20% { transform: translateX(-8px); }
+                40% { transform: translateX(8px); }
+                60% { transform: translateX(-6px); }
+                80% { transform: translateX(6px); }
+              }
+            `}</style>
+          </div>
+        </div>
+      )}
+      {/* ----------------------------------------------------------------- */}
 
       {/* -------------------- Auto Logout Warning Modal -------------------- */}
       {showLogoutWarning && (
