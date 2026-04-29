@@ -305,16 +305,16 @@ export default function Dashboard() {
                 <div className="db-hero-title-block">
                     {/* Hospital Logo (Left-aligned with background) */}
                     <div className="db-hero-logo-wrap" style={{ 
-                        background: 'rgba(255,255,255,0.85)', 
-                        padding: '12px 20px', 
+                        background: '#000000', 
+                        padding: '14px 22px', 
                         borderRadius: '20px', 
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.1), inset 0 2px 5px rgba(255,255,255,1)',
-                        border: '1px solid rgba(255,255,255,0.5)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+                        border: '1px solid rgba(255,255,255,0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <img src="/cnkp-logo-transparent.png" alt="Nakornping Hospital Logo" style={{ height: '55px', objectFit: 'contain' }} />
+                        <img src="/cnkp-logo-transparent.png" alt="Nakornping Hospital Logo" style={{ height: '80px', objectFit: 'contain' }} />
                     </div>
                     <div>
                         <div className="db-hero-org">กลุ่มงานเทคโนโลยีสารสนเทศ·ฝ่ายดูแลพัสดุอุปกรณ์ครุภัณฑ์รอจำหน่าย</div>
@@ -439,6 +439,26 @@ export default function Dashboard() {
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
                         <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>AVAILABLE</span>
                     </div>
+                    {/* ── ป้ายกลาง ── */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 18px',
+                        borderRadius: '10px',
+                        background: 'rgba(185,28,28,0.12)',
+                        border: '1.5px solid rgba(185,28,28,0.35)',
+                        marginLeft: '8px',
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#7f1d1d',
+                            fontFamily: 'Prompt, sans-serif',
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.02em',
+                        }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่องและเตรียมเอกสาร</span>
+                    </div>
                     {selectedStocks.length > 0 && (
                         <div style={{ marginLeft: '15px' }}>
                             <Button variant="primary" size="sm" onClick={handlePrintSelected} className="d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: '8px' }}>
@@ -535,6 +555,26 @@ export default function Dashboard() {
                         <div className="latest-panel-dot" style={{ backgroundColor: '#f87171' }}></div>
                         <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
                         <span className="latest-panel-badge" style={{ color: '#f87171' }}>DISTRIBUTED</span>
+                    </div>
+                    {/* ── ป้ายกลาง DISTRIBUTED ── */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 18px',
+                        borderRadius: '10px',
+                        background: 'rgba(180,83,9,0.12)',
+                        border: '1.5px solid rgba(180,83,9,0.35)',
+                        marginLeft: '8px',
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#78350f',
+                            fontFamily: 'Prompt, sans-serif',
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.02em',
+                        }}>🚚 ครุภัณฑ์แพ็คลงกล่องและเอกสารพร้อมจำหน่าย</span>
                     </div>
                     {selectedDistributed.length > 0 && (
                         <div style={{ marginLeft: '15px' }}>
