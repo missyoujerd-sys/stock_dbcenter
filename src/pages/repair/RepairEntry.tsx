@@ -25,7 +25,7 @@ const HOSPITAL_LOGO = '/cnkp-logo-best.png';
 const PREMIUM_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
 
-.repair-page-wrap { font-family: 'Prompt', sans-serif; }
+.repair-page-wrap { font-family: 'Prompt', sans-serif; overflow-x: hidden; }
 
 /* A4 preview */
 .a4-preview {
@@ -217,31 +217,43 @@ const PREMIUM_CSS = `
 .a4-sig-card.blue  .sig-header { color: #3b82f6; }
 .a4-sig-card.green .sig-header { color: #22c55e; }
 
-.a4-sig-row { display: flex; align-items: center; margin-bottom: 10px; }
-.a4-sig-row .k { font-size: 13px; color: #64748b; font-weight: 700; width: 45px; }
-.a4-sig-input { flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: 'Prompt', sans-serif; outline: none; font-weight: 600; color: #1e293b; background: white; transition: 0.2s; }
+.a4-sig-row { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; }
+.a4-sig-row .k { font-size: 13px; color: #64748b; font-weight: 700; width: 60px; flex-shrink: 0; }
+.a4-sig-input { flex: 1; min-width: 0; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: 'Prompt', sans-serif; outline: none; font-weight: 600; color: #1e293b; background: white; transition: 0.2s; width: 100%; box-sizing: border-box; }
 .a4-sig-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 .a4-sig-input::placeholder { color: #cbd5e1; font-weight: 500;}
 
 .a4-sig-line { border-bottom: 1.5px dashed #cbd5e1; margin-top: 30px; }
-.a4-sig-line-label { font-size: 10px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 600; }
+.a4-sig-line-label { font-size: 10px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 600; word-break: break-all; }
 
 /* Footer */
 .a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; }
 
 /* Responsive adjustments for A4 Preview */
 @media (max-width: 768px) {
-  .a4-preview { min-height: auto; }
-  .a4-content { padding: 5mm; }
-  .a4-header-stripe { margin: -5mm -5mm 0; padding: 5mm; flex-direction: column; text-align: center; gap: 8px; margin-bottom: 4mm; }
-  .a4-header-title h1 { font-size: 20px; }
+  .a4-preview { min-height: auto; overflow-x: hidden; }
+  .a4-content { padding: 4mm 4mm 6mm; }
+  .a4-header-stripe {
+    margin: -4mm -4mm 0;
+    padding: 4mm;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    margin-bottom: 4mm;
+  }
+  .a4-header-title h1 { font-size: 18px; }
   .a4-header-title p { font-size: 9px; line-height: 1.4; }
-  .a4-info-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
-  .a4-sig-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4mm; }
-  .a4-input-box { padding: 8px 12px; }
-  .a4-input-box input { font-size: 14px; }
+  .a4-info-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-sig-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-input-box { padding: 8px 10px; }
+  .a4-input-box input { font-size: 15px; }
   .a4-stock-guaranteed, .a4-stock-expired { min-height: 80px; padding: 12px; }
-  .a4-sig-card { padding: 12px; }
+  .a4-sig-card { padding: 12px 10px; overflow: hidden; }
+  .a4-sig-row { flex-wrap: nowrap; }
+  .a4-sig-row .k { font-size: 12px; width: 58px; }
+  .a4-sig-input { font-size: 13px; padding: 7px 8px; }
+  .a4-sig-line-label { font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .section-title { font-size: 12px; }
 }
 
 /* -- Export hidden wrapper -- */
