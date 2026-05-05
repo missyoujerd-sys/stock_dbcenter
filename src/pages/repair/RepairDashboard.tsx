@@ -80,26 +80,40 @@ export default function RepairDashboard() {
   };
 
   const getStatusBadge = (status: RepairStatus) => {
-    // กำหนดค่าสไตล์สำหรับแต่ละสถานะ
     const styles: Record<string, string> = {
+      'รอดำเนินการ': 'bg-amber-50 text-amber-700 border-amber-200/60 shadow-inner',
+      'การซ่อมแซม': 'bg-blue-50 text-blue-700 border-blue-200/60 shadow-inner',
+      'สมบูรณ์': 'bg-emerald-50 text-emerald-700 border-emerald-200/60 shadow-inner',
+      'กลับมาแล้ว': 'bg-slate-50 text-slate-600 border-slate-200/60 shadow-inner',
+      'ดำเนินการซ่อมแล้ว': 'bg-emerald-50 text-emerald-700 border-emerald-200/60 shadow-inner',
+      'ส่งคืนหมดประกัน': 'bg-rose-50 text-rose-700 border-rose-200/60 shadow-inner',
+      'ส่งคืนค่าซ่อมไม่คุ้ม': 'bg-rose-50 text-rose-700 border-rose-200/60 shadow-inner',
+      'อื่นๆ': 'bg-purple-50 text-purple-700 border-purple-200/60 shadow-inner',
       pending: 'bg-amber-50 text-amber-700 border-amber-200/60 shadow-inner',
-      repairing: 'bg-blue-50 text-blue-700 border-blue-200/60 shadow-inner',
-      completed: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 shadow-inner',
-      returned: 'bg-slate-50 text-slate-600 border-slate-200/60 shadow-inner',
     };
     
     const dotColors: Record<string, string> = {
+      'รอดำเนินการ': 'bg-amber-500',
+      'การซ่อมแซม': 'bg-blue-500',
+      'สมบูรณ์': 'bg-emerald-500',
+      'กลับมาแล้ว': 'bg-slate-400',
+      'ดำเนินการซ่อมแล้ว': 'bg-emerald-500',
+      'ส่งคืนหมดประกัน': 'bg-rose-500',
+      'ส่งคืนค่าซ่อมไม่คุ้ม': 'bg-rose-500',
+      'อื่นๆ': 'bg-purple-500',
       pending: 'bg-amber-500',
-      repairing: 'bg-blue-500',
-      completed: 'bg-emerald-500',
-      returned: 'bg-slate-400',
     };
 
     const labels: Record<string, string> = {
-      pending: 'รอดำเนินการตรวจสอบ',
-      repairing: 'อยู่ระหว่างดำเนินการซ่อม',
-      completed: 'ซ่อมบำรุงเสร็จสิ้น',
-      returned: 'ส่งคืนอุปกรณ์เรียบร้อยแล้ว',
+      'รอดำเนินการ': 'รอดำเนินการ',
+      'การซ่อมแซม': 'กำลังซ่อมแซม',
+      'สมบูรณ์': 'ซ่อมบำรุงเสร็จสิ้น',
+      'กลับมาแล้ว': 'กลับมาแล้ว',
+      'ดำเนินการซ่อมแล้ว': 'ดำเนินการซ่อมแล้ว',
+      'ส่งคืนหมดประกัน': 'ส่งคืนหมดประกัน',
+      'ส่งคืนค่าซ่อมไม่คุ้ม': 'ส่งคืนค่าซ่อมไม่คุ้ม',
+      'อื่นๆ': 'อื่นๆ',
+      pending: 'รอดำเนินการ',
     };
 
     // ใช้ fallback เป็นค่าว่างหากไม่พบสถานะ (เพื่อป้องกัน runtime error แม้ TS จะดักไว้แล้ว)
@@ -205,10 +219,12 @@ export default function RepairDashboard() {
             onChange={e => setStatusFilter(e.target.value as any)}
           >
             <option value="all">แสดงสถานะทั้งหมด</option>
-            <option value="pending">รอดำเนินการตรวจสอบ</option>
-            <option value="repairing">อยู่ระหว่างดำเนินการซ่อม</option>
-            <option value="completed">ซ่อมบำรุงเสร็จสิ้น</option>
-            <option value="returned">ส่งคืนอุปกรณ์เรียบร้อยแล้ว</option>
+            <option value="รอดำเนินการ">รอดำเนินการ</option>
+            <option value="การซ่อมแซม">กำลังซ่อมแซม</option>
+            <option value="ดำเนินการซ่อมแล้ว">ดำเนินการซ่อมแล้ว</option>
+            <option value="ส่งคืนหมดประกัน">ส่งคืนหมดประกัน</option>
+            <option value="ส่งคืนค่าซ่อมไม่คุ้ม">ส่งคืนค่าซ่อมไม่คุ้ม</option>
+            <option value="อื่นๆ">อื่นๆ</option>
           </select>
         </div>
       </div>
