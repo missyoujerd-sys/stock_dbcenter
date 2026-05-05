@@ -5,14 +5,15 @@ import {
   ShieldCheck,
   User,
   ArrowLeft,
-  Download
+  Download,
+  ClipboardList
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const HOSPITAL_LOGO = '/cnkp-logo-best.png';
+const HOSPITAL_LOGO = '/โลโก้ ร.พ.png';
 
 const PREMIUM_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
@@ -62,8 +63,8 @@ const PREMIUM_CSS = `
   margin-bottom: 8mm;
   border-bottom: 4px solid #60a5fa;
 }
-.a4-header-stripe .logo-box { background: white; padding: 8px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-.a4-header-stripe .logo-box img { width: 65px; height: 65px; object-fit: contain; }
+.a4-header-stripe .logo-box { background: white; padding: 4px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.a4-header-stripe .logo-box img { width: 100%; height: 100%; object-fit: contain; }
 .a4-header-title h1 { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 4px 0; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .a4-header-title p  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; letter-spacing: 2px; text-transform: uppercase; }
 
@@ -271,21 +272,17 @@ export default function RepairView() {
       const pw = pdf.internal.pageSize.getWidth();
       const ph = pdf.internal.pageSize.getHeight();
       const ratio = canvas.height / canvas.width;
-      const imgH = pw * ratio;
-      if (imgH <= ph) {
-        pdf.addImage(imgData, 'PNG', 0, 0, pw, imgH);
-      } else {
-        let yPos = 0;
-        let remaining = canvas.height;
-        const pageH = canvas.width * (ph / pw);
-        let page = 0;
-        while (remaining > 0) {
-          if (page > 0) pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, -(page * ph), pw, pw * ratio);
-          remaining -= pageH;
-          page++;
-        }
+      let imgW = pw;
+      let imgH = pw * ratio;
+
+      // Force 1 page by scaling down if needed
+      if (imgH > ph) {
+        imgH = ph;
+        imgW = ph / ratio;
       }
+
+      const marginX = (pw - imgW) / 2;
+      pdf.addImage(imgData, 'PNG', marginX, 0, imgW, imgH);
       pdf.save(`Repair_${data.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
     } catch (err) {
       console.error(err);
@@ -349,8 +346,8 @@ export default function RepairView() {
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
             </div>
             <div className="a4-header-title">
-              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</h1>
-              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Management System)</p>
+              <h1>คัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</h1>
+              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Management System)</p>
             </div>
           </div>
 
@@ -402,12 +399,32 @@ export default function RepairView() {
             </div>
           </div>
 
-          {/* Section 2 */}
-          <div className="section-title red">
-            อาการเสีย / รายละเอียดปัญหา
-          </div>
-          <div className="a4-problem">
-            {data.problemDescription || '-'}
+          {/* Section 2 & Status */}
+          <div className="a4-info-grid">
+            <div>
+              <div className="section-title red">
+                อาการเสีย / รายละเอียดปัญหา
+              </div>
+              <div className="a4-problem" style={{ marginBottom: 0, height: 'calc(100% - 32px)' }}>
+                {data.problemDescription || '-'}
+              </div>
+            </div>
+
+            <div>
+              <div className="section-title" style={{ color: '#8b5cf6' }}>
+                <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px', height: 'calc(100% - 32px)' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', background: '#fff', border: '1.5px solid #c4b5fd', borderRadius: '8px', padding: '8px 16px', fontSize: '18px', fontWeight: 800, color: '#5b21b6', boxShadow: '0 2px 8px rgba(139,92,246,0.1)' }}>
+                  {data.status}
+                </div>
+                {data.status === 'อื่นๆ' && data.statusDetail && (
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#4c1d95', lineHeight: '1.6', borderTop: '1px dashed #c4b5fd', marginTop: '12px', paddingTop: '12px' }}>
+                    <span style={{ color: '#8b5cf6', marginRight: '6px' }}>รายละเอียด:</span> {data.statusDetail}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Section 3 */}
@@ -520,28 +537,28 @@ export default function RepairView() {
             }}>
               <div style={{
                 background: '#fff',
-                padding: '0',
-                borderRadius: '12px',
+                padding: '4px',
+                borderRadius: '16px',
                 overflow: 'hidden',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.8), 0 0 0 3px rgba(255,255,255,0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '76px',
-                height: '76px',
+                width: '90px',
+                height: '90px',
                 border: '1px solid #e2e8f0',
                 flexShrink: 0
               }}>
                 <img
                   src={HOSPITAL_LOGO}
                   alt="logo"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(1.1)', padding: '2px' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
                 />
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์การแพทย์ (Management System)</div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Management System)</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right' }}>
                 <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
@@ -587,12 +604,32 @@ export default function RepairView() {
                 </div>
               </div>
 
-              {/* Problem */}
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-                รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
-              </div>
-              <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', marginBottom: '30px' }}>
-                <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{data.problemDescription || '-'}</div>
+              {/* Problem & Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+                    รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{data.problemDescription || '-'}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#fff', border: '1.5px solid #c4b5fd', borderRadius: '8px', padding: '8px 16px', fontSize: '18px', fontWeight: 800, color: '#5b21b6', boxShadow: '0 2px 8px rgba(139,92,246,0.1)' }}>
+                      {data.status}
+                    </div>
+                    {data.status === 'อื่นๆ' && data.statusDetail && (
+                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#4c1d95', lineHeight: '1.6', borderTop: '1px dashed #c4b5fd', marginTop: '12px', paddingTop: '12px' }}>
+                        <span style={{ color: '#8b5cf6', marginRight: '6px' }}>รายละเอียด:</span> {data.statusDetail}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Signatures */}

@@ -1,4 +1,4 @@
-export type RepairStatus = 'รอดำเนินการ' | 'การซ่อมแซม' | 'สมบูรณ์' | 'กลับมาแล้ว';
+export type RepairStatus = 'รอดำเนินการ' | 'การซ่อมแซม' | 'สมบูรณ์' | 'กลับมาแล้ว' | 'ดำเนินการซ่อมแล้ว' | 'ส่งคืนหมดประกัน' | 'ส่งคืนค่าซ่อมไม่คุ้ม' | 'อื่นๆ';
 
 export interface RepairRecord {
   id: string;
@@ -27,6 +27,7 @@ export interface RepairRecord {
   isWarranty: boolean;
   
   status: RepairStatus;
+  statusDetail?: string;
   createdAt: string;
   updatedAt: string;
 }
