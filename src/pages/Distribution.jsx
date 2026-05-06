@@ -493,35 +493,30 @@ export default function Distribution() {
         <div className="box-manager-widget" style={{ 
             background: 'linear-gradient(to bottom, #ffffff, #f8fafc)', 
             backdropFilter: 'blur(20px)', 
-            borderRadius: '1.5rem', 
-            padding: '1.25rem',
+            borderRadius: '1rem', 
+            padding: '1rem',
             border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05), 0 5px 15px rgba(0,0,0,0.03)',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 10px rgba(0,0,0,0.03)',
             width: '100%',
-            maxWidth: '520px',
+            maxWidth: '100%',
             position: 'relative',
             overflow: 'hidden'
         }}>
             {/* Decorative background glow */}
             <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(13,110,253,0.1) 0%, rgba(255,255,255,0) 70%)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }}></div>
 
-            <div className="d-flex justify-content-between align-items-center mb-3" style={{ position: 'relative', zIndex: 1 }}>
-                <div className="d-flex align-items-center gap-3">
-                    <div className="d-flex align-items-center justify-content-center shadow-sm" style={{ 
-                        width: '38px', height: '38px', 
-                        background: 'linear-gradient(135deg, #0d6efd, #3b82f6)', 
-                        borderRadius: '12px',
-                        color: 'white'
-                    }}>
-                        <FaBox size={16} />
+            <div className="d-flex justify-content-between align-items-center mb-2" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="d-flex align-items-center gap-2">
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                        <img src="/open-box.png" alt="box" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                     <div>
-                        <h6 className="mb-0 fw-bold" style={{ fontFamily: 'Prompt, sans-serif', color: '#1e293b', fontSize: '1.05rem', letterSpacing: '0.3px' }}>จัดการกล่องพัสดุ</h6>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>จัดเตรียมพัสดุเพื่อจำหน่าย</div>
+                        <h6 className="mb-0 fw-bold" style={{ fontFamily: 'Prompt, sans-serif', color: '#1e293b', fontSize: '0.95rem' }}>จัดการกล่องพัสดุ</h6>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b' }}>จัดเตรียมพัสดุเพื่อจำหน่าย</div>
                     </div>
                 </div>
-                <Button variant="primary" size="sm" onClick={handleAddBox} className="rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm" style={{ 
-                    fontSize: '0.8rem', fontWeight: '600', 
+                <Button variant="primary" size="sm" onClick={handleAddBox} className="rounded-pill px-2 py-1 d-flex align-items-center gap-1 shadow-sm" style={{ 
+                    fontSize: '0.75rem', fontWeight: '600', 
                     background: 'linear-gradient(135deg, #ffffff, #f8fafc)', 
                     color: '#3b82f6', border: '1px solid #bfdbfe', transition: 'all 0.2s'
                 }}
@@ -532,7 +527,7 @@ export default function Distribution() {
                 </Button>
             </div>
             
-            <div className="d-flex gap-2 mb-3 mt-4" style={{ overflowX: 'auto', paddingBottom: '6px', position: 'relative', zIndex: 1 }}>
+            <div className="d-flex gap-2 mb-2 mt-2" style={{ overflowX: 'auto', paddingBottom: '4px', position: 'relative', zIndex: 1 }}>
                 {boxes.map(box => (
                     <div 
                         key={box.id} 
@@ -547,14 +542,21 @@ export default function Distribution() {
                         }}
                     >
                         <span className="fw-semibold" style={{ fontSize: '0.85rem' }}>{box.name}</span>
-                        <span className={`badge rounded-pill`} style={{ 
-                            fontSize: '0.7rem', 
+                        <div className="d-flex align-items-center gap-1" style={{ 
                             background: activeBoxId === box.id ? 'rgba(255,255,255,0.25)' : '#cbd5e1',
-                            color: activeBoxId === box.id ? '#ffffff' : '#475569',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
                             boxShadow: activeBoxId === box.id ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
                         }}>
-                            {box.items.length}
-                        </span>
+                            <img src="/open-box.png" alt="box" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
+                            <span style={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: 'bold',
+                                color: activeBoxId === box.id ? '#ffffff' : '#475569'
+                            }}>
+                                {box.items.length}
+                            </span>
+                        </div>
                         {boxes.length > 1 && activeBoxId === box.id && (
                             <div className="ms-1 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '22px', height: '22px', background: 'rgba(255,255,255,0.15)', transition: 'background 0.2s' }} 
                                 onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.8)'}
@@ -567,20 +569,20 @@ export default function Distribution() {
                 ))}
             </div>
             
-            <div className="active-box-content p-3 rounded-4" style={{ 
-                maxHeight: '190px', overflowY: 'auto', 
+            <div className="active-box-content p-2 rounded-3" style={{ 
+                maxHeight: '120px', overflowY: 'auto', 
                 background: '#f8fafc', 
                 border: '1px solid #e2e8f0',
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
                 position: 'relative', zIndex: 1 
             }}>
                 {boxes.find(b => b.id === activeBoxId)?.items.length === 0 ? (
-                    <div className="text-center text-muted py-4 d-flex flex-column align-items-center" style={{ animation: 'fadeIn 0.5s ease' }}>
-                        <div className="mb-3 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '60px', height: '60px', background: '#f1f5f9' }}>
-                            <FaBox size={24} color="#94a3b8" />
+                    <div className="text-center text-muted py-2 d-flex flex-column align-items-center" style={{ animation: 'fadeIn 0.5s ease' }}>
+                        <div className="mb-2 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
+                            <img src="/open-box.png" alt="empty box" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: '0.8' }} />
                         </div>
-                        <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#64748b' }}>ยังไม่มีพัสดุในกล่องนี้</span>
-                        <small style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>เลือกพัสดุจากตารางด้านล่างเพื่อจัดลงกล่อง</small>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#64748b' }}>ยังไม่มีพัสดุในกล่องนี้</span>
+                        <small style={{ fontSize: '0.7rem', color: '#94a3b8' }}>เลือกพัสดุจากตารางเพื่อจัดลงกล่อง</small>
                     </div>
                 ) : (
                     boxes.find(b => b.id === activeBoxId)?.items.map((item, idx) => (
@@ -621,31 +623,31 @@ export default function Distribution() {
 
     return (
         <>
-            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                <div className="page-title-badge">
-                    <div className="page-icon-box">
-                        <FaTruck />
-                    </div>
-                    <h2 className="page-title-text">
-                        จำหน่ายพัสดุ <small>(Distribution)</small>
-                    </h2>
-                </div>
-
-                <div className="d-flex align-items-center gap-2">
-                    {allSelectedItemsCount > 0 && (
-                        <Button variant="primary" className="logout-btn-custom px-4 shadow-lg" size="lg" onClick={handleShowBulkDistribute} style={{ borderRadius: '50px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FaTruck />
-                            จำหน่ายพัสดุในกล่อง ({allSelectedItemsCount})
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            <div className="d-flex flex-column flex-xl-row gap-3 w-100 mb-4 align-items-start">
+            <div className="d-flex flex-column flex-xl-row gap-4 w-100 mb-4 align-items-start">
                 <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
+                    <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                        <div className="page-title-badge">
+                            <div className="page-icon-box">
+                                <FaTruck />
+                            </div>
+                            <h2 className="page-title-text">
+                                จำหน่ายพัสดุ <small>(Distribution)</small>
+                            </h2>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-2">
+                            {allSelectedItemsCount > 0 && (
+                                <Button variant="primary" className="logout-btn-custom px-4 shadow-lg" size="lg" onClick={handleShowBulkDistribute} style={{ borderRadius: '50px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <FaTruck />
+                                    จำหน่ายพัสดุในกล่อง ({allSelectedItemsCount})
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
                     <StatusSummaryBar />
                 </div>
-                <div style={{ flex: '0 0 auto', maxWidth: '100%' }}>
+                <div style={{ flex: '0 0 auto', width: '100%', maxWidth: '320px' }}>
                     <BoxManagerWidget />
                 </div>
             </div>
