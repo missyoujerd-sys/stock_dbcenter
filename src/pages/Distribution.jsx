@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle } from 'react-icons/fa';
+import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
@@ -24,6 +24,11 @@ export default function Distribution() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
+
+    // Box Manager States
+    const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
+    const [activeBoxId, setActiveBoxId] = useState(1);
+    const [nextBoxId, setNextBoxId] = useState(2);
 
     const StatusSummaryBar = () => (
         <div className="status-summary-bar">
@@ -102,65 +107,143 @@ export default function Distribution() {
         setShowDetailModal(true);
     };
 
+    const handleAddBox = () => {
+        const newId = nextBoxId;
+        setBoxes([...boxes, { id: newId, name: `กล่องที่ ${newId}`, items: [] }]);
+        setNextBoxId(newId + 1);
+        setActiveBoxId(newId);
+    };
+
+    const handleRemoveBox = (boxId) => {
+        if (boxes.length <= 1) return;
+        const updatedBoxes = boxes.filter(b => b.id !== boxId);
+        setBoxes(updatedBoxes);
+        if (activeBoxId === boxId) {
+            setActiveBoxId(updatedBoxes[0].id);
+        }
+    };
+
+    const getAssignedBox = (id) => {
+        for (const box of boxes) {
+            const idx = box.items.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                return { box, order: idx + 1 };
+            }
+        }
+        return null;
+    };
+
     const toggleSelect = (id) => {
-        setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
+        setBoxes(prev => {
+            const newBoxes = [...prev];
+            let foundBoxIdx = -1;
+            
+            newBoxes.forEach((box, bIdx) => {
+                const iIdx = box.items.findIndex(i => i.id === id);
+                if (iIdx !== -1) {
+                    foundBoxIdx = bIdx;
+                }
+            });
+
+            if (foundBoxIdx !== -1) {
+                // Remove from current box immutably
+                newBoxes[foundBoxIdx] = {
+                    ...newBoxes[foundBoxIdx],
+                    items: newBoxes[foundBoxIdx].items.filter(i => i.id !== id)
+                };
+            } else {
+                // Add to active box immutably
+                const activeIdx = newBoxes.findIndex(b => b.id === activeBoxId);
+                if (activeIdx !== -1) {
+                    const stockItem = stocks.find(s => s.id === id);
+                    if (stockItem) {
+                        newBoxes[activeIdx] = {
+                            ...newBoxes[activeIdx],
+                            items: [...newBoxes[activeIdx].items, stockItem]
+                        };
+                    }
+                }
+            }
+            return newBoxes;
+        });
     };
 
     const toggleSelectAll = () => {
         const filteredIds = filteredStocks.map(s => s.id);
-        const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+        const allSelected = filteredIds.length > 0 && filteredIds.every(id => {
+            return boxes.some(b => b.items.some(i => i.id === id));
+        });
 
-        if (allFilteredSelected) {
-            // Deselect visible items from selectedIds
-            setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
+        if (allSelected) {
+            // Remove all filtered from boxes
+            setBoxes(prev => prev.map(box => ({
+                ...box,
+                items: box.items.filter(i => !filteredIds.includes(i.id))
+            })));
         } else {
-            // Select visible items (merge with existing selectedIds)
-            setSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+            // Add all filtered to active box (that are not already in any box)
+            setBoxes(prev => {
+                const newBoxes = [...prev];
+                const activeIdx = newBoxes.findIndex(b => b.id === activeBoxId);
+                if (activeIdx === -1) return newBoxes;
+
+                const itemsToAdd = filteredStocks.filter(stock => 
+                    !newBoxes.some(b => b.items.some(i => i.id === stock.id))
+                );
+                
+                newBoxes[activeIdx].items = [...newBoxes[activeIdx].items, ...itemsToAdd];
+                return newBoxes;
+            });
         }
     };
+
+    const allSelectedItemsCount = boxes.reduce((acc, box) => acc + box.items.length, 0);
 
     const handleShowDistribute = (stock) => {
         if (stock) {
             setSelectedStock(stock);
-            setSelectedIds([stock.id]);
+            if (!getAssignedBox(stock.id)) {
+                 toggleSelect(stock.id);
+            }
         }
         setDistributeDate(new Date().toISOString().split('T')[0]);
         setShowModal(true);
     };
 
     const handleShowBulkDistribute = () => {
-        if (selectedIds.length === 0) return;
+        if (allSelectedItemsCount === 0) return;
         setSelectedStock(null);
         setDistributeDate(new Date().toISOString().split('T')[0]);
         setShowModal(true);
     };
 
     const handleDistribute = async (exportExcel = true) => {
-        if (selectedIds.length === 0) return;
+        if (allSelectedItemsCount === 0) return;
         setDistributeError('');
 
         try {
-            const selectedStocks = stocks.filter(s => selectedIds.includes(s.id));
+            const itemsToDistribute = boxes.flatMap(b => b.items.map(item => ({...item, distributionBox: b.name})));
 
-            for (const stock of selectedStocks) {
+            for (const stock of itemsToDistribute) {
                 const stockRef = ref(db, `stocks/${stock.id}`);
                 await update(stockRef, {
                     status: 'จำหน่าย',
                     distributionDate: distributeDate,
                     distributor: encryptData(currentUser.email),
                     qt_distributed: 1,
-                    qt_balance: 0
+                    qt_balance: 0,
+                    distributionBox: stock.distributionBox
                 });
             }
 
             // Generate Excel if requested
             if (exportExcel) {
-                generateExcel(selectedStocks, distributeDate);
+                generateExcel(itemsToDistribute, distributeDate);
             }
 
-            setSelectedIds([]);
+            setBoxes([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
+            setActiveBoxId(1);
+            setNextBoxId(2);
             setShowModal(false);
         } catch (err) {
             console.error(err);
@@ -314,7 +397,8 @@ export default function Distribution() {
             const assetAndSN = snLine ? `${assetLine}\n${snLine}` : assetLine;
             const catName = stock.category || 'จอคอมพิวเตอร์';
             const bModel = stock.brandModel || '-';
-            const itemDesc = `${catName} ${bModel}`;
+            const boxInfo = stock.distributionBox ? `[${stock.distributionBox}] ` : '';
+            const itemDesc = `${boxInfo}${catName} ${bModel}`;
 
             sc(`A${r}`, i + 1, { align: { horizontal: 'center' } });
             sc(`B${r}`, assetAndSN, { font: { size: 13 }, align: { horizontal: 'left', wrapText: true, vertical: 'top' } });
@@ -405,9 +489,139 @@ export default function Distribution() {
         stock.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const BoxManagerWidget = () => (
+        <div className="box-manager-widget" style={{ 
+            background: 'linear-gradient(to bottom, #ffffff, #f8fafc)', 
+            backdropFilter: 'blur(20px)', 
+            borderRadius: '1.5rem', 
+            padding: '1.25rem',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05), 0 5px 15px rgba(0,0,0,0.03)',
+            width: '100%',
+            maxWidth: '520px',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Decorative background glow */}
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(13,110,253,0.1) 0%, rgba(255,255,255,0) 70%)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }}></div>
+
+            <div className="d-flex justify-content-between align-items-center mb-3" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="d-flex align-items-center gap-3">
+                    <div className="d-flex align-items-center justify-content-center shadow-sm" style={{ 
+                        width: '38px', height: '38px', 
+                        background: 'linear-gradient(135deg, #0d6efd, #3b82f6)', 
+                        borderRadius: '12px',
+                        color: 'white'
+                    }}>
+                        <FaBox size={16} />
+                    </div>
+                    <div>
+                        <h6 className="mb-0 fw-bold" style={{ fontFamily: 'Prompt, sans-serif', color: '#1e293b', fontSize: '1.05rem', letterSpacing: '0.3px' }}>จัดการกล่องพัสดุ</h6>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>จัดเตรียมพัสดุเพื่อจำหน่าย</div>
+                    </div>
+                </div>
+                <Button variant="primary" size="sm" onClick={handleAddBox} className="rounded-pill px-3 py-1 d-flex align-items-center gap-1 shadow-sm" style={{ 
+                    fontSize: '0.8rem', fontWeight: '600', 
+                    background: 'linear-gradient(135deg, #ffffff, #f8fafc)', 
+                    color: '#3b82f6', border: '1px solid #bfdbfe', transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff, #f8fafc)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                    <FaPlus size={10} /> เพิ่มกล่อง
+                </Button>
+            </div>
+            
+            <div className="d-flex gap-2 mb-3 mt-4" style={{ overflowX: 'auto', paddingBottom: '6px', position: 'relative', zIndex: 1 }}>
+                {boxes.map(box => (
+                    <div 
+                        key={box.id} 
+                        onClick={() => setActiveBoxId(box.id)}
+                        className={`box-tab px-3 py-2 rounded-pill d-flex align-items-center gap-2 ${activeBoxId === box.id ? 'shadow' : ''}`}
+                        style={{ 
+                            cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', whiteSpace: 'nowrap',
+                            background: activeBoxId === box.id ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : '#f1f5f9',
+                            color: activeBoxId === box.id ? '#ffffff' : '#64748b',
+                            border: activeBoxId === box.id ? '1px solid rgba(59,130,246,0.5)' : '1px solid transparent',
+                            transform: activeBoxId === box.id ? 'scale(1.02)' : 'scale(1)'
+                        }}
+                    >
+                        <span className="fw-semibold" style={{ fontSize: '0.85rem' }}>{box.name}</span>
+                        <span className={`badge rounded-pill`} style={{ 
+                            fontSize: '0.7rem', 
+                            background: activeBoxId === box.id ? 'rgba(255,255,255,0.25)' : '#cbd5e1',
+                            color: activeBoxId === box.id ? '#ffffff' : '#475569',
+                            boxShadow: activeBoxId === box.id ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+                        }}>
+                            {box.items.length}
+                        </span>
+                        {boxes.length > 1 && activeBoxId === box.id && (
+                            <div className="ms-1 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '22px', height: '22px', background: 'rgba(255,255,255,0.15)', transition: 'background 0.2s' }} 
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.8)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                            >
+                                <FaTrash size={10} className="text-white" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); handleRemoveBox(box.id); }} />
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+            
+            <div className="active-box-content p-3 rounded-4" style={{ 
+                maxHeight: '190px', overflowY: 'auto', 
+                background: '#f8fafc', 
+                border: '1px solid #e2e8f0',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+                position: 'relative', zIndex: 1 
+            }}>
+                {boxes.find(b => b.id === activeBoxId)?.items.length === 0 ? (
+                    <div className="text-center text-muted py-4 d-flex flex-column align-items-center" style={{ animation: 'fadeIn 0.5s ease' }}>
+                        <div className="mb-3 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '60px', height: '60px', background: '#f1f5f9' }}>
+                            <FaBox size={24} color="#94a3b8" />
+                        </div>
+                        <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#64748b' }}>ยังไม่มีพัสดุในกล่องนี้</span>
+                        <small style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>เลือกพัสดุจากตารางด้านล่างเพื่อจัดลงกล่อง</small>
+                    </div>
+                ) : (
+                    boxes.find(b => b.id === activeBoxId)?.items.map((item, idx) => (
+                        <div key={item.id} className="d-flex justify-content-between align-items-center p-2 mb-2 bg-white rounded-3 shadow-sm" style={{ 
+                            borderLeft: '4px solid #3b82f6',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            cursor: 'default'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 .125rem .25rem rgba(0,0,0,.075)'; }}
+                        >
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ 
+                                    width: '26px', height: '26px', 
+                                    background: '#eff6ff', color: '#2563eb', 
+                                    fontSize: '0.8rem', fontWeight: '700',
+                                    border: '1px solid #bfdbfe'
+                                }}>
+                                    {idx + 1}
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#1e293b' }}>{item.assetId}</div>
+                                    <div style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>{item.brandModel}</div>
+                                </div>
+                            </div>
+                            <Button variant="link" className="text-danger p-2 text-decoration-none rounded-circle" style={{ background: '#fef2f2', transition: 'all 0.2s' }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
+                                onClick={() => toggleSelect(item.id)}>
+                                <FaTrash size={12} />
+                            </Button>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <>
-            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                 <div className="page-title-badge">
                     <div className="page-icon-box">
                         <FaTruck />
@@ -418,15 +632,23 @@ export default function Distribution() {
                 </div>
 
                 <div className="d-flex align-items-center gap-2">
-                    {selectedIds.length > 0 && (
-                        <Button variant="primary" className="logout-btn-custom px-4" size="sm" onClick={handleShowBulkDistribute}>
-                            จำหน่ายที่เลือก ({selectedIds.length})
+                    {allSelectedItemsCount > 0 && (
+                        <Button variant="primary" className="logout-btn-custom px-4 shadow-lg" size="lg" onClick={handleShowBulkDistribute} style={{ borderRadius: '50px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FaTruck />
+                            จำหน่ายพัสดุในกล่อง ({allSelectedItemsCount})
                         </Button>
                     )}
                 </div>
             </div>
 
-            <StatusSummaryBar />
+            <div className="d-flex flex-column flex-xl-row gap-3 w-100 mb-4 align-items-start">
+                <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
+                    <StatusSummaryBar />
+                </div>
+                <div style={{ flex: '0 0 auto', maxWidth: '100%' }}>
+                    <BoxManagerWidget />
+                </div>
+            </div>
 
 
             <div className="section-header-container mt-2">
@@ -486,12 +708,12 @@ export default function Distribution() {
                                 <th style={{ width: '50px', paddingLeft: '1.5rem' }}>
                                     <Form.Check
                                         type="checkbox"
-                                        checked={filteredStocks.length > 0 && filteredStocks.every(s => selectedIds.includes(s.id))}
+                                        checked={filteredStocks.length > 0 && filteredStocks.every(s => !!getAssignedBox(s.id))}
                                         onChange={toggleSelectAll}
                                         className="db-check-custom"
                                     />
                                 </th>
-                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
+                                <th style={{ width: '90px', textAlign: 'center' }}>ลำดับ (กล่อง)</th>
                                 <th>วันที่สำรวจ</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ/รุ่น</th>
@@ -516,11 +738,19 @@ export default function Distribution() {
                                         <td style={{ paddingLeft: '1.5rem' }}>
                                             <Form.Check
                                                 type="checkbox"
-                                                checked={selectedIds.includes(stock.id)}
+                                                checked={!!getAssignedBox(stock.id)}
                                                 onChange={() => toggleSelect(stock.id)}
                                             />
                                         </td>
-                                        <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
+                                        <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>
+                                            {getAssignedBox(stock.id) ? (
+                                                <span className="badge bg-success rounded-pill px-2 py-1 shadow-sm d-flex align-items-center justify-content-center mx-auto" style={{ width: 'fit-content', gap: '4px', fontSize: '0.75rem' }}>
+                                                    <FaBox size={10} /> {getAssignedBox(stock.id).box.name} (#{getAssignedBox(stock.id).order})
+                                                </span>
+                                            ) : (
+                                                idx + 1
+                                            )}
+                                        </td>
                                         <td>{stock.importDate}</td>
                                         <td className="latest-asset-id">{stock.assetId}</td>
                                         <td className="latest-brand">{stock.brandModel}</td>
@@ -591,22 +821,29 @@ export default function Distribution() {
                     {distributeError && <Alert variant="danger" className="border-0 shadow-sm rounded-3">{distributeError}</Alert>}
                     
                     <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                        <span className="text-secondary fw-semibold" style={{ fontSize: '0.9rem' }}>รายการที่เลือก</span>
+                        <span className="text-secondary fw-semibold" style={{ fontSize: '0.9rem' }}>รายการที่เลือกแยกตามกล่อง</span>
                         <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 shadow-sm border border-primary border-opacity-25">
-                            {selectedIds.length} รายการ
+                            {allSelectedItemsCount} รายการ
                         </span>
                     </div>
                     
-                    <div className="selected-items-box mb-4 p-3 rounded-4 shadow-sm" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef', maxHeight: '180px', overflowY: 'auto' }}>
-                        {stocks.filter(s => selectedIds.includes(s.id)).map((s, index) => (
-                            <div key={s.id} className={`d-flex align-items-center py-2 ${index !== selectedIds.length - 1 ? 'border-bottom border-light' : ''}`}>
-                                <div className="me-3 text-secondary">
-                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0d6efd', boxShadow: '0 0 5px rgba(13,110,253,0.5)' }}></div>
-                                </div>
-                                <div className="flex-grow-1">
-                                    <div className="fw-semibold text-dark" style={{ fontSize: '0.95rem' }}>{s.assetId}</div>
-                                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>{s.brandModel.trim().replace(/-$/, '').trim()}</div>
-                                </div>
+                    <div className="selected-items-box mb-4 p-3 rounded-4 shadow-sm" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef', maxHeight: '220px', overflowY: 'auto' }}>
+                        {boxes.filter(b => b.items.length > 0).map(box => (
+                            <div key={box.id} className="mb-3 bg-white p-2 rounded-3 shadow-sm" style={{ borderLeft: '4px solid #0d6efd' }}>
+                                <h6 className="text-primary fw-bold mb-2 border-bottom pb-2 d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
+                                    <FaBox /> {box.name} <span className="badge bg-secondary rounded-pill ms-auto" style={{ fontSize: '0.7rem' }}>{box.items.length} รายการ</span>
+                                </h6>
+                                {box.items.map((s, index) => (
+                                    <div key={s.id} className={`d-flex align-items-center py-2 ${index !== box.items.length - 1 ? 'border-bottom border-light' : ''}`}>
+                                        <div className="me-3 text-secondary">
+                                            <div className="badge bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '24px', height: '24px', padding: '0' }}>{index + 1}</div>
+                                        </div>
+                                        <div className="flex-grow-1">
+                                            <div className="fw-semibold text-dark" style={{ fontSize: '0.90rem' }}>{s.assetId}</div>
+                                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{s.brandModel.trim().replace(/-$/, '').trim()}</div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ))}
                     </div>

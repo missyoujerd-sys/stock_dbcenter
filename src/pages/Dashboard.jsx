@@ -653,7 +653,14 @@ export default function Dashboard() {
                                         )}
                                     </td>
                                     <td className="latest-asset-id">{stock.assetId || '—'}</td>
-                                    <td className="latest-brand">{stock.brandModel}</td>
+                                    <td className="latest-brand">
+                                        {stock.distributionBox && (
+                                            <span className="badge bg-success rounded-pill px-2 py-1 shadow-sm d-inline-flex align-items-center justify-content-center mb-1" style={{ gap: '4px', fontSize: '0.70rem' }}>
+                                                <FaBox size={10} /> {stock.distributionBox}
+                                            </span>
+                                        )}
+                                        <div style={{ marginTop: stock.distributionBox ? '2px' : '0' }}>{stock.brandModel}</div>
+                                    </td>
                                     <td className="latest-dept">{stock.department}</td>
                                     <td><span className="latest-status latest-status--out">จำหน่าย</span></td>
                                 </tr>
