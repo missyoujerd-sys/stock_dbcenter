@@ -105,7 +105,7 @@ export default function Layout({ children }) {
           performAutoLogout();
         }
       }, 1000);
-    }, 1 * 60 * 1000); // ตั้งค่า 1 นาที
+    }, 15 * 60 * 1000); // ตั้งค่า 5 นาที
   }, [performAutoLogout]);
 
   const extendSession = React.useCallback(() => {
