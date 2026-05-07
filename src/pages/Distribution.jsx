@@ -686,7 +686,7 @@ export default function Distribution() {
                             fontFamily: 'Prompt, sans-serif',
                             whiteSpace: 'nowrap',
                             letterSpacing: '0.02em',
-                        }}>🖨️ เลือกครุภัณฑ์ที่จะจำหน่ายและปริ้นเอกสารติดอุปกรณ์</span>
+                        }}>🖨️ เลือกครุภัณฑ์จำหน่ายลงกล่อง</span>
                     </div>
                     <div className="d-flex align-items-center gap-3">
                         <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>

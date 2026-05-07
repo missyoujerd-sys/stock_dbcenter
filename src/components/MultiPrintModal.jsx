@@ -47,7 +47,13 @@ const MultiPrintModal = ({ show, onHide, items }) => {
 
                             {/* Header: title + date/time on same row */}
                             <div className="d-flex justify-content-between align-items-start mb-1">
-                                <div style={{ flex: 1 }}></div>
+                                <div style={{ flex: 1, fontSize: '0.9rem', fontWeight: 'bold', color: '#dc3545' }}>
+                                    {item.distributionBox ? (
+                                        <span style={{ textDecoration: 'underline double', textUnderlineOffset: '2px' }}>
+                                            {item.distributionBox}
+                                        </span>
+                                    ) : ''}
+                                </div>
                                 <h1 className="document-title fw-bold text-decoration-underline mb-0 text-center" style={{ flex: 2, fontSize: '1rem' }}>
                                     {item.status === 'จำหน่าย' ? 'จำหน่าย' : (item.status === 'รับเข้า' ? 'รับเข้า' : 'พัสดุ')}
                                 </h1>
