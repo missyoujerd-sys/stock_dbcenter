@@ -672,8 +672,8 @@ export default function RepairView() {
 
       {/* ── Bottom Actions ── */}
       <div className="mt-8 flex justify-end">
-        <Link to="/repair/dashboard" className="group flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-blue-200/50 font-bold text-base hover:-translate-y-1">
-          <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+        <Link to="/distribution" className="group flex items-center gap-3 bg-gradient-to-br from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-orange-200/50 font-bold text-base hover:-translate-y-1">
+          <img src="/เตรียมจำหน่าย.png" alt="จำหน่าย" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           <span style={{ fontFamily: 'Prompt, sans-serif' }}>ย้อนกลับ</span>
         </Link>
       </div>
