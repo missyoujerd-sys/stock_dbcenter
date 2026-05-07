@@ -106,7 +106,7 @@ export default function Layout({ children }) {
           performAutoLogout();
         }
       }, 1000);
-    }, 15 * 60 * 1000); // ตั้งค่า 5 นาที
+    }, 5 * 60 * 1000); // ตั้งค่า 5 นาที
   }, [performAutoLogout]);
 
   const extendSession = React.useCallback(() => {
@@ -159,6 +159,18 @@ export default function Layout({ children }) {
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
 
       <div className={`flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isSidebarCollapsed ? 'py-6 px-3' : 'py-6 px-4'}`}>
+        {/* Toggle Sidebar Button - inside top-right */}
+        <button
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="absolute top-4 right-3 z-[60] flex items-center justify-center w-8 h-8 rounded-lg shadow-md hover:scale-110 transition-all duration-300 cursor-pointer border border-rose-200 hover:border-rose-300 hover:shadow-rose-200/60"
+          style={{ background: 'linear-gradient(135deg, #fff0f3 60%, #ffe4ea 100%)' }}
+          title={isSidebarCollapsed ? 'เปิด Sidebar' : 'ซ่อน Sidebar'}
+        >
+          {isSidebarCollapsed
+            ? <ChevronRight size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
+            : <ChevronLeft size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
+          }
+        </button>
         {/* Elite Branding Section */}
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
           <div className="relative shrink-0">
@@ -308,17 +320,6 @@ export default function Layout({ children }) {
     <div className="h-screen bg-[#fcfcfd] dark:bg-[#060a12] flex overflow-hidden font-['Prompt'] transition-colors duration-500">
       <aside className={`hidden lg:block h-full shrink-0 ${isSidebarCollapsed ? 'w-[100px]' : 'w-[320px]'} transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative z-50`}>
         {SidebarContent()}
-        <button 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="absolute top-8 -right-4 z-[60] flex items-center justify-center w-8 h-8 rounded-lg shadow-md hover:scale-110 transition-all duration-300 cursor-pointer border border-rose-200 hover:border-rose-300 hover:shadow-rose-200/60"
-          style={{ background: 'linear-gradient(135deg, #fff0f3 60%, #ffe4ea 100%)' }}
-          title={isSidebarCollapsed ? "เปิด Sidebar" : "ซ่อน Sidebar"}
-        >
-          {isSidebarCollapsed
-            ? <ChevronRight size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
-            : <ChevronLeft size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
-          }
-        </button>
       </aside>
 
       {/* Mobile Sidebar Overlay */}
