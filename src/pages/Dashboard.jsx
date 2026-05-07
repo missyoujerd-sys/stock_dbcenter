@@ -27,6 +27,7 @@ export default function Dashboard() {
     
     const [selectedStocks, setSelectedStocks] = useState([]);
     const [showMultiPrintModal, setShowMultiPrintModal] = useState(false);
+    const [showDistPrintModal, setShowDistPrintModal] = useState(false);
     const [selectedDistributed, setSelectedDistributed] = useState([]);
 
     const [summary, setSummary] = useState({
@@ -584,7 +585,16 @@ export default function Dashboard() {
                             }}>🚚 ครุภัณฑ์พร้อมจำหน่ายแล้ว</span>
                         </div>
                         {selectedDistributed.length > 0 && (
-                            <div style={{ marginLeft: 'auto' }}>
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => setShowDistPrintModal(true)}
+                                    className="d-flex align-items-center gap-2 shadow-sm"
+                                    style={{ borderRadius: '8px' }}
+                                >
+                                    <FaPrint /> พิมพ์ที่เลือก ({selectedDistributed.length})
+                                </Button>
                                 <Button
                                     size="sm"
                                     onClick={() => generateExcelDistributed(selectedDistributed)}
@@ -690,6 +700,11 @@ export default function Dashboard() {
                 show={showMultiPrintModal}
                 onHide={() => setShowMultiPrintModal(false)}
                 items={selectedStocks}
+            />
+            <MultiPrintModal
+                show={showDistPrintModal}
+                onHide={() => setShowDistPrintModal(false)}
+                items={selectedDistributed}
             />
         </div>
     );
