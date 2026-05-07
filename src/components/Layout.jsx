@@ -163,7 +163,7 @@ export default function Layout({ children }) {
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
             <div className={`relative bg-[#f3e8ff] p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
-              <img src="/cnkp-logo-transparent.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
+              <img src="/nakornping-logo.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
@@ -359,7 +359,7 @@ export default function Layout({ children }) {
                   <div className="relative shrink-0">
                     <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-black">
                      {/*Header (บนขวา) * */}
-                      <img src="/cnkp-logo-transparent.png" alt="Profile" className="w-full h-full object-cover" />
+                      <img src="/nakornping-logo.png" alt="Profile" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">

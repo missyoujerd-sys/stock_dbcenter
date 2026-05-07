@@ -2221,6 +2221,8 @@ h6 {
 
 /* Table wrapper */
 .latest-table-wrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: auto;
   max-height: 420px;
@@ -2228,23 +2230,25 @@ h6 {
 }
 
 .latest-table-wrap::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 .latest-table-wrap::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
 }
 .latest-table-wrap::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
 }
 .latest-table-wrap::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Table */
 .latest-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   table-layout: auto;
 }
