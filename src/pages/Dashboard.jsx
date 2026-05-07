@@ -457,7 +457,7 @@ export default function Dashboard() {
                             fontFamily: 'Prompt, sans-serif',
                             whiteSpace: 'nowrap',
                             letterSpacing: '0.02em',
-                        }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่องและเตรียมเอกสาร</span>
+                        }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
                     </div>
                     {selectedStocks.length > 0 && (
                         <div style={{ marginLeft: '15px' }}>
@@ -574,7 +574,7 @@ export default function Dashboard() {
                             fontFamily: 'Prompt, sans-serif',
                             whiteSpace: 'nowrap',
                             letterSpacing: '0.02em',
-                        }}>🚚 ครุภัณฑ์แพ็คลงกล่องและเอกสารพร้อมจำหน่าย</span>
+                        }}>🚚 ครุภัณฑ์แพ็คลงกล่องพร้อมจำหน่าย</span>
                     </div>
                     {selectedDistributed.length > 0 && (
                         <div style={{ marginLeft: '15px' }}>
