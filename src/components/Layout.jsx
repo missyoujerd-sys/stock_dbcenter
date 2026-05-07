@@ -29,6 +29,7 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   // -- สำหรับ Password Lock (Admin Inventory) --
   const [showPasswordModal, setShowPasswordModal] = React.useState(false);
@@ -157,16 +158,16 @@ export default function Layout({ children }) {
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
 
-      <div className={`p-6 flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] px-6`}>
+      <div className={`flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isSidebarCollapsed ? 'py-6 px-3' : 'py-6 px-4'}`}>
         {/* Elite Branding Section */}
-        <div className={`flex items-center gap-4 mb-10 group transition-all duration-[600ms] px-1`}>
+        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
             <div className={`relative bg-[#f3e8ff] p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
               <img src="/nakornping-logo.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
-          <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-6 duration-[800ms] flex flex-col justify-center">
+          <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
             <div className="flex flex-col">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-[16px] font-bold text-slate-700 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
@@ -218,17 +219,17 @@ export default function Layout({ children }) {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
                 </div>
 
-                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[600ms] font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                <div className={`flex flex-col flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
+                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
                     {item.name}
                   </span>
-                  {isActive && (
+                  {isActive && !isSidebarCollapsed && (
                     <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
                   )}
                 </div>
                 {/* Lock icon badge */}
                 {item.locked && (
-                  <span className="text-amber-500 text-[16px] shrink-0">🔒</span>
+                  <span className={`text-amber-500 shrink-0 transition-all duration-[300ms] ${isSidebarCollapsed ? 'absolute -top-1 -right-1 text-[12px] bg-white rounded-full w-5 h-5 flex items-center justify-center border border-purple-200 z-20' : 'text-[16px]'}`}>🔒</span>
                 )}
               </>
             );
@@ -238,7 +239,7 @@ export default function Layout({ children }) {
                   key={item.path}
                   href="#"
                   onClick={handleAdminNavClick}
-                  className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
+                  className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
                     isActive 
                       ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
                       : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
@@ -253,7 +254,7 @@ export default function Layout({ children }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center gap-4 px-4 py-[0.85rem] rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+                className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                   isActive 
                     ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
                     : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
@@ -268,8 +269,8 @@ export default function Layout({ children }) {
         {/* Elite Footer Section */}
         <div className="mt-auto pt-6 border-t border-white/[0.06] dark:border-white/[0.1] space-y-5">
           {currentUser && (
-            <div className="space-y-5">
-              <div className={`flex items-center gap-4 group/avatar transition-all duration-[600ms] px-2`}>
+            <div className={`flex flex-col ${isSidebarCollapsed ? 'space-y-4 items-center' : 'space-y-5'}`}>
+              <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-4 px-2'} group/avatar transition-all duration-[600ms]`}>
                 <div className="relative shrink-0">
                   {/* Luxury Avatar Ring */}
                   <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
@@ -279,21 +280,21 @@ export default function Layout({ children }) {
                     <img src="/cat-3.png" alt="Profile" className="w-full h-full object-cover relative z-10" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0 overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-bottom-3 duration-[800ms]">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5">ยินดีต้อนรับ</p>
+                <div className={`flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
                   <p className="text-[14px] font-bold text-slate-800 truncate tracking-tight group-hover/avatar:text-purple-900 transition-colors duration-[300ms]">
                     {currentUser.email.split('@')[0]}
                   </p>
                 </div>
               </div>
               
-              <div className="px-1">
+              <div className="px-1 w-full">
                 <button
                   onClick={handleLogout}
-                  className={`w-full flex items-center gap-3.5 py-3.5 rounded-[1.2rem] bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-700 transition-all duration-[600ms] font-black text-[13px] border border-rose-200 dark:border-rose-500/20 hover:border-rose-300 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)] justify-center px-4`}
+                  className={`w-full flex items-center justify-center ${isSidebarCollapsed ? 'p-3 gap-0' : 'gap-3.5 py-3.5 px-4'} rounded-[1.2rem] bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-700 transition-all duration-[600ms] font-black text-[13px] border border-rose-200 dark:border-rose-500/20 hover:border-rose-300 group/logout ease-[cubic-bezier(0.2,0.8,0.2,1)]`}
                 >
                   <LogOut size={18} className="shrink-0 transition-transform duration-[500ms] group-hover/logout:rotate-[-8deg] group-hover/logout:scale-110" />
-                  <span className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-[700ms] font-['Prompt'] tracking-widest">SIGN OUT</span>
+                  <span className={`transition-all duration-[600ms] font-['Prompt'] tracking-widest overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[110px] opacity-100'}`}>SIGN OUT</span>
                 </button>
               </div>
             </div>
@@ -305,8 +306,19 @@ export default function Layout({ children }) {
 
   return (
     <div className="h-screen bg-[#fcfcfd] dark:bg-[#060a12] flex overflow-hidden font-['Prompt'] transition-colors duration-500">
-      <aside className={`hidden lg:block h-full shrink-0 w-[320px] transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]`}>
+      <aside className={`hidden lg:block h-full shrink-0 ${isSidebarCollapsed ? 'w-[100px]' : 'w-[320px]'} transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative z-50`}>
         {SidebarContent()}
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="absolute top-8 -right-4 z-[60] flex items-center justify-center w-8 h-8 rounded-lg shadow-md hover:scale-110 transition-all duration-300 cursor-pointer border border-rose-200 hover:border-rose-300 hover:shadow-rose-200/60"
+          style={{ background: 'linear-gradient(135deg, #fff0f3 60%, #ffe4ea 100%)' }}
+          title={isSidebarCollapsed ? "เปิด Sidebar" : "ซ่อน Sidebar"}
+        >
+          {isSidebarCollapsed
+            ? <ChevronRight size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
+            : <ChevronLeft size={16} className="text-rose-500 drop-shadow-sm" strokeWidth={2.5} />
+          }
+        </button>
       </aside>
 
       {/* Mobile Sidebar Overlay */}
