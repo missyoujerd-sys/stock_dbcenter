@@ -323,8 +323,10 @@ export default function Distribution() {
         const YFILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
 
         // ═══════ ROW 1: Title ═══════
+        const boxNumberText = selectedStocks.length > 0 && selectedStocks[0].distributionBox ? selectedStocks[0].distributionBox : '';
         ws.getRow(1).height = 38;
-        mc('A1:I1', 'ใบเบิกหรือใบส่งคืน', { font: { bold: true, size: 22 }, align: { horizontal: 'center' }, border: {} });
+        mc('A1:B1', boxNumberText, { font: { bold: true, size: 16, color: { argb: 'FFDC3545' }, underline: 'double' }, align: { horizontal: 'left', vertical: 'top' }, border: {} });
+        mc('C1:I1', 'ใบเบิกหรือใบส่งคืน', { font: { bold: true, size: 22 }, align: { horizontal: 'center', vertical: 'middle' }, border: {} });
         mc('J1:K1', 'แบบ พ.3101\nรพ.นครพิงค์', { font: { size: 12 }, align: { horizontal: 'right', wrapText: true }, border: {} });
 
         // ═══════ ROW 2 ═══════

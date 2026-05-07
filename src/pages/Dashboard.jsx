@@ -211,8 +211,10 @@ export default function Dashboard() {
         };
         const YFILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
 
+        const boxNumberText = selectedStocksList.length > 0 && selectedStocksList[0].distributionBox ? selectedStocksList[0].distributionBox : '';
         ws.getRow(1).height = 38;
-        mc('A1:I1', 'ใบเบิกหรือใบส่งคืน', { font: { bold: true, size: 22 }, align: { horizontal: 'center' }, border: {} });
+        mc('A1:B1', boxNumberText, { font: { bold: true, size: 16, color: { argb: 'FFDC3545' }, underline: 'double' }, align: { horizontal: 'left', vertical: 'top' }, border: {} });
+        mc('C1:I1', 'ใบเบิกหรือใบส่งคืน', { font: { bold: true, size: 22 }, align: { horizontal: 'center', vertical: 'middle' }, border: {} });
         mc('J1:K1', 'แบบ พ.3101\nรพ.นครพิงค์', { font: { size: 12 }, align: { horizontal: 'right', wrapText: true }, border: {} });
         ws.getRow(2).height = 22;
         mc('A2:E2', 'แผ่นที่ ............. ของจำนวน ............. แผ่น', { font: { size: 14 }, align: { horizontal: 'left' } });
@@ -424,49 +426,52 @@ export default function Dashboard() {
                 </Link>
             </div>
 
-            {/* ══ TABLE 1: รับเข้า ══ */}
-            <div className="section-header-container mt-2">
+            <Row className="g-4 mt-2">
+                <Col xl={6} className="d-flex flex-column">
+                    {/* ══ TABLE 1: รับเข้า ══ */}
+                    <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
                 <h4 className="section-title-text">
                     รายการพัสดุรับเข้า
                     <span className="section-title-badge" style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>รับเข้า (AVAILABLE)</span>
                 </h4>
             </div>
-            <div className="latest-panel">
-                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#fca5a5' }}>
-                    <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
-                        <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>AVAILABLE</span>
-                    </div>
-                    {/* ── ป้ายกลาง ── */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '6px 18px',
-                        borderRadius: '10px',
-                        background: 'rgba(185,28,28,0.12)',
-                        border: '1.5px solid rgba(185,28,28,0.35)',
-                        marginLeft: '8px',
-                    }}>
-                        <span style={{
-                            fontSize: '0.9rem',
-                            fontWeight: 700,
-                            color: '#7f1d1d',
-                            fontFamily: 'Prompt, sans-serif',
-                            whiteSpace: 'nowrap',
-                            letterSpacing: '0.02em',
-                        }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
-                    </div>
-                    {selectedStocks.length > 0 && (
-                        <div style={{ marginLeft: '15px' }}>
-                            <Button variant="primary" size="sm" onClick={handlePrintSelected} className="d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: '8px' }}>
-                                <FaPrint /> พิมพ์ที่เลือก ({selectedStocks.length})
-                            </Button>
+            <div className="latest-panel d-flex flex-column h-100">
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ backgroundColor: '#fca5a5', gap: '15px', minHeight: '130px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                        <div className="latest-panel-title-wrap">
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
+                            <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
+                            <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>AVAILABLE</span>
                         </div>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+                        {/* ── ป้ายกลาง ── */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '6px 18px',
+                            borderRadius: '10px',
+                            background: 'rgba(185,28,28,0.12)',
+                            border: '1.5px solid rgba(185,28,28,0.35)',
+                        }}>
+                            <span style={{
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                color: '#7f1d1d',
+                                fontFamily: 'Prompt, sans-serif',
+                                whiteSpace: 'nowrap',
+                                letterSpacing: '0.02em',
+                            }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
+                        </div>
+                        {selectedStocks.length > 0 && (
+                            <div style={{ marginLeft: 'auto' }}>
+                                <Button variant="primary" size="sm" onClick={handlePrintSelected} className="d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: '8px' }}>
+                                    <FaPrint /> พิมพ์ที่เลือก ({selectedStocks.length})
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -540,55 +545,58 @@ export default function Dashboard() {
                     </table>
                 </div>
             </div>
+                </Col>
 
-            {/* ══ TABLE 2: จำหน่าย ══ */}
-            <div className="section-header-container mt-4">
+                <Col xl={6} className="d-flex flex-column">
+                    {/* ══ TABLE 2: จำหน่าย ══ */}
+                    <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
                 <h4 className="section-title-text">
                     รายการพัสดุจำหน่ายแล้ว
                     <span className="section-title-badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>จำหน่าย (DISTRIBUTED)</span>
                 </h4>
             </div>
-            <div className="latest-panel">
-                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#ffb74d' }}>
-                    <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot" style={{ backgroundColor: '#f87171' }}></div>
-                        <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
-                        <span className="latest-panel-badge" style={{ color: '#f87171' }}>DISTRIBUTED</span>
-                    </div>
-                    {/* ── ป้ายกลาง DISTRIBUTED ── */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '6px 18px',
-                        borderRadius: '10px',
-                        background: 'rgba(180,83,9,0.12)',
-                        border: '1.5px solid rgba(180,83,9,0.35)',
-                        marginLeft: '8px',
-                    }}>
-                        <span style={{
-                            fontSize: '0.9rem',
-                            fontWeight: 700,
-                            color: '#78350f',
-                            fontFamily: 'Prompt, sans-serif',
-                            whiteSpace: 'nowrap',
-                            letterSpacing: '0.02em',
-                        }}>🚚 ครุภัณฑ์แพ็คลงกล่องพร้อมจำหน่าย</span>
-                    </div>
-                    {selectedDistributed.length > 0 && (
-                        <div style={{ marginLeft: '15px' }}>
-                            <Button
-                                size="sm"
-                                onClick={() => generateExcelDistributed(selectedDistributed)}
-                                className="d-flex align-items-center gap-2 shadow-sm"
-                                style={{ borderRadius: '8px', background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 600 }}
-                            >
-                                <FaFileExcel /> Export Excel ใบเบิก ({selectedDistributed.length})
-                            </Button>
+            <div className="latest-panel d-flex flex-column h-100">
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ backgroundColor: '#ffb74d', gap: '15px', minHeight: '130px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                        <div className="latest-panel-title-wrap">
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#f87171' }}></div>
+                            <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
+                            <span className="latest-panel-badge" style={{ color: '#f87171' }}>DISTRIBUTED</span>
                         </div>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+                        {/* ── ป้ายกลาง DISTRIBUTED ── */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '6px 18px',
+                            borderRadius: '10px',
+                            background: 'rgba(180,83,9,0.12)',
+                            border: '1.5px solid rgba(180,83,9,0.35)',
+                        }}>
+                            <span style={{
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                color: '#78350f',
+                                fontFamily: 'Prompt, sans-serif',
+                                whiteSpace: 'nowrap',
+                                letterSpacing: '0.02em',
+                            }}>🚚 ครุภัณฑ์พร้อมจำหน่ายแล้ว</span>
+                        </div>
+                        {selectedDistributed.length > 0 && (
+                            <div style={{ marginLeft: 'auto' }}>
+                                <Button
+                                    size="sm"
+                                    onClick={() => generateExcelDistributed(selectedDistributed)}
+                                    className="d-flex align-items-center gap-2 shadow-sm"
+                                    style={{ borderRadius: '8px', background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 600 }}
+                                >
+                                    <FaFileExcel /> Export Excel ใบเบิก ({selectedDistributed.length})
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -669,6 +677,8 @@ export default function Dashboard() {
                     </table>
                 </div>
             </div>
+                </Col>
+            </Row>
 
             <ItemDetailModal
                 show={showDetailModal}
