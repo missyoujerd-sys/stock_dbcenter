@@ -91,7 +91,20 @@ export default function Dashboard() {
                     });
                 }
             }
-            loadedStocks.sort((a, b) => b.timestamp - a.timestamp);
+            loadedStocks.sort((a, b) => {
+                // If both are distributed items, sort by box number (least to greatest)
+                if (a.status === 'จำหน่าย' && b.status === 'จำหน่าย') {
+                    const boxA = parseInt(a.distributionBox?.match(/\d+/)?.[0] || 0);
+                    const boxB = parseInt(b.distributionBox?.match(/\d+/)?.[0] || 0);
+                    
+                    if (boxA !== boxB) {
+                        return boxA - boxB; // Ascending order: Box 1, Box 2, ...
+                    }
+                }
+                
+                // Fallback to timestamp (newest first) for incoming items or same-box items
+                return (b.timestamp || 0) - (a.timestamp || 0);
+            });
             setStocks(loadedStocks);
             setSummary({ total, available, distributed });
             setLoading(false);
