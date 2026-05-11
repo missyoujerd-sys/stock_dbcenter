@@ -106,7 +106,7 @@ export default function Layout({ children }) {
           performAutoLogout();
         }
       }, 1000);
-    }, 5 * 60 * 1000); // ตั้งค่า 5 นาที
+    }, 15 * 60 * 1000); // ตั้งค่า 15 นาที
   }, [performAutoLogout]);
 
   const extendSession = React.useCallback(() => {
@@ -176,7 +176,7 @@ export default function Layout({ children }) {
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
             <div className={`relative bg-[#f3e8ff] p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
-              <img src="/nakornping-logo.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
+              <img src="/โลโก้ ร.พ.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
@@ -372,7 +372,7 @@ export default function Layout({ children }) {
                   <div className="relative shrink-0">
                     <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-black">
                      {/*Header (บนขวา) * */}
-                      <img src="/nakornping-logo.png" alt="Profile" className="w-full h-full object-cover" />
+                      <img src="/โลโก้ ร.พ.png" alt="Profile" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">
