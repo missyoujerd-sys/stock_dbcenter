@@ -129,6 +129,21 @@ export default function RepairDashboard() {
     );
   };
 
+  const getRowStyle = (status: RepairStatus) => {
+    const styles: Record<string, string> = {
+      'รอดำเนินการ': 'border-l-[4px] border-l-amber-500 hover:bg-amber-50/50',
+      'การซ่อมแซม': 'border-l-[4px] border-l-blue-500 hover:bg-blue-50/50',
+      'สมบูรณ์': 'border-l-[4px] border-l-emerald-500 hover:bg-emerald-50/50',
+      'กลับมาแล้ว': 'border-l-[4px] border-l-slate-400 hover:bg-slate-50/50',
+      'ดำเนินการซ่อมแล้ว': 'border-l-[4px] border-l-emerald-500 hover:bg-emerald-50/50',
+      'ส่งคืนหมดประกัน': 'border-l-[4px] border-l-rose-500 hover:bg-rose-50/50',
+      'ส่งคืนค่าซ่อมไม่คุ้ม': 'border-l-[4px] border-l-rose-500 hover:bg-rose-50/50',
+      'อื่นๆ': 'border-l-[4px] border-l-purple-500 hover:bg-purple-50/50',
+      pending: 'border-l-[4px] border-l-amber-500 hover:bg-amber-50/50',
+    };
+    return styles[status] || styles.pending;
+  };
+
   return (
     <div className="p-4 md:p-8 relative min-h-screen overflow-hidden">
       {/* Premium Background Decorative Elements */}
@@ -143,78 +158,79 @@ export default function RepairDashboard() {
         <div>
           <Link 
             to="/" 
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-800 transition-all mb-6 group font-bold"
+            className="inline-flex items-center gap-3 text-blue-600 hover:text-blue-800 transition-all mb-6 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:bg-slate-50 transition-all">
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <div className="w-11 h-11 rounded-2xl bg-white/80 backdrop-blur-sm border border-blue-200 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:bg-white transition-all">
+              <ArrowLeft size={22} className="group-hover:-translate-x-1 transition-transform text-blue-600" />
             </div>
-            <span className="text-sm uppercase tracking-[0.2em] font-black">ย้อนกลับสู่หน้าหลัก</span>
+            <span className="text-[15px] font-black tracking-wide underline decoration-2 underline-offset-4 group-hover:text-blue-800">ย้อนกลับสู่หน้าหลัก</span>
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                ระบบบริหารจัดการ <span className="text-blue-600">งานซ่อมบำรุง</span>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                ระบบบริหารจัดการ <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">งานซ่อมบำรุง</span>
               </h1>
-              <p className="text-slate-500 font-medium">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
+              <p className="text-slate-500 font-medium text-sm mt-1">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
             </div>
             <Link 
               to="/repair/entry"
-              className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl transition-all shadow-2xl shadow-slate-200 group font-bold"
+              className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(59,130,246,0.4)] group font-black text-base border-2 border-white/20"
             >
-              <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+              <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
               เพิ่มรายการแจ้งซ่อมใหม่
             </Link>
           </div>
         </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
-          <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-            <Database size={28} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl shadow-sm border-l-[4px] border-l-indigo-500 border-y border-r border-slate-100 flex items-center gap-4 hover:shadow-md transition-all group">
+          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+            <Database size={24} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">จำนวนรายการทั้งหมด</p>
-            <h3 className="text-3xl font-black text-slate-800">{stats.total}</h3>
+            <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">จำนวนรายการทั้งหมด</p>
+            <h3 className="text-2xl font-black text-slate-800">{stats.total}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
-          <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
-            <Clock size={28} />
+        <div className="bg-white p-4 rounded-xl shadow-sm border-l-[4px] border-l-amber-500 border-y border-r border-slate-100 flex items-center gap-4 hover:shadow-md transition-all group">
+          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+            <Clock size={24} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">อยู่ระหว่างดำเนินการ</p>
-            <h3 className="text-3xl font-black text-slate-800">{stats.repairing}</h3>
+            <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-0.5">อยู่ระหว่างดำเนินการ</p>
+            <h3 className="text-2xl font-black text-slate-800">{stats.repairing}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
-          <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
-            <CheckCircle size={28} />
+        <div className="bg-white p-4 rounded-xl shadow-sm border-l-[4px] border-l-emerald-500 border-y border-r border-slate-100 flex items-center gap-4 hover:shadow-md transition-all group">
+          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+            <CheckCircle size={24} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">ดำเนินการเสร็จสิ้น</p>
-            <h3 className="text-3xl font-black text-slate-800">{stats.completed}</h3>
+            <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">ดำเนินการเสร็จสิ้น</p>
+            <h3 className="text-2xl font-black text-slate-800">{stats.completed}</h3>
           </div>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      <div className="bg-white p-3 rounded-xl shadow-sm border border-blue-100 flex flex-col md:flex-row justify-between gap-3 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
+        <div className="relative w-full md:w-[400px] pl-2">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-400" size={16} />
           <input 
             type="text" 
             placeholder="ค้นหาตามรุ่น, หมายเลขครุภัณฑ์ หรือหมายเลขซีเรียล..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-blue-50/30 border border-blue-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all text-sm text-slate-700"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="text-slate-400" size={18} />
+          <Filter className="text-blue-400" size={16} />
           <select 
-            className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-slate-600"
+            className="bg-blue-50/30 border border-blue-100 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all font-semibold text-slate-600 text-sm cursor-pointer hover:bg-blue-50/60"
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as any)}
           >
@@ -234,17 +250,17 @@ export default function RepairDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">รายละเอียดอุปกรณ์ / หมายเลขครุภัณฑ์</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">รายละเอียดอาการเสีย / ข้อขัดข้อง</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">สถานะการดำเนินการ</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">เจ้าหน้าที่รับซ่อม / วันที่รับรายการ</th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider text-right">
-                  {isAdmin && "การจัดการ"}
+              <tr className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 border-b-0 divide-x divide-white/20 shadow-md">
+                <th className="px-6 py-4 text-[13px] font-black text-white uppercase tracking-wider whitespace-nowrap">รายละเอียดอุปกรณ์ / หมายเลขครุภัณฑ์</th>
+                <th className="px-6 py-4 text-[13px] font-black text-white uppercase tracking-wider whitespace-nowrap">รายละเอียดอาการเสีย / ข้อขัดข้อง</th>
+                <th className="px-6 py-4 text-[13px] font-black text-white uppercase tracking-wider whitespace-nowrap text-center">สถานะการดำเนินการ</th>
+                <th className="px-6 py-4 text-[13px] font-black text-white uppercase tracking-wider whitespace-nowrap">เจ้าหน้าที่รับซ่อม / วันที่รับรายการ</th>
+                <th className="px-6 py-4 text-[13px] font-black text-white uppercase tracking-wider whitespace-nowrap text-center">
+                  {isAdmin ? "การจัดการ" : "ข้อมูล"}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-20 text-center">
@@ -255,51 +271,51 @@ export default function RepairDashboard() {
                   </td>
                 </tr>
               ) : filteredRepairs.length > 0 ? filteredRepairs.map((repair) => (
-                <tr key={repair.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="font-bold text-slate-800">{repair.equipmentModel}</div>
-                    <div className="text-xs font-semibold text-slate-400 mt-0.5">{repair.assetNumber}</div>
-                    <div className="text-[10px] text-slate-300 uppercase">{repair.serialNumber}</div>
+                <tr key={repair.id} className={`transition-colors group divide-x divide-slate-200 bg-white ${getRowStyle(repair.status)}`}>
+                  <td className="px-6 py-4 align-top">
+                    <div className="font-bold text-slate-800 text-[14px]">{repair.equipmentModel}</div>
+                    <div className="text-xs font-semibold text-slate-500 mt-1">{repair.assetNumber}</div>
+                    <div className="text-[10px] text-slate-400 uppercase">{repair.serialNumber}</div>
                   </td>
-                  <td className="px-6 py-5 max-w-[250px]">
+                  <td className="px-6 py-4 align-top max-w-[250px]">
                     <div className="text-sm text-slate-600 line-clamp-2">{repair.problemDescription}</div>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-4 align-top text-center">
                     {getStatusBadge(repair.status)}
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-4 align-top">
                     <div className="text-sm font-bold text-slate-700">{repair.receiverName}</div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs font-medium text-slate-500 mt-0.5">
                       {repair.receivedDate}
                       {repair.createdAt && (
-                        <span className="ml-1 text-[10px] text-slate-300">
+                        <span className="ml-1 text-[10px] text-slate-400">
                           {new Date(repair.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-right">
+                  <td className="px-6 py-4 align-top">
                     {isAdmin && (
-                      <div className="flex items-center justify-end gap-1">
-                        <Link to={`/repair/view/${repair.id}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shadow-sm flex items-center justify-center" title="ตรวจสอบรายละเอียด">
-                          <Eye size={18} />
+                      <div className="flex items-center justify-center gap-2">
+                        <Link to={`/repair/view/${repair.id}`} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 hover:scale-110 rounded-xl transition-all shadow-sm flex items-center justify-center border border-blue-100" title="ตรวจสอบรายละเอียด">
+                          <Eye size={20} />
                         </Link>
                         {isAdmin && (
-                          <Link to={`/repair/edit/${repair.id}`} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="แก้ไขข้อมูลรายการ">
-                            <Pencil size={18} />
+                          <Link to={`/repair/edit/${repair.id}`} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-amber-100" title="แก้ไขข้อมูลรายการ">
+                            <Pencil size={20} />
                           </Link>
                         )}
                         {isAdmin_2 && (
                           <button 
                             onClick={() => handleDelete(repair.id)}
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                            className="p-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-rose-100"
                             title="ลบข้อมูลรายการ"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={20} />
                           </button>
                         )}
-                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="พิมพ์/ส่งออกเอกสารราชการ">
-                          <Printer size={18} />
+                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-indigo-100" title="พิมพ์/ส่งออกเอกสารราชการ">
+                          <Printer size={20} />
                         </Link>
                       </div>
                     )}

@@ -158,7 +158,7 @@ export default function Layout({ children }) {
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
 
-      <div className={`flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isSidebarCollapsed ? 'py-6 px-3' : 'py-6 px-4'}`}>
+      <div className={`flex flex-col h-full relative z-10 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isSidebarCollapsed ? 'py-6 px-2' : 'py-6 px-4'}`}>
         {/* Toggle Sidebar Button - inside top-right */}
         <button
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -318,7 +318,7 @@ export default function Layout({ children }) {
 
   return (
     <div className="h-screen bg-[#fcfcfd] dark:bg-[#060a12] flex overflow-hidden font-['Prompt'] transition-colors duration-500">
-      <aside className={`hidden lg:block h-full shrink-0 ${isSidebarCollapsed ? 'w-[100px]' : 'w-[320px]'} transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative z-50`}>
+      <aside className={`hidden lg:block h-full shrink-0 ${isSidebarCollapsed ? 'w-[80px]' : 'w-[320px]'} transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative z-50`}>
         {SidebarContent()}
       </aside>
 
@@ -326,11 +326,11 @@ export default function Layout({ children }) {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="relative w-80 max-w-[85vw] h-full shadow-[20px_0_50px_rgba(0,0,0,0.5)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)] animate-in slide-in-from-left duration-300">
+          <div className={`relative ${isSidebarCollapsed ? 'w-[80px]' : 'w-[320px] max-w-[85vw]'} h-full shadow-[20px_0_50px_rgba(0,0,0,0.5)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)] animate-in slide-in-from-left duration-300 transition-all ease-[cubic-bezier(0.2,0.8,0.2,1)]`}>
             {SidebarContent()}
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-4 right-[-50px] p-2 bg-slate-900 dark:bg-slate-800 rounded-full text-white"
+              className={`absolute top-4 ${isSidebarCollapsed ? 'right-[-45px]' : 'right-[-50px]'} p-2 bg-slate-900 dark:bg-slate-800 rounded-full text-white transition-all`}
             >
               <X size={24} />
             </button>
