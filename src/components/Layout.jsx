@@ -142,7 +142,7 @@ export default function Layout({ children }) {
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
     ...(isAdmin ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true }] : []),
     { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
-    { name: "แจ้งซ่อม", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
+    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
   ];
 
@@ -293,8 +293,8 @@ export default function Layout({ children }) {
                   </div>
                 </div>
                 <div className={`flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
-                  <p className="text-[14px] font-bold text-slate-800 truncate tracking-tight group-hover/avatar:text-purple-900 transition-colors duration-[300ms]">
+                  <p className="text-[12px] font-black text-indigo-800 uppercase tracking-[0.2em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
+                  <p className="text-[14px] font-bold text-emerald-600 truncate tracking-tight group-hover/avatar:text-purple-900 transition-colors duration-[300ms]">
                     {currentUser.email.split('@')[0]}
                   </p>
                 </div>
