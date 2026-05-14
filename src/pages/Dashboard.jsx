@@ -451,13 +451,13 @@ export default function Dashboard() {
                     <span className="section-title-badge" style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>รับเข้า (AVAILABLE)</span>
                 </h4>
             </div>
-            <div className="latest-panel d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ backgroundColor: '#fca5a5', gap: '15px', minHeight: '130px' }}>
+            <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ gap: '15px', minHeight: '130px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
-                            <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#ef4444', boxShadow: '0 0 0 3px rgba(239,68,68,0.25)' }}></div>
                             <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                            <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>AVAILABLE</span>
+                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' }}>AVAILABLE</span>
                         </div>
                         {/* ── ป้ายกลาง ── */}
                         <div style={{
@@ -466,13 +466,13 @@ export default function Dashboard() {
                             gap: '8px',
                             padding: '6px 18px',
                             borderRadius: '10px',
-                            background: 'rgba(185,28,28,0.12)',
-                            border: '1.5px solid rgba(185,28,28,0.35)',
+                            background: 'rgba(239, 68, 68, 0.12)',
+                            border: '1.5px solid rgba(239, 68, 68, 0.3)',
                         }}>
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#7f1d1d',
+                                color: '#f87171',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
@@ -571,13 +571,13 @@ export default function Dashboard() {
                     <span className="section-title-badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>จำหน่าย (DISTRIBUTED)</span>
                 </h4>
             </div>
-            <div className="latest-panel d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ backgroundColor: '#ffb74d', gap: '15px', minHeight: '130px' }}>
+            <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ gap: '15px', minHeight: '130px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
-                            <div className="latest-panel-dot" style={{ backgroundColor: '#f87171' }}></div>
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#f59e0b', boxShadow: '0 0 0 3px rgba(245,158,11,0.25)' }}></div>
                             <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
-                            <span className="latest-panel-badge" style={{ color: '#f87171' }}>DISTRIBUTED</span>
+                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.4)' }}>DISTRIBUTED</span>
                         </div>
                         {/* ── ป้ายกลาง DISTRIBUTED ── */}
                         <div style={{
@@ -586,13 +586,13 @@ export default function Dashboard() {
                             gap: '8px',
                             padding: '6px 18px',
                             borderRadius: '10px',
-                            background: 'rgba(180,83,9,0.12)',
-                            border: '1.5px solid rgba(180,83,9,0.35)',
+                            background: 'rgba(245, 158, 11, 0.12)',
+                            border: '1.5px solid rgba(245, 158, 11, 0.3)',
                         }}>
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#78350f',
+                                color: '#fbbf24',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',

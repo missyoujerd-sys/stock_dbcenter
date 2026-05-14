@@ -493,7 +493,7 @@ export default function IncomingStock() {
                 </div>
             </div>
 
-            <div className="latest-panel latest-panel--blue">
+            <div className="latest-panel latest-panel--dark">
                 {/* Panel Header */}
                 <div className="latest-panel-header">
                     <div className="latest-panel-title-wrap">
