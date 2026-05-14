@@ -175,8 +175,8 @@ export default function Layout({ children }) {
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`relative bg-[#f3e8ff] p-1 rounded-[1.1rem] transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105`}>
-              <img src="/โลโก้ ร.พ.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain drop-shadow-md" style={{ filter: 'brightness(1.1)' }} />
+            <div className={`relative bg-white p-[3px] rounded-full shadow-sm border border-purple-200/50 transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105 flex items-center justify-center`}>
+              <img src="/โลโก้ ร.พ.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain rounded-full drop-shadow-sm" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
@@ -370,9 +370,9 @@ export default function Layout({ children }) {
               <div className="hidden sm:flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 shadow-sm transition-all hover:shadow-md hover:border-slate-300/50 dark:hover:border-white/10 group">
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
-                    <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-white/20 shadow-lg bg-black">
+                    <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-slate-200 dark:border-slate-600 shadow-sm bg-white flex items-center justify-center p-[2px]">
                      {/*Header (บนขวา) * */}
-                      <img src="/โลโก้ ร.พ.png" alt="Profile" className="w-full h-full object-cover" />
+                      <img src="/โลโก้ ร.พ.png" alt="Profile" className="w-full h-full object-contain rounded-full" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">

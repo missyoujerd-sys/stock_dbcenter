@@ -19,6 +19,13 @@ export default function Inventory() {
     const { currentUser, isAdmin, isAdmin_2 } = useAuth();
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+    const [passwordShake, setPasswordShake] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const ADMIN_PASSWORD = '101988';
+
     useEffect(() => {
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
@@ -93,18 +100,43 @@ export default function Inventory() {
         setShowDetailModal(true);
     };
 
-    const handleDelete = async (e, stockId) => {
+    const handleDeleteClick = (e, stockId) => {
         e.stopPropagation();
-        if (!isAdmin_2) {
+        if (!isAdmin && !isAdmin_2) {
             alert('ลบได้เฉพาะ Admin เท่านั้น');
             return;
         }
-        if (!window.confirm('ต้องการลบรายการนี้ออกจากระบบ?')) return;
-        try {
-            await remove(ref(db, `stocks/${stockId}`));
-        } catch (err) {
-            console.error('ลบไม่สำเร็จ:', err);
-            alert('เกิดข้อผิดพลาด ไม่สามารถลบรายการได้');
+        setItemToDelete(stockId);
+        setPasswordInput('');
+        setPasswordError(false);
+        setShowPasswordModal(true);
+    };
+
+    const handlePasswordSubmit = async () => {
+        if (passwordInput === ADMIN_PASSWORD) {
+            setShowPasswordModal(false);
+            setPasswordInput('');
+            setPasswordError(false);
+            
+            if (itemToDelete) {
+                if (!window.confirm('ต้องการลบรายการนี้ออกจากระบบ?')) {
+                    setItemToDelete(null);
+                    return;
+                }
+                try {
+                    await remove(ref(db, `stocks/${itemToDelete}`));
+                    setItemToDelete(null);
+                } catch (err) {
+                    console.error('ลบไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาด ไม่สามารถลบรายการได้');
+                    setItemToDelete(null);
+                }
+            }
+        } else {
+            setPasswordError(true);
+            setPasswordShake(true);
+            setPasswordInput('');
+            setTimeout(() => setPasswordShake(false), 600);
         }
     };
 
@@ -290,7 +322,7 @@ export default function Inventory() {
                                 <th>หน่วยงาน / อาคาร</th>
                                 <th>สถานะ</th>
                                 <th>Print</th>
-                                 {isAdmin_2 && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
+                                 {(isAdmin || isAdmin_2) && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
                                  {isAdmin_2 && <th style={{ width: '100px' }}>คืนสถานะ</th>}
                             </tr>
                         </thead>
@@ -337,12 +369,12 @@ export default function Inventory() {
                                              <FaPrint />
                                          </button>
                                      </td>
-                                     {isAdmin_2 && (
+                                     {(isAdmin || isAdmin_2) && (
                                          <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
                                              <button
                                                  className="inv-del-btn"
                                                  title="ลบรายการนี้"
-                                                 onClick={(e) => handleDelete(e, stock.id)}
+                                                 onClick={(e) => handleDeleteClick(e, stock.id)}
                                              >
                                                  <FaTrash />
                                              </button>
@@ -393,6 +425,68 @@ export default function Inventory() {
                     <FaHome className="me-2" /> กลับเมนูหลัก
                 </Button>
             </div>
+
+            {/* -------------------- Password Lock Modal -------------------- */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div
+                        className="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden"
+                        style={passwordShake ? { animation: 'shake 0.5s ease' } : {}}
+                    >
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-400 via-rose-500 to-pink-500 rounded-t-3xl"></div>
+
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4 shadow-inner">
+                                <span className="text-3xl">🗑️</span>
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-1">ยืนยันการลบ</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-['Prompt'] mb-6">กรุณาใส่รหัสผ่านเพื่อลบข้อมูล</p>
+
+                            <input
+                                type="password"
+                                autoFocus
+                                value={passwordInput}
+                                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                                placeholder="รหัสผ่าน"
+                                className={`w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-2 ${
+                                    passwordError
+                                        ? 'border-red-400 text-red-600 bg-red-50 dark:bg-red-500/10 placeholder-red-300'
+                                        : 'border-slate-200 dark:border-slate-600 text-slate-800 focus:border-red-400'
+                                }`}
+                            />
+                            {passwordError && (
+                                <p className="text-red-500 text-sm font-bold font-['Prompt'] mb-3">❌ รหัสผ่านไม่ถูกต้อง</p>
+                            )}
+
+                            <div className="flex gap-3 w-full mt-3">
+                                <button
+                                    onClick={() => { setShowPasswordModal(false); setPasswordInput(''); setPasswordError(false); setItemToDelete(null); }}
+                                    className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors font-['Prompt']"
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    onClick={handlePasswordSubmit}
+                                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-red-500/30 transition-all active:scale-95 font-['Prompt']"
+                                >
+                                    ยืนยันลบ
+                                </button>
+                            </div>
+                        </div>
+
+                        <style>{`
+                            @keyframes shake {
+                                0%, 100% { transform: translateX(0); }
+                                20% { transform: translateX(-8px); }
+                                40% { transform: translateX(8px); }
+                                60% { transform: translateX(-6px); }
+                                80% { transform: translateX(6px); }
+                            }
+                        `}</style>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }

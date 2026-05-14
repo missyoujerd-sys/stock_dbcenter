@@ -680,12 +680,12 @@ export default function Distribution() {
                 </h4>
             </div>
 
-            <div className="latest-panel">
-                <div className="latest-panel-header" style={{ backgroundColor: '#fca5a5' }}>
+            <div className="latest-panel latest-panel--dark">
+                <div className="latest-panel-header">
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#ef4444', boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.25)' }}></div>
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>งานซ่อมบำรุงคอมพิวเตอร์</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.4)' }}>งานซ่อมบำรุงคอมพิวเตอร์</span>
                     </div>
                     {/* ── ป้ายกลาง ── */}
                     <div style={{
@@ -694,14 +694,14 @@ export default function Distribution() {
                         gap: '8px',
                         padding: '6px 18px',
                         borderRadius: '10px',
-                        background: 'rgba(185,28,28,0.12)',
-                        border: '1.5px solid rgba(185,28,28,0.35)',
+                        background: 'rgba(239, 68, 68, 0.12)',
+                        border: '1.5px solid rgba(239, 68, 68, 0.3)',
                         marginLeft: '8px',
                     }}>
                         <span style={{
                             fontSize: '0.9rem',
                             fontWeight: 700,
-                            color: '#7f1d1d',
+                            color: '#f87171',
                             fontFamily: 'Prompt, sans-serif',
                             whiteSpace: 'nowrap',
                             letterSpacing: '0.02em',
