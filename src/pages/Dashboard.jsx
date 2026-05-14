@@ -209,7 +209,8 @@ export default function Dashboard() {
         };
         const mc = (range, val, opts = {}) => {
             ws.mergeCells(range);
-            sc(range.split(':')[0], val, { border: AB, ...opts });
+            const borderToUse = opts.border || AB;
+            sc(range.split(':')[0], val, { border: borderToUse, ...opts });
             const [start, end] = range.split(':');
             const sc1 = start.replace(/[0-9]/g, '');
             const sr1 = parseInt(start.replace(/[A-Z]/gi, ''));
@@ -219,7 +220,7 @@ export default function Dashboard() {
             for (let r = sr1; r <= er1; r++)
                 for (let ci = ci1; ci <= ci2; ci++) {
                     const cell = ws.getCell(`${COLS[ci]}${r}`);
-                    cell.border = AB;
+                    cell.border = borderToUse;
                     if (opts.fill) cell.fill = opts.fill;
                 }
         };
@@ -299,15 +300,15 @@ export default function Dashboard() {
         let R = DATA_START + MIN_ROWS;
         ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'หลักฐานที่ใช้ในการเบิก/ส่งคืน', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:H${R}`, 'รวมแผ่นนี้', { font: { size: 13 }, align: { horizontal: 'left' } }); mc(`I${R}:K${R}`, '');
         R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ให้บุคคลต่อไปนี้เป็นผู้รับพัสดุแทนได้', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:H${R}`, 'รวมทั้งสิ้น', { font: { size: 13 }, align: { horizontal: 'left' } }); mc(`I${R}:K${R}`, '');
-        R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:K${R}`, 'ผู้ตรวจสอบ ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
+        R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:K${R}`, 'ผู้ตรวจสอบ ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
         R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ได้รับของตามจำนวนและรายการที่จ่ายเรียบร้อยแล้ว', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:K${R}`, 'ผู้อนุมัติจ่าย/รับคืน ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
         const blankTop = R + 1; const blankBottom = R + 4;
-        mc(`A${blankTop}:F${blankBottom}`, '');
+        mc(`A${blankTop}:F${blankBottom}`, '', { border: { top: TN, left: TN, right: TN } });
         R++; ws.getRow(R).height = 22; mc(`G${R}:K${R}`, 'ผู้จ่าย ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
         R++; ws.getRow(R).height = 22; mc(`G${R}:H${R}`, 'รหัสจ่าย', { font: { size: 13 }, align: { horizontal: 'left' } }); mc(`I${R}:J${R}`, 'ค. ครึ่งคราว', { font: { size: 13 }, align: { horizontal: 'left' } }); sc(`K${R}`, '');
         R++; ws.getRow(R).height = 22; mc(`G${R}:H${R}`, ''); mc(`I${R}:J${R}`, 'ป. ประจำ', { font: { size: 13 }, align: { horizontal: 'left' } }); sc(`K${R}`, '');
         R++; ws.getRow(R).height = 22; mc(`G${R}:H${R}`, 'รหัสคืน', { font: { size: 13 }, align: { horizontal: 'left' } }); mc(`I${R}:J${R}`, 'ช. ใช้การได้', { font: { size: 13 }, align: { horizontal: 'left' } }); sc(`K${R}`, '');
-        R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left' } }); mc(`G${R}:H${R}`, ''); mc(`I${R}:J${R}`, 'ชม. ใช้การไม่ได้', { font: { size: 13 }, align: { horizontal: 'left' } }); sc(`K${R}`, '');
+        R++; ws.getRow(R).height = 22; mc(`A${R}:F${R}`, 'ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข', { font: { size: 14 }, align: { horizontal: 'center' }, border: { left: TN, right: TN, bottom: TN } }); mc(`G${R}:H${R}`, ''); mc(`I${R}:J${R}`, 'ชม. ใช้การไม่ได้', { font: { size: 13 }, align: { horizontal: 'left' } }); sc(`K${R}`, '');
 
         const buffer = await workbook.xlsx.writeBuffer();
         saveAs(new Blob([buffer]), `ใบเบิกหรือใบส่งคืน_${date}.xlsx`);
