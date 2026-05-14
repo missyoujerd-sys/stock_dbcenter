@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import { Table, Button, Form, Modal, Alert, Row, Col } from 'react-bootstrap';
@@ -25,10 +25,10 @@ export default function Distribution() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
-    // Box Manager States
     const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
     const [activeBoxId, setActiveBoxId] = useState(1);
     const [nextBoxId, setNextBoxId] = useState(2);
+    const isBoxInitialized = useRef(false);
 
     const StatusSummaryBar = () => (
         <div className="status-summary-bar">
@@ -69,6 +69,7 @@ export default function Distribution() {
             const data = snapshot.val();
             const loadedStocks = [];
             let total = 0, available = 0, distributed = 0;
+            let maxBoxIdInDb = 0;
 
             if (data) {
                 for (const key in data) {
@@ -90,12 +91,27 @@ export default function Distribution() {
                         });
                     } else if (item.status === 'จำหน่าย') {
                         distributed++;
+                        if (item.distributionBox) {
+                            const match = item.distributionBox.match(/\d+/);
+                            if (match) {
+                                const num = parseInt(match[0]);
+                                if (num > maxBoxIdInDb) maxBoxIdInDb = num;
+                            }
+                        }
                     }
                 }
             }
             setStocks(loadedStocks);
             setSummary({ total, available, distributed });
             setLoading(false);
+
+            if (!isBoxInitialized.current) {
+                const startingId = maxBoxIdInDb + 1;
+                setBoxes([{ id: startingId, name: `กล่องที่ ${startingId}`, items: [] }]);
+                setActiveBoxId(startingId);
+                setNextBoxId(startingId + 1);
+                isBoxInitialized.current = true;
+            }
         });
 
         return unsubscribe;
@@ -241,9 +257,9 @@ export default function Distribution() {
                 generateExcel(itemsToDistribute, distributeDate);
             }
 
-            setBoxes([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
-            setActiveBoxId(1);
-            setNextBoxId(2);
+            setBoxes([{ id: nextBoxId, name: `กล่องที่ ${nextBoxId}`, items: [] }]);
+            setActiveBoxId(nextBoxId);
+            setNextBoxId(nextBoxId + 1);
             setShowModal(false);
         } catch (err) {
             console.error(err);
@@ -301,7 +317,8 @@ export default function Distribution() {
         // This is critical because ExcelJS only sets border on the top-left cell
         const mc = (range, val, opts = {}) => {
             ws.mergeCells(range);
-            sc(range.split(':')[0], val, { border: AB, ...opts });
+            const borderToUse = opts.border || AB;
+            sc(range.split(':')[0], val, { border: borderToUse, ...opts });
             // Apply border to all cells in merged range
             const [start, end] = range.split(':');
             const sc1 = start.replace(/[0-9]/g, '');
@@ -313,7 +330,7 @@ export default function Distribution() {
             for (let r = sr1; r <= er1; r++) {
                 for (let ci = ci1; ci <= ci2; ci++) {
                     const cell = ws.getCell(`${COLS[ci]}${r}`);
-                    cell.border = AB;
+                    cell.border = borderToUse;
                     if (opts.fill) cell.fill = opts.fill;
                 }
             }
@@ -438,7 +455,7 @@ export default function Distribution() {
 
         // Row 3: ผู้มีสิทธิ + ผู้ตรวจสอบ
         R++; ws.getRow(R).height = 22;
-        mc(`A${R}:F${R}`, `ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข`, { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc(`A${R}:F${R}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left' } });
         mc(`G${R}:K${R}`, 'ผู้ตรวจสอบ ..................................................', { font: { size: 14 }, align: { horizontal: 'left' } });
 
         // Row 4: ได้รับของ + ผู้อนุมัติ
@@ -449,7 +466,7 @@ export default function Distribution() {
         // --- Left side vertical blank block ---
         const blankTop = R + 1;
         const blankBottom = R + 4;
-        mc(`A${blankTop}:F${blankBottom}`, ''); // Merge all 4 rows on the left into one clean box
+        mc(`A${blankTop}:F${blankBottom}`, '', { border: { top: TN, left: TN, right: TN } }); // Merge all 4 rows on the left into one clean box
 
         // Row 5: ผู้จ่าย
         R++; ws.getRow(R).height = 22;
@@ -475,7 +492,7 @@ export default function Distribution() {
 
         // Row 9: ผู้รับพัสดุ + ชม.ใช้การไม่ได้
         R++; ws.getRow(R).height = 22;
-        mc(`A${R}:F${R}`, 'ผู้รับพัสดุ', { font: { size: 14 }, align: { horizontal: 'left' } });
+        mc(`A${R}:F${R}`, `ผู้มีสิทธิเบิก/ส่งคืน  นาย ณรงค์ รวมสุข`, { font: { size: 14 }, align: { horizontal: 'center' }, border: { left: TN, right: TN, bottom: TN } });
         mc(`G${R}:H${R}`, '');
         mc(`I${R}:J${R}`, 'ชม. ใช้การไม่ได้', { font: { size: 13 }, align: { horizontal: 'left' } });
         sc(`K${R}`, '');
