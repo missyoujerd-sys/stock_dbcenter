@@ -452,12 +452,18 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ gap: '15px', minHeight: '130px' }}>
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
+                    gap: '15px', minHeight: '130px',
+                    background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderBottom: '1px solid rgba(234, 179, 8, 0.2)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '0.75rem 0.75rem 0 0'
+                }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
-                            <div className="latest-panel-dot" style={{ backgroundColor: '#ef4444', boxShadow: '0 0 0 3px rgba(239,68,68,0.25)' }}></div>
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#eab308', boxShadow: '0 0 0 3px rgba(234,179,8,0.25)' }}></div>
                             <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
-                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' }}>AVAILABLE</span>
+                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(234,179,8,0.15)', color: '#facc15', border: '1px solid rgba(234,179,8,0.4)' }}>AVAILABLE</span>
                         </div>
                         {/* ── ป้ายกลาง ── */}
                         <div style={{
@@ -466,16 +472,18 @@ export default function Dashboard() {
                             gap: '8px',
                             padding: '6px 18px',
                             borderRadius: '10px',
-                            background: 'rgba(239, 68, 68, 0.12)',
-                            border: '1.5px solid rgba(239, 68, 68, 0.3)',
+                            background: 'linear-gradient(to bottom, rgba(234, 179, 8, 0.25), rgba(202, 138, 4, 0.15))',
+                            border: '1px solid rgba(234, 179, 8, 0.4)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.1)'
                         }}>
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#f87171',
+                                color: '#fef08a',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
+                                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                             }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
                         </div>
                         {selectedStocks.length > 0 && (
@@ -572,12 +580,18 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ gap: '15px', minHeight: '130px' }}>
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
+                    gap: '15px', minHeight: '130px',
+                    background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 88, 12, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderBottom: '1px solid rgba(249, 115, 22, 0.2)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '0.75rem 0.75rem 0 0'
+                }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
-                            <div className="latest-panel-dot" style={{ backgroundColor: '#f59e0b', boxShadow: '0 0 0 3px rgba(245,158,11,0.25)' }}></div>
+                            <div className="latest-panel-dot" style={{ backgroundColor: '#f97316', boxShadow: '0 0 0 3px rgba(249,115,22,0.25)' }}></div>
                             <span className="latest-panel-title">รายการพัสดุจำหน่ายแล้ว</span>
-                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.4)' }}>DISTRIBUTED</span>
+                            <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(249,115,22,0.15)', color: '#fdba74', border: '1px solid rgba(249,115,22,0.4)' }}>DISTRIBUTED</span>
                         </div>
                         {/* ── ป้ายกลาง DISTRIBUTED ── */}
                         <div style={{
@@ -586,16 +600,18 @@ export default function Dashboard() {
                             gap: '8px',
                             padding: '6px 18px',
                             borderRadius: '10px',
-                            background: 'rgba(245, 158, 11, 0.12)',
-                            border: '1.5px solid rgba(245, 158, 11, 0.3)',
+                            background: 'linear-gradient(to bottom, rgba(249, 115, 22, 0.25), rgba(234, 88, 12, 0.15))',
+                            border: '1px solid rgba(249, 115, 22, 0.4)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.1)'
                         }}>
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#fbbf24',
+                                color: '#fed7aa',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
+                                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                             }}>🚚 ครุภัณฑ์พร้อมจำหน่ายแล้ว</span>
                         </div>
                         {selectedDistributed.length > 0 && (

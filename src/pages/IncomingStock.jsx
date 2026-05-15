@@ -495,11 +495,16 @@ export default function IncomingStock() {
 
             <div className="latest-panel latest-panel--dark">
                 {/* Panel Header */}
-                <div className="latest-panel-header">
+                <div className="latest-panel-header" style={{
+                    background: 'linear-gradient(145deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '0.75rem 0.75rem 0 0'
+                }}>
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot"></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#38bdf8', boxShadow: '0 0 0 3px rgba(56, 189, 248, 0.25)' }}></div>
                         <span className="latest-panel-title">กรอกข้อมูลพัสดุให้ครบถ้วน</span>
-                        <span className="latest-panel-badge">INCOMING STOCK FORM</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)' }}>INCOMING STOCK FORM</span>
                     </div>
                 </div>
 
