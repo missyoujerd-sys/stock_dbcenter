@@ -173,7 +173,7 @@ export default function Login() {
                     <p className="mb-3 text-dark" style={{ fontSize: '1rem' }}>กรุณาระบุชื่อหรือบริษัทที่แจ้งซ่อมก่อนเข้าใช้งาน</p>
                     
                     <Form.Group className="mb-4 text-start">
-                        <Form.Label className="fw-bold" style={{ color: '#ef4444' }}>ชื่อ/บริษัท (หัวหน้า IT ให้กรอก) *</Form.Label>
+                        <Form.Label className="fw-bold" style={{ color: '#ef4444' }}>ชื่อ/บริษัท (หัวหน้า IT ให้กรอกก่อนทุกครั้ง) *</Form.Label>
                         <Form.Control 
                             type="text" 
                             placeholder="พิมพ์ชื่อหรือบริษัทของคุณ..." 
