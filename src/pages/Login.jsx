@@ -24,6 +24,17 @@ export default function Login() {
             setIsAutoLogin(true);
             setLoading(true);
             const doAutoLogin = async () => {
+                const name = window.prompt("หัวหน้า IT บังคับให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนเข้าระบบ:");
+                if (!name || name.trim() === '') {
+                    alert('ไม่อนุญาตให้เข้าระบบเนื่องจากไม่ได้ระบุชื่อหรือบริษัท!');
+                    setIsAutoLogin(false);
+                    setLoading(false);
+                    // Clear the query parameter so it doesn't loop
+                    navigate('/login', { replace: true });
+                    return;
+                }
+                sessionStorage.setItem('repair_reporterName', name.trim());
+
                 try {
                     await login('itt@nkp.com', 'itt123456');
                     setShowSuccessModal(true);
@@ -37,7 +48,7 @@ export default function Login() {
             };
             doAutoLogin();
         }
-    }, [searchParams, login]);
+    }, [searchParams, login, navigate]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -165,38 +176,19 @@ export default function Login() {
                 keyboard={false}
                 className="login-error-modal" // reusing styles
             >
-                <Modal.Body className="text-center p-4">
-                    <div className="login-error-icon-wrap mb-3" style={{ backgroundColor: '#d1e7dd', color: '#0f5132', border: 'none', width: '70px', height: '70px', fontSize: '2rem', margin: '0 auto' }}>
+                <Modal.Body className="text-center p-5">
+                    <div className="login-error-icon-wrap mb-4" style={{ backgroundColor: '#d1e7dd', color: '#0f5132', border: 'none' }}>
                         <FaCheck className="login-error-icon" />
                     </div>
-                    <h4 className="fw-bold mb-2" style={{ color: '#0f5132' }}>เข้าสู่ระบบสำเร็จ!</h4>
-                    <p className="mb-3 text-dark" style={{ fontSize: '1rem' }}>กรุณาระบุชื่อหรือบริษัทที่แจ้งซ่อมก่อนเข้าใช้งาน</p>
-                    
-                    <Form.Group className="mb-4 text-start">
-                        <Form.Label className="fw-bold" style={{ color: '#ef4444' }}>ชื่อ/บริษัท (หัวหน้า IT ให้กรอก) *</Form.Label>
-                        <Form.Control 
-                            type="text" 
-                            placeholder="พิมพ์ชื่อหรือบริษัทของคุณ..." 
-                            value={reporterName}
-                            onChange={(e) => setReporterName(e.target.value)}
-                            style={{ border: '2px solid #ef4444', borderRadius: '10px', padding: '10px' }}
-                        />
-                    </Form.Group>
-
+                    <h3 className="fw-bold mb-3" style={{ color: '#0f5132' }}>เข้าสู่ระบบสำเร็จ!</h3>
+                    <p className="mb-4 text-dark" style={{ fontSize: '1.1rem' }}>คุณได้เข้าสู่ระบบส่งงานซ่อมบำรุงคอมพิวเตอร์แล้ว</p>
                     <Button 
                         variant="success" 
-                        onClick={() => {
-                            if (!reporterName.trim()) {
-                                alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
-                                return;
-                            }
-                            sessionStorage.setItem('repair_reporterName', reporterName.trim());
-                            navigate('/repair/entry');
-                        }}
-                        className="px-5 py-2 fw-bold w-100"
-                        style={{ borderRadius: '10px' }}
+                        onClick={() => navigate('/repair/entry')}
+                        className="px-5 py-2 fw-bold"
+                        style={{ borderRadius: '50px' }}
                     >
-                        ตกลง และเข้าสู่ระบบ
+                        ตกลง
                     </Button>
                 </Modal.Body>
             </Modal>
