@@ -11,8 +11,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   ShieldX,
-  ClipboardList,
-  Save
+  ClipboardList
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord } from '../../types/repair';
@@ -300,7 +299,6 @@ export default function RepairEntry() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState('');
   const photoInputRef = React.useRef<HTMLInputElement>(null);
-  const reporterNameInputRef = React.useRef<HTMLInputElement>(null);
   const isAutoFilledReporter = !!sessionStorage.getItem('repair_reporterName');
 
   // Inject premium CSS once
@@ -413,7 +411,6 @@ export default function RepairEntry() {
   const handleScanClick = (type: 'asset' | 'serial') => {
     if (!formData.reporterName || formData.reporterName.trim() === '') {
       alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
-      reporterNameInputRef.current?.focus();
       return;
     }
     setScanning(type);
@@ -544,7 +541,7 @@ export default function RepairEntry() {
               <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
             </div>
             <div className="a4-header-title" style={{ paddingRight: '100px' }}>
-              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</h1>
+              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</h1>
               <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</p>
             </div>
             {/* QR Code for auto login on mobile */}        
@@ -555,37 +552,10 @@ export default function RepairEntry() {
             </div>
           </div>
 
-          {/* ── Intro line and Submit Button ── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8mm', flexWrap: 'wrap', gap: '10px' }}>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
-              วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
-            </p>
-            
-            <button
-              type="button"
-              onClick={handleSubmit as any}
-              disabled={!isAdmin}
-              className={`group flex items-center justify-center gap-2 px-6 py-2.5 rounded-full font-bold text-white transition-all duration-300 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/50 active:translate-y-0'}`}
-              style={{
-                fontFamily: 'Prompt, sans-serif',
-                background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%)',
-                backgroundSize: '200% auto',
-                boxShadow: '0 4px 15px rgba(37, 99, 235, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                letterSpacing: '0.5px'
-              }}
-              onMouseEnter={(e) => {
-                if(isAdmin) e.currentTarget.style.backgroundPosition = 'right center';
-              }}
-              onMouseLeave={(e) => {
-                if(isAdmin) e.currentTarget.style.backgroundPosition = 'left center';
-              }}
-            >
-              <Save size={18} className="drop-shadow-md group-hover:scale-110 transition-transform" />
-              <span>{id ? 'บันทึกแก้ไขข้อมูล' : 'ยืนยันการบันทึกแจ้งซ่อม'}</span>
-            </button>
-          </div>
+          {/* ── Intro line ── */}
+          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
+            วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+          </p>
 
           {/* ── Section 1: Equipment ── */}
           <div className="section-title blue">
@@ -812,7 +782,19 @@ export default function RepairEntry() {
             <option value="อาจารีย์ โสภากร" />
           </datalist>
 
-
+          {/* ── Submit ── */}
+          <div style={{ display: 'flex', justifyItems: 'end', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={handleSubmit as any}
+              disabled={!isAdmin}
+              className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{ fontFamily: 'Prompt, sans-serif' }}
+            >
+              {id ? 'ยืนยันการบันทึกแก้ไขข้อมูล' : 'ยืนยันการบันทึกแจ้งซ่อม'}
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+            </button>
+          </div>
 
           {/* ── Footer ── */}
           <div className="a4-footer" style={{ marginTop: '6mm' }}>
