@@ -276,10 +276,10 @@ export default function RepairEntry() {
     equipmentModel: '',
     serialNumber: '',
     problemDescription: '',
-    reporterName: sessionStorage.getItem('repair_reporterName') || '',
+    reporterName: '',
     reportedDate: new Date().toISOString().split('T')[0],
     reporterSignature: '',
-    receiverName: '',
+    receiverName: sessionStorage.getItem('repair_reporterName') || '',
     receivedDate: new Date().toISOString().split('T')[0],
     receiverSignature: '',
     staffReceiptName: '',
@@ -305,7 +305,7 @@ export default function RepairEntry() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState('');
   const photoInputRef = React.useRef<HTMLInputElement>(null);
-  const reporterNameInputRef = React.useRef<HTMLInputElement>(null);
+  const receiverNameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Inject premium CSS once
   useEffect(() => {
@@ -415,9 +415,9 @@ export default function RepairEntry() {
 
 
   const handleScanClick = (type: 'asset' | 'serial') => {
-    if (!formData.reporterName || formData.reporterName.trim() === '') {
+    if (!formData.receiverName || formData.receiverName.trim() === '') {
       alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
-      reporterNameInputRef.current?.focus();
+      receiverNameInputRef.current?.focus();
       return;
     }
     setScanning(type);
@@ -564,28 +564,6 @@ export default function RepairEntry() {
             <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
               วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
-              <span>ชื่อ/บริษัทที่แจ้งซ่อม:</span>
-              <input
-                ref={reporterNameInputRef}
-                type="text"
-                value={formData.reporterName}
-                onChange={e => setFormData({ ...formData, reporterName: e.target.value })}
-                placeholder="หัวหน้า IT ให้กรอกก่อนทุกครั้ง..."
-                style={{ 
-                  border: 'none', 
-                  borderBottom: '2px solid #ef4444', 
-                  outline: 'none', 
-                  background: 'transparent', 
-                  padding: '2px 4px', 
-                  width: '200px', 
-                  fontFamily: 'Prompt, sans-serif',
-                  color: '#1e3a8a',
-                  fontWeight: 700
-                }}
-                readOnly={!isAdmin}
-              />
-            </div>
           </div>
 
           {/* ── Section 1: Equipment ── */}
@@ -761,7 +739,7 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ-สกุล:</div>
-                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <input ref={receiverNameInputRef} type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
