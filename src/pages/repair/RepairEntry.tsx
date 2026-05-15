@@ -407,6 +407,19 @@ export default function RepairEntry() {
   };
 
 
+  const handleScanClick = (type: 'asset' | 'serial') => {
+    if (!formData.reporterName || formData.reporterName.trim() === '') {
+      const name = window.prompt('กรุณาระบุชื่อหรือบริษัทที่แจ้งซ่อม (หัวหน้า IT ให้กรอก):');
+      if (!name || name.trim() === '') {
+        alert('หัวหน้า IT ให้กรอก');
+        return;
+      }
+      setFormData(prev => ({ ...prev, reporterName: name }));
+    }
+    setScanning(type);
+    photoInputRef.current?.click();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAdmin) {
@@ -543,9 +556,32 @@ export default function RepairEntry() {
           </div>
 
           {/* ── Intro line ── */}
-          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8mm', fontStyle: 'italic', fontWeight: 600 }}>
-            วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8mm', flexWrap: 'wrap', gap: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
+              วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
+              <span>ชื่อ/บริษัทที่แจ้งซ่อม:</span>
+              <input
+                type="text"
+                value={formData.reporterName}
+                onChange={e => setFormData({ ...formData, reporterName: e.target.value })}
+                placeholder="หัวหน้า IT ให้กรอก..."
+                style={{ 
+                  border: 'none', 
+                  borderBottom: '2px solid #ef4444', 
+                  outline: 'none', 
+                  background: 'transparent', 
+                  padding: '2px 4px', 
+                  width: '200px', 
+                  fontFamily: 'Prompt, sans-serif',
+                  color: '#1e3a8a',
+                  fontWeight: 700
+                }}
+                readOnly={!isAdmin}
+              />
+            </div>
+          </div>
 
           {/* ── Section 1: Equipment ── */}
           <div className="section-title blue">
@@ -566,7 +602,7 @@ export default function RepairEntry() {
                     placeholder="ระบุหมายเลขครุภัณฑ์ เช่น 7440-006-1009/..."
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('asset'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin}>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('asset')} disabled={ocrLoading || !isAdmin}>
                   <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
@@ -601,7 +637,7 @@ export default function RepairEntry() {
                     placeholder="Serial Number"
                   />
                 </div>
-                <button type="button" className="a4-scan-btn" onClick={() => { setScanning('serial'); photoInputRef.current?.click(); }} disabled={ocrLoading || !isAdmin}>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('serial')} disabled={ocrLoading || !isAdmin}>
                   <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
                 </button>
               </div>
