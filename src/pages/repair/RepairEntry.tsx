@@ -299,6 +299,7 @@ export default function RepairEntry() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState('');
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const reporterNameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Inject premium CSS once
   useEffect(() => {
@@ -409,12 +410,9 @@ export default function RepairEntry() {
 
   const handleScanClick = (type: 'asset' | 'serial') => {
     if (!formData.reporterName || formData.reporterName.trim() === '') {
-      const name = window.prompt('กรุณาระบุชื่อหรือบริษัทที่แจ้งซ่อม (หัวหน้า IT ให้กรอก):');
-      if (!name || name.trim() === '') {
-        alert('หัวหน้า IT ให้กรอก');
-        return;
-      }
-      setFormData(prev => ({ ...prev, reporterName: name }));
+      alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
+      reporterNameInputRef.current?.focus();
+      return;
     }
     setScanning(type);
     photoInputRef.current?.click();
@@ -563,6 +561,7 @@ export default function RepairEntry() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
               <span>ชื่อ/บริษัทที่แจ้งซ่อม:</span>
               <input
+                ref={reporterNameInputRef}
                 type="text"
                 value={formData.reporterName}
                 onChange={e => setFormData({ ...formData, reporterName: e.target.value })}
