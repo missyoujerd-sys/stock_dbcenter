@@ -274,7 +274,7 @@ export default function RepairEntry() {
     equipmentModel: '',
     serialNumber: '',
     problemDescription: '',
-    reporterName: '',
+    reporterName: sessionStorage.getItem('repair_reporterName') || '',
     reportedDate: new Date().toISOString().split('T')[0],
     receiverName: '',
     receivedDate: new Date().toISOString().split('T')[0],
