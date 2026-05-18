@@ -113,13 +113,24 @@ export default function IncomingStock() {
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
+       
         "Printer": [
-            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
-            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
-            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
-            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
-            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+            "Brother (Inkjet)",
+            "Brother (Laser)",
+            "Canon (Inkjet)",
+            "Canon (Laser)",
+            "Epson (Dot Matrix)",
+            "Epson (Inkjet)",
+            "OKI (Dot Matrix)",
+            "HP (Inkjet)",
+            "HP (Laser)",
+            "Ricoh(Inkjet)",
+            "Ricoh(Laser)",
+            "Xerox (Laser)",
+            "Zebra (Thermal)",
+            "Xprinter (Thermal)",
         ],
+ 
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
 
         "สแกนเนอร์": [
