@@ -6,7 +6,7 @@ import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     FaWarehouse, FaBox, FaCheckCircle,
-    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint, FaFileExcel, FaTruck
+    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint, FaFileExcel, FaTruck, FaSync
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 import MultiPrintModal from '../components/MultiPrintModal';
@@ -37,6 +37,18 @@ export default function Dashboard() {
     });
 
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isRefreshingDist, setIsRefreshingDist] = useState(false);
+
+    const handleRefreshIncoming = () => {
+        setIsRefreshing(true);
+        setTimeout(() => setIsRefreshing(false), 600);
+    };
+
+    const handleRefreshDist = () => {
+        setIsRefreshingDist(true);
+        setTimeout(() => setIsRefreshingDist(false), 600);
+    };
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -507,7 +519,10 @@ export default function Dashboard() {
                                 onBlur={(e) => { e.target.style.border = '1px solid rgba(255,255,255,0.1)'; }}
                             />
                         </div>
-                        <span className="latest-panel-count">{loading ? '...' : `${filteredIncoming.length} รายการ`}</span>
+                        <button className="btn-glossy-refresh" onClick={handleRefreshIncoming} title="รีเฟรชข้อมูล">
+                            <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
+                        </button>
+                        <span className="latest-panel-count" style={{ color: '#ff4d4f', fontWeight: 'bold', textShadow: '0 0 5px rgba(255, 77, 79, 0.3)' }}>{loading ? '...' : `${filteredIncoming.length} รายการ`}</span>
                     </div>
                 </div>
                 <div className="latest-table-wrap">
@@ -534,7 +549,7 @@ export default function Dashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
+                            {loading || isRefreshing ? (
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredIncoming.length === 0 ? (
                                 <tr><td colSpan="6" className="latest-empty">ไม่พบรายการพัสดุรับเข้า</td></tr>
@@ -649,7 +664,10 @@ export default function Dashboard() {
                                 onBlur={(e) => { e.target.style.border = '1px solid rgba(255,255,255,0.1)'; }}
                             />
                         </div>
-                        <span className="latest-panel-count">{loading ? '...' : `${filteredDistributed.length} รายการ`}</span>
+                        <button className="btn-glossy-refresh" onClick={handleRefreshDist} title="รีเฟรชข้อมูล">
+                            <FaSync size={18} className={isRefreshingDist ? 'spin-animation' : ''} />
+                        </button>
+                        <span className="latest-panel-count" style={{ color: '#ff4d4f', fontWeight: 'bold', textShadow: '0 0 5px rgba(255, 77, 79, 0.3)' }}>{loading ? '...' : `${filteredDistributed.length} รายการ`}</span>
                     </div>
                 </div>
                 <div className="latest-table-wrap">
@@ -676,7 +694,7 @@ export default function Dashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
+                            {loading || isRefreshingDist ? (
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredDistributed.length === 0 ? (
                                 <tr><td colSpan="6" className="latest-empty">ไม่พบรายการพัสดุจำหน่าย</td></tr>
@@ -736,6 +754,41 @@ export default function Dashboard() {
                 onHide={() => setShowDistPrintModal(false)}
                 items={selectedDistributed}
             />
+            <style>{`
+                .btn-glossy-refresh {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 50% 10%, #c4ff4d 0%, #4ade80 40%, #166534 100%);
+                    border: 2.5px solid #ffffff;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.9);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0;
+                    flex-shrink: 0;
+                    filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+                }
+                .btn-glossy-refresh:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 4px 6px rgba(255,255,255,1);
+                    background: radial-gradient(circle at 50% 10%, #d9ff80 0%, #4ade80 45%, #15803d 100%);
+                    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.8));
+                }
+                .btn-glossy-refresh:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5);
+                }
+                .spin-animation {
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 }

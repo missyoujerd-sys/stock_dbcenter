@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck, FaSync } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
@@ -24,6 +24,12 @@ export default function Distribution() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        setTimeout(() => setIsRefreshing(false), 600);
+    };
 
     const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
     const [activeBoxId, setActiveBoxId] = useState(1);
@@ -708,7 +714,10 @@ export default function Distribution() {
                         }}>🖨️ เลือกครุภัณฑ์จำหน่ายลงกล่อง</span>
                     </div>
                     <div className="d-flex align-items-center gap-3">
-                        <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
+                        <button className="btn-glossy-refresh" onClick={handleRefresh} title="รีเฟรชข้อมูล">
+                            <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
+                        </button>
+                        <span className="latest-panel-count" style={{ color: '#ff4d4f', fontWeight: 'bold', textShadow: '0 0 5px rgba(255, 77, 79, 0.3)' }}>{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
                         <div className="inv-search-wrap">
                             <FaSearch className="inv-search-icon" />
                             <input
@@ -746,7 +755,7 @@ export default function Distribution() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
+                            {loading || isRefreshing ? (
                                 <tr><td colSpan="10" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredStocks.length === 0 ? (
                                 <tr><td colSpan="10" className="latest-empty">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
@@ -916,31 +925,64 @@ export default function Distribution() {
                         </div>
                     </div>
                 </Modal.Footer>
-                <style>{`
-                    .luxury-modal .modal-content {
-                        border: none;
-                        border-radius: 1rem;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                        overflow: hidden;
-                    }
-                    .luxury-modal .form-control:focus {
-                        border-color: #0d6efd;
-                        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-                    }
-                    .distribute-btn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3) !important;
-                    }
-                    .bounce-animation {
-                        animation: bounce 2s infinite;
-                    }
-                    @keyframes bounce {
-                        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-                        40% { transform: translateY(-5px); }
-                        60% { transform: translateY(-3px); }
-                    }
-                `}</style>
             </Modal>
+            <style>{`
+                .luxury-modal .modal-content {
+                    border: none;
+                    border-radius: 1rem;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                .luxury-modal .form-control:focus {
+                    border-color: #0d6efd;
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+                }
+                .distribute-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3) !important;
+                }
+                .bounce-animation {
+                    animation: bounce 2s infinite;
+                }
+                @keyframes bounce {
+                    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                    40% { transform: translateY(-5px); }
+                    60% { transform: translateY(-3px); }
+                }
+                .btn-glossy-refresh {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 50% 10%, #c4ff4d 0%, #4ade80 40%, #166534 100%);
+                    border: 2.5px solid #ffffff;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.9);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0;
+                    flex-shrink: 0;
+                    filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+                }
+                .btn-glossy-refresh:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 4px 6px rgba(255,255,255,1);
+                    background: radial-gradient(circle at 50% 10%, #d9ff80 0%, #4ade80 45%, #15803d 100%);
+                    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.8));
+                }
+                .btn-glossy-refresh:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5);
+                }
+                .spin-animation {
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </>
     );
 }
