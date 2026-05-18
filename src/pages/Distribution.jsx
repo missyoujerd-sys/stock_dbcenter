@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck, FaSync } from 'react-icons/fa';
+import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck, FaSync, FaEdit, FaLock, FaUnlock } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
@@ -26,9 +26,70 @@ export default function Distribution() {
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    // Edit states
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+    const [passwordShake, setPasswordShake] = useState(false);
+    const [itemToEdit, setItemToEdit] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        assetId: '', brandModel: '', serialNumber: '', department: '', category: '', remarks: ''
+    });
+    const [isAssetIdUnlocked, setIsAssetIdUnlocked] = useState(false);
+    const ADMIN_PASSWORD = '101988';
     const handleRefresh = () => {
         setIsRefreshing(true);
         setTimeout(() => setIsRefreshing(false), 600);
+    };
+
+    const handleEditClick = (e, stock) => {
+        e.stopPropagation();
+        setItemToEdit(stock);
+        setIsAssetIdUnlocked(false);
+        setEditFormData({
+            assetId: stock.assetId || '',
+            brandModel: stock.brandModel || '',
+            serialNumber: stock.serialNumber || '',
+            department: stock.department || '',
+            category: stock.category || '',
+            remarks: stock.remarks || ''
+        });
+        setShowEditModal(true);
+    };
+
+    const handlePasswordSubmit = () => {
+        if (passwordInput === ADMIN_PASSWORD) {
+            setShowPasswordModal(false);
+            setPasswordInput('');
+            setPasswordError(false);
+            setIsAssetIdUnlocked(true);
+        } else {
+            setPasswordError(true);
+            setPasswordShake(true);
+            setPasswordInput('');
+            setTimeout(() => setPasswordShake(false), 600);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        if (!itemToEdit) return;
+        try {
+            const stockRef = ref(db, `stocks/${itemToEdit.id}`);
+            await update(stockRef, {
+                assetId: encryptData(editFormData.assetId),
+                brandModel: encryptData(editFormData.brandModel),
+                serialNumber: encryptData(editFormData.serialNumber),
+                department: encryptData(editFormData.department),
+                category: encryptData(editFormData.category),
+                remarks: encryptData(editFormData.remarks)
+            });
+            setShowEditModal(false);
+            setItemToEdit(null);
+        } catch (err) {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        }
     };
 
     const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
@@ -797,16 +858,28 @@ export default function Distribution() {
                                             </Button>
                                         </td>
                                         <td className="text-center">
-                                            <Button
-                                                variant="outline-info"
-                                                size="sm"
-                                                onClick={(e) => handleInfoClick(e, stock)}
-                                                title="ดูรายละเอียด"
-                                                className="rounded-circle p-1"
-                                                style={{ width: '32px', height: '32px' }}
-                                            >
-                                                <FaInfoCircle />
-                                            </Button>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={(e) => handleEditClick(e, stock)}
+                                                    title="แก้ไขข้อมูล"
+                                                    className="rounded-circle p-1"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <FaEdit />
+                                                </Button>
+                                                <Button
+                                                    variant="outline-info"
+                                                    size="sm"
+                                                    onClick={(e) => handleInfoClick(e, stock)}
+                                                    title="ดูรายละเอียด"
+                                                    className="rounded-circle p-1"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <FaInfoCircle />
+                                                </Button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -926,6 +999,114 @@ export default function Distribution() {
                     </div>
                 </Modal.Footer>
             </Modal>
+
+            {/* Password Modal */}
+            <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered size="sm" className="luxury-modal">
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold">ใส่รหัสผ่าน</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pt-2">
+                    <Form.Group>
+                        <Form.Control
+                            type="password"
+                            placeholder="Password..."
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handlePasswordSubmit();
+                                }
+                            }}
+                            className={`p-2 rounded-3 text-center ${passwordError ? 'border-danger' : ''} ${passwordShake ? 'shake-animation' : ''}`}
+                            style={{ backgroundColor: '#f8f9fa', fontSize: '1.2rem', letterSpacing: '2px' }}
+                            autoFocus
+                        />
+                        {passwordError && <div className="text-danger mt-2 text-center" style={{ fontSize: '0.85rem' }}>รหัสผ่านไม่ถูกต้อง!</div>}
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer className="border-0 d-flex justify-content-center">
+                    <Button variant="primary" onClick={handlePasswordSubmit} className="w-100 rounded-pill fw-bold">ยืนยัน</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg" className="luxury-modal">
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold text-primary"><FaEdit className="me-2"/>แก้ไขข้อมูลพัสดุ</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pt-3 px-4">
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">
+                                    เลขครุภัณฑ์
+                                    {!isAssetIdUnlocked && <span className="text-danger ms-2" style={{ fontSize: '0.8rem' }}>(ห้ามเปลี่ยนเลขครุภัณฑ์)</span>}
+                                </Form.Label>
+                                <div className="d-flex gap-2">
+                                    <Form.Control 
+                                        value={editFormData.assetId} 
+                                        onChange={e => setEditFormData({...editFormData, assetId: e.target.value})} 
+                                        disabled={!isAssetIdUnlocked}
+                                        style={!isAssetIdUnlocked ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
+                                    />
+                                    {!isAssetIdUnlocked ? (
+                                        <Button variant="outline-danger" onClick={() => {
+                                            setPasswordInput('');
+                                            setPasswordError(false);
+                                            setShowPasswordModal(true);
+                                        }} title="ปลดล็อคเพื่อแก้ไข">
+                                            <FaLock />
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline-success" disabled title="ปลดล็อคแล้ว">
+                                            <FaUnlock />
+                                        </Button>
+                                    )}
+                                </div>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">Serial Number</Form.Label>
+                                <Form.Control value={editFormData.serialNumber} onChange={e => setEditFormData({...editFormData, serialNumber: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">ยี่ห้อ/รุ่น</Form.Label>
+                                <Form.Control value={editFormData.brandModel} onChange={e => setEditFormData({...editFormData, brandModel: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">ประเภทครุภัณฑ์</Form.Label>
+                                <Form.Control value={editFormData.category} onChange={e => setEditFormData({...editFormData, category: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">หน่วยงาน</Form.Label>
+                                <Form.Control value={editFormData.department} onChange={e => setEditFormData({...editFormData, department: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">หมายเหตุ</Form.Label>
+                                <Form.Control as="textarea" rows={1} value={editFormData.remarks} onChange={e => setEditFormData({...editFormData, remarks: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Modal.Body>
+                <Modal.Footer className="border-0">
+                    <Button variant="outline-secondary" onClick={() => setShowEditModal(false)} className="rounded-pill px-4">ยกเลิก</Button>
+                    <Button variant="primary" onClick={handleSaveEdit} className="rounded-pill px-4 fw-bold">บันทึกการแก้ไข</Button>
+                </Modal.Footer>
+            </Modal>
             <style>{`
                 .luxury-modal .modal-content {
                     border: none;
@@ -948,6 +1129,16 @@ export default function Distribution() {
                     0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
                     40% { transform: translateY(-5px); }
                     60% { transform: translateY(-3px); }
+                }
+                .shake-animation {
+                    animation: shake 0.5s;
+                }
+                @keyframes shake {
+                    0% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    50% { transform: translateX(5px); }
+                    75% { transform: translateX(-5px); }
+                    100% { transform: translateX(0); }
                 }
                 .btn-glossy-refresh {
                     width: 36px;
