@@ -42,11 +42,13 @@ export default function Dashboard() {
 
     const handleRefreshIncoming = () => {
         setIsRefreshing(true);
+        setSelectedStocks([]);
         setTimeout(() => setIsRefreshing(false), 600);
     };
 
     const handleRefreshDist = () => {
         setIsRefreshingDist(true);
+        setSelectedDistributed([]);
         setTimeout(() => setIsRefreshingDist(false), 600);
     };
 
