@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaFileExcel, FaTruck, FaSearch, FaHome, FaInfoCircle, FaBox, FaPlus, FaTrash, FaCheck, FaSync, FaEdit, FaLock, FaUnlock } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 export default function Distribution() {
@@ -24,6 +24,73 @@ export default function Distribution() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Edit states
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+    const [passwordShake, setPasswordShake] = useState(false);
+    const [itemToEdit, setItemToEdit] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        assetId: '', brandModel: '', serialNumber: '', department: '', category: '', remarks: ''
+    });
+    const [isAssetIdUnlocked, setIsAssetIdUnlocked] = useState(false);
+    const ADMIN_PASSWORD = '101988';
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        setTimeout(() => setIsRefreshing(false), 600);
+    };
+
+    const handleEditClick = (e, stock) => {
+        e.stopPropagation();
+        setItemToEdit(stock);
+        setIsAssetIdUnlocked(false);
+        setEditFormData({
+            assetId: stock.assetId || '',
+            brandModel: stock.brandModel || '',
+            serialNumber: stock.serialNumber || '',
+            department: stock.department || '',
+            category: stock.category || '',
+            remarks: stock.remarks || ''
+        });
+        setShowEditModal(true);
+    };
+
+    const handlePasswordSubmit = () => {
+        if (passwordInput === ADMIN_PASSWORD) {
+            setShowPasswordModal(false);
+            setPasswordInput('');
+            setPasswordError(false);
+            setIsAssetIdUnlocked(true);
+        } else {
+            setPasswordError(true);
+            setPasswordShake(true);
+            setPasswordInput('');
+            setTimeout(() => setPasswordShake(false), 600);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        if (!itemToEdit) return;
+        try {
+            const stockRef = ref(db, `stocks/${itemToEdit.id}`);
+            await update(stockRef, {
+                assetId: encryptData(editFormData.assetId),
+                brandModel: encryptData(editFormData.brandModel),
+                serialNumber: encryptData(editFormData.serialNumber),
+                department: encryptData(editFormData.department),
+                category: encryptData(editFormData.category),
+                remarks: encryptData(editFormData.remarks)
+            });
+            setShowEditModal(false);
+            setItemToEdit(null);
+        } catch (err) {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        }
+    };
 
     const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
     const [activeBoxId, setActiveBoxId] = useState(1);
@@ -708,7 +775,10 @@ export default function Distribution() {
                         }}>🖨️ เลือกครุภัณฑ์จำหน่ายลงกล่อง</span>
                     </div>
                     <div className="d-flex align-items-center gap-3">
-                        <span className="latest-panel-count">{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
+                        <button className="btn-glossy-refresh" onClick={handleRefresh} title="รีเฟรชข้อมูล">
+                            <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
+                        </button>
+                        <span className="latest-panel-count" style={{ color: '#ff4d4f', fontWeight: 'bold', textShadow: '0 0 5px rgba(255, 77, 79, 0.3)' }}>{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
                         <div className="inv-search-wrap">
                             <FaSearch className="inv-search-icon" />
                             <input
@@ -746,7 +816,7 @@ export default function Distribution() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
+                            {loading || isRefreshing ? (
                                 <tr><td colSpan="10" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredStocks.length === 0 ? (
                                 <tr><td colSpan="10" className="latest-empty">ไม่พบรายการสินค้าที่สามารถจำหน่ายได้</td></tr>
@@ -788,16 +858,28 @@ export default function Distribution() {
                                             </Button>
                                         </td>
                                         <td className="text-center">
-                                            <Button
-                                                variant="outline-info"
-                                                size="sm"
-                                                onClick={(e) => handleInfoClick(e, stock)}
-                                                title="ดูรายละเอียด"
-                                                className="rounded-circle p-1"
-                                                style={{ width: '32px', height: '32px' }}
-                                            >
-                                                <FaInfoCircle />
-                                            </Button>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={(e) => handleEditClick(e, stock)}
+                                                    title="แก้ไขข้อมูล"
+                                                    className="rounded-circle p-1"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <FaEdit />
+                                                </Button>
+                                                <Button
+                                                    variant="outline-info"
+                                                    size="sm"
+                                                    onClick={(e) => handleInfoClick(e, stock)}
+                                                    title="ดูรายละเอียด"
+                                                    className="rounded-circle p-1"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <FaInfoCircle />
+                                                </Button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -916,31 +998,182 @@ export default function Distribution() {
                         </div>
                     </div>
                 </Modal.Footer>
-                <style>{`
-                    .luxury-modal .modal-content {
-                        border: none;
-                        border-radius: 1rem;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                        overflow: hidden;
-                    }
-                    .luxury-modal .form-control:focus {
-                        border-color: #0d6efd;
-                        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-                    }
-                    .distribute-btn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3) !important;
-                    }
-                    .bounce-animation {
-                        animation: bounce 2s infinite;
-                    }
-                    @keyframes bounce {
-                        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-                        40% { transform: translateY(-5px); }
-                        60% { transform: translateY(-3px); }
-                    }
-                `}</style>
             </Modal>
+
+            {/* Password Modal */}
+            <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered size="sm" className="luxury-modal">
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold">ใส่รหัสผ่าน</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pt-2">
+                    <Form.Group>
+                        <Form.Control
+                            type="password"
+                            placeholder="Password..."
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handlePasswordSubmit();
+                                }
+                            }}
+                            className={`p-2 rounded-3 text-center ${passwordError ? 'border-danger' : ''} ${passwordShake ? 'shake-animation' : ''}`}
+                            style={{ backgroundColor: '#f8f9fa', fontSize: '1.2rem', letterSpacing: '2px' }}
+                            autoFocus
+                        />
+                        {passwordError && <div className="text-danger mt-2 text-center" style={{ fontSize: '0.85rem' }}>รหัสผ่านไม่ถูกต้อง!</div>}
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer className="border-0 d-flex justify-content-center">
+                    <Button variant="primary" onClick={handlePasswordSubmit} className="w-100 rounded-pill fw-bold">ยืนยัน</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg" className="luxury-modal">
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold text-primary"><FaEdit className="me-2"/>แก้ไขข้อมูลพัสดุ</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pt-3 px-4">
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">
+                                    เลขครุภัณฑ์
+                                    {!isAssetIdUnlocked && <span className="text-danger ms-2" style={{ fontSize: '0.8rem' }}>(ห้ามเปลี่ยนเลขครุภัณฑ์)</span>}
+                                </Form.Label>
+                                <div className="d-flex gap-2">
+                                    <Form.Control 
+                                        value={editFormData.assetId} 
+                                        onChange={e => setEditFormData({...editFormData, assetId: e.target.value})} 
+                                        disabled={!isAssetIdUnlocked}
+                                        style={!isAssetIdUnlocked ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
+                                    />
+                                    {!isAssetIdUnlocked ? (
+                                        <Button variant="outline-danger" onClick={() => {
+                                            setPasswordInput('');
+                                            setPasswordError(false);
+                                            setShowPasswordModal(true);
+                                        }} title="ปลดล็อคเพื่อแก้ไข">
+                                            <FaLock />
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline-success" disabled title="ปลดล็อคแล้ว">
+                                            <FaUnlock />
+                                        </Button>
+                                    )}
+                                </div>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">Serial Number</Form.Label>
+                                <Form.Control value={editFormData.serialNumber} onChange={e => setEditFormData({...editFormData, serialNumber: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">ยี่ห้อ/รุ่น</Form.Label>
+                                <Form.Control value={editFormData.brandModel} onChange={e => setEditFormData({...editFormData, brandModel: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">ประเภทครุภัณฑ์</Form.Label>
+                                <Form.Control value={editFormData.category} onChange={e => setEditFormData({...editFormData, category: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">หน่วยงาน</Form.Label>
+                                <Form.Control value={editFormData.department} onChange={e => setEditFormData({...editFormData, department: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
+                                <Form.Label className="fw-semibold">หมายเหตุ</Form.Label>
+                                <Form.Control as="textarea" rows={1} value={editFormData.remarks} onChange={e => setEditFormData({...editFormData, remarks: e.target.value})} />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Modal.Body>
+                <Modal.Footer className="border-0">
+                    <Button variant="outline-secondary" onClick={() => setShowEditModal(false)} className="rounded-pill px-4">ยกเลิก</Button>
+                    <Button variant="primary" onClick={handleSaveEdit} className="rounded-pill px-4 fw-bold">บันทึกการแก้ไข</Button>
+                </Modal.Footer>
+            </Modal>
+            <style>{`
+                .luxury-modal .modal-content {
+                    border: none;
+                    border-radius: 1rem;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                .luxury-modal .form-control:focus {
+                    border-color: #0d6efd;
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+                }
+                .distribute-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3) !important;
+                }
+                .bounce-animation {
+                    animation: bounce 2s infinite;
+                }
+                @keyframes bounce {
+                    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                    40% { transform: translateY(-5px); }
+                    60% { transform: translateY(-3px); }
+                }
+                .shake-animation {
+                    animation: shake 0.5s;
+                }
+                @keyframes shake {
+                    0% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    50% { transform: translateX(5px); }
+                    75% { transform: translateX(-5px); }
+                    100% { transform: translateX(0); }
+                }
+                .btn-glossy-refresh {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 50% 10%, #c4ff4d 0%, #4ade80 40%, #166534 100%);
+                    border: 2.5px solid #ffffff;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.9);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0;
+                    flex-shrink: 0;
+                    filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+                }
+                .btn-glossy-refresh:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 4px 6px rgba(255,255,255,1);
+                    background: radial-gradient(circle at 50% 10%, #d9ff80 0%, #4ade80 45%, #15803d 100%);
+                    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.8));
+                }
+                .btn-glossy-refresh:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5);
+                }
+                .spin-animation {
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </>
     );
 }

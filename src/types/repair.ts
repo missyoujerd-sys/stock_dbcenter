@@ -10,18 +10,22 @@ export interface RepairRecord {
   // Reported by
   reporterName: string;
   reportedDate: string;
+  reporterSignature?: string;
   
   // Received for repair
   receiverName: string;
   receivedDate: string;
+  receiverSignature?: string;
   
   // Staff who received repaired device
   staffReceiptName: string;
   staffReceiptDate: string;
+  staffReceiptSignature?: string;
   
   // Person who returned the device
   returnerName: string;
   returnDate: string;
+  returnerSignature?: string;
   
   // Warranty status
   isWarranty: boolean;

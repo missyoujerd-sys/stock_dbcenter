@@ -12,7 +12,7 @@ import { th, enUS } from 'date-fns/locale';
 import { format } from 'date-fns';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList, FaCamera, FaSignature, FaTrash, FaEraser } from 'react-icons/fa';
+import { FaSave, FaHome, FaCalendarAlt, FaList, FaBarcode, FaTag, FaBox, FaBuilding, FaStickyNote, FaChevronLeft, FaChevronRight, FaClipboardList, FaCamera, FaSignature, FaTrash, FaEraser, FaSync } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 
 registerLocale('th', th);
@@ -34,6 +34,28 @@ export default function IncomingStock() {
     const [remarkError, setRemarkError] = useState(false);
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        setFormData({
+            surveyDate: new Date().toISOString().split('T')[0],
+            building: '',
+            department: '',
+            serialNumber: '',
+            assetId: '',
+            category: '',
+            brand: '',
+            model: '',
+            computerName: '',
+            remarks: ''
+        });
+        setPhotoData('');
+        setOcrResult('');
+        if (photoInputRef.current) photoInputRef.current.value = '';
+        setTimeout(() => setIsRefreshing(false), 600);
+    };
 
     const [stocksLoading, setStocksLoading] = useState(true);
     const [stocks, setStocks] = useState([]);
@@ -91,13 +113,24 @@ export default function IncomingStock() {
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
+       
         "Printer": [
-            "เครื่องพิมพ์ประเภทหัวเข็ม (Dot Matrix Printer)",
-            "เครื่องพิมพ์อิงค์เจ็ท (Inkjet Printer)",
-            "เครื่องพิมพ์เลเซอร์ (Laser Printer)",
-            "เครื่องพิมพ์ความร้อน (Thermal Printer)",
-            "เครื่องพิมพ์พล็อตเตอร์ (Plotter Printer)"
+            "Brother (Inkjet)",
+            "Brother (Laser)",
+            "Canon (Inkjet)",
+            "Canon (Laser)",
+            "Epson (Dot Matrix)",
+            "Epson (Inkjet)",
+            "OKI (Dot Matrix)",
+            "HP (Inkjet)",
+            "HP (Laser)",
+            "Ricoh(Inkjet)",
+            "Ricoh(Laser)",
+            "Xerox (Laser)",
+            "Zebra (Thermal)",
+            "Xprinter (Thermal)",
         ],
+ 
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
 
         "สแกนเนอร์": [
@@ -495,11 +528,21 @@ export default function IncomingStock() {
 
             <div className="latest-panel latest-panel--dark">
                 {/* Panel Header */}
-                <div className="latest-panel-header">
+                <div className="latest-panel-header" style={{
+                    background: 'linear-gradient(145deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
+                    borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '0.75rem 0.75rem 0 0'
+                }}>
                     <div className="latest-panel-title-wrap">
-                        <div className="latest-panel-dot"></div>
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#38bdf8', boxShadow: '0 0 0 3px rgba(56, 189, 248, 0.25)' }}></div>
                         <span className="latest-panel-title">กรอกข้อมูลพัสดุให้ครบถ้วน</span>
-                        <span className="latest-panel-badge">INCOMING STOCK FORM</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)' }}>INCOMING STOCK FORM</span>
+                    </div>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                        <button type="button" className="btn-glossy-refresh" onClick={handleRefresh} title="ล้างฟอร์มข้อมูล">
+                            <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
+                        </button>
                     </div>
                 </div>
 
@@ -1120,6 +1163,41 @@ export default function IncomingStock() {
                     </div>
                 </div>
             )}
+            <style>{`
+                .btn-glossy-refresh {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 50% 10%, #c4ff4d 0%, #4ade80 40%, #166534 100%);
+                    border: 2.5px solid #ffffff;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.9);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0;
+                    flex-shrink: 0;
+                    filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+                }
+                .btn-glossy-refresh:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 4px 6px rgba(255,255,255,1);
+                    background: radial-gradient(circle at 50% 10%, #d9ff80 0%, #4ade80 45%, #15803d 100%);
+                    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.8));
+                }
+                .btn-glossy-refresh:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5);
+                }
+                .spin-animation {
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </>
     );
 }

@@ -18,6 +18,8 @@ import { RepairRecord } from '../../types/repair';
 import { useAuth } from '../../contexts/AuthContext';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import SignaturePad from '../../components/SignaturePad';
+
 
 // ---- Shared constants ----
 const HOSPITAL_LOGO = '/โลโก้ ร.พ.png';
@@ -276,12 +278,16 @@ export default function RepairEntry() {
     problemDescription: '',
     reporterName: '',
     reportedDate: new Date().toISOString().split('T')[0],
-    receiverName: '',
+    reporterSignature: '',
+    receiverName: sessionStorage.getItem('repair_reporterName') || '',
     receivedDate: new Date().toISOString().split('T')[0],
+    receiverSignature: '',
     staffReceiptName: '',
     staffReceiptDate: '',
+    staffReceiptSignature: '',
     returnerName: '',
     returnDate: '',
+    returnerSignature: '',
     isWarranty: true,
     status: 'รอดำเนินการ',
     statusDetail: ''
@@ -299,7 +305,7 @@ export default function RepairEntry() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState('');
   const photoInputRef = React.useRef<HTMLInputElement>(null);
-  const reporterNameInputRef = React.useRef<HTMLInputElement>(null);
+  const receiverNameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Inject premium CSS once
   useEffect(() => {
@@ -409,9 +415,9 @@ export default function RepairEntry() {
 
 
   const handleScanClick = (type: 'asset' | 'serial') => {
-    if (!formData.reporterName || formData.reporterName.trim() === '') {
+    if (!formData.receiverName || formData.receiverName.trim() === '') {
       alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
-      reporterNameInputRef.current?.focus();
+      receiverNameInputRef.current?.focus();
       return;
     }
     setScanning(type);
@@ -558,28 +564,6 @@ export default function RepairEntry() {
             <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
               วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
-              <span>ชื่อ/บริษัทที่แจ้งซ่อม:</span>
-              <input
-                ref={reporterNameInputRef}
-                type="text"
-                value={formData.reporterName}
-                onChange={e => setFormData({ ...formData, reporterName: e.target.value })}
-                placeholder="หัวหน้า IT ให้กรอก..."
-                style={{ 
-                  border: 'none', 
-                  borderBottom: '2px solid #ef4444', 
-                  outline: 'none', 
-                  background: 'transparent', 
-                  padding: '2px 4px', 
-                  width: '200px', 
-                  fontFamily: 'Prompt, sans-serif',
-                  color: '#1e3a8a',
-                  fontWeight: 700
-                }}
-                readOnly={!isAdmin}
-              />
-            </div>
           </div>
 
           {/* ── Section 1: Equipment ── */}
@@ -740,8 +724,14 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
               </div>
-              <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.reporterSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, reporterSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.reporterName ? formData.reporterName : '.............................................................'}</div>
             </div>
 
             {/* Receiver */}
@@ -749,14 +739,20 @@ export default function RepairEntry() {
               <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
               <div className="a4-sig-row">
                 <div className="k">ชื่อ-สกุล:</div>
-                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} />
+                <input ref={receiverNameInputRef} type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} list="officer-names-list" />
               </div>
               <div className="a4-sig-row">
                 <div className="k">วันที่:</div>
                 <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
               </div>
-              <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.receiverSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, receiverSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.receiverName ? formData.receiverName : '.............................................................'}</div>
             </div>
 
             {/* Staff receipt */}
@@ -770,8 +766,14 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
               </div>
-              <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.staffReceiptSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, staffReceiptSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.staffReceiptName ? formData.staffReceiptName : '.............................................................'}</div>
             </div>
 
             {/* Returner */}
@@ -785,8 +787,14 @@ export default function RepairEntry() {
                 <div className="k">วันที่:</div>
                 <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
               </div>
-              <div className="a4-sig-line" />
-              <div className="a4-sig-line-label">(ลงชื่อ)......................................................................</div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.returnerSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, returnerSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.returnerName ? formData.returnerName : '.............................................................'}</div>
             </div>
           </div>
 
@@ -976,10 +984,10 @@ export default function RepairEntry() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {[
-                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
-                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)' },
+                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.reporterSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.receiverSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.staffReceiptSignature },
+                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.returnerSignature },
                 ].map((sig, i) => (
                   <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
@@ -991,9 +999,15 @@ export default function RepairEntry() {
                       <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 700, width: '45px' }}>วันที่: </span>
                       <span style={{ flex: 1, border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', fontWeight: 600, color: '#1e293b', background: 'white' }}>{sig.date || '-'}</span>
                     </div>
-                    <div style={{ marginTop: 'auto' }}>
-                      <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px' }} />
-                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ)......................................................................</div>
+                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {sig.signature ? (
+                        <div style={{ marginTop: '10px', marginBottom: '5px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={sig.signature} alt="signature" style={{ maxHeight: '100%', maxWidth: '200px' }} />
+                        </div>
+                      ) : (
+                        <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px', width: '100%' }} />
+                      )}
+                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ) {sig.name ? sig.name : '.............................................................'}</div>
                     </div>
                   </div>
                 ))}
