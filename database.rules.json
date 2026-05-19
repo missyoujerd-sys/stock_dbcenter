@@ -19,5 +19,10 @@
                 }
             }
         }
+        "chatMessages": {
+            "general": {
+                ".indexOn": ["timestamp"]
+            }
+        }
     }
 }

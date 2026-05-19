@@ -13,6 +13,8 @@ import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
 import RepairView from './pages/repair/RepairView';
 import BorrowReturn from './pages/BorrowReturn';
+import ChatRoom from './pages/ChatRoom';
+import FloatingChat from './components/FloatingChat';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -57,6 +59,11 @@ function App() {
               <BorrowReturn />
             </PrivateRoute>
           } />
+          <Route path="/chat" element={
+            <PrivateRoute>
+              <ChatRoom />
+            </PrivateRoute>
+          } />
           <Route path="/repair" element={
             <PrivateRoute>
               <RepairDashboard />
@@ -83,6 +90,8 @@ function App() {
             </PrivateRoute>
           } />
         </Routes>
+        {/* Floating Chat Bubble - available on all authenticated pages */}
+        <FloatingChat />
         </AuthProvider>
       </ThemeProvider>
     </Router>
