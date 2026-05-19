@@ -104,10 +104,9 @@ export default function FloatingChat() {
   useEffect(() => { isMinimizedRef.current = isMinimized; }, [isMinimized]);
   useEffect(() => { soundRef.current = soundEnabled; }, [soundEnabled]);
 
-  if (location.pathname === '/chat') return null;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // โหลดข้อความ + แจ้งเตือน (hooks ต้องอยู่ก่อน early return เสมอ)
   useEffect(() => {
+    if (!currentUser) return; // guard ภายใน hook
     const q = query(ref(db, CHAT_REF), orderByChild('timestamp'), limitToLast(50));
     const handler = snap => {
       const data = snap.val();
@@ -141,16 +140,17 @@ export default function FloatingChat() {
     return () => off(q, 'value', handler);
   }, [currentUser?.uid]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (isOpen && !isMinimized) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
   }, [messages, isOpen, isMinimized]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (isOpen && !prevOpenRef.current) setUnreadCount(0);
     prevOpenRef.current = isOpen;
   }, [isOpen]);
+
+  // Early return หลัง hooks ทั้งหมด (ถูกต้องตาม Rules of Hooks)
+  if (location.pathname === '/chat' || !currentUser) return null;
 
   const requestNotifPermission = async () => {
     const p = await Notification.requestPermission();
