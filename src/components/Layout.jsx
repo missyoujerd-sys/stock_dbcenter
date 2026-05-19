@@ -147,13 +147,13 @@ export default function Layout({ children }) {
   ];
 
   const SidebarContent = () => (
-    <div className={`flex flex-col h-full bg-[#f3e8ff] dark:bg-[#f3e8ff] text-slate-800 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-purple-200 select-none w-full shadow-[30px_0_70px_rgba(147,51,234,0.15)]`}>
+    <div className={`flex flex-col h-full bg-[#f3e8ff] dark:bg-[#0d1117] text-slate-800 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-purple-200 dark:border-slate-700/60 select-none w-full shadow-[30px_0_70px_rgba(147,51,234,0.15)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.5)]`}>
       {/* Moving Glass Shine Effect */}
       <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
-      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-purple-400/[0.15] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
-      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-fuchsia-400/[0.15] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-purple-400/[0.15] dark:bg-blue-500/[0.08] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-fuchsia-400/[0.15] dark:bg-indigo-500/[0.08] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
       
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>
@@ -182,7 +182,7 @@ export default function Layout({ children }) {
           <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
             <div className="flex flex-col">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-[16px] font-bold text-slate-700 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
+                <span className="text-[16px] font-bold text-slate-700 dark:text-slate-200 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
                 
                 {/* IT NKP Logo in place of Status Pill */}
                 <img 
@@ -192,15 +192,15 @@ export default function Layout({ children }) {
                   style={{ clipPath: 'inset(2px)' }}
                 />
               </div>
-              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 font-['Prompt'] -mt-1 mb-1.5">
+              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 dark:text-white font-['Prompt'] -mt-1 mb-1.5">
                 จัดการ
               </h1>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
+                <span className="text-[10px] font-black text-blue-400 dark:text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
               </div>
             </div>
-            <p className="text-[11px] text-purple-600/90 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-purple-700 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+            <p className="text-[11px] text-purple-600/90 dark:text-purple-400/80 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
           </div>
         </div>
 
@@ -214,8 +214,8 @@ export default function Layout({ children }) {
                 {/* Icon Wrapper Circle */}
                 <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
                   isActive 
-                    ? "bg-purple-100 border-purple-300 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
-                    : "bg-white/50 border-purple-200/50 group-hover:bg-white/80 group-hover:border-purple-300 group-hover:scale-110"
+                    ? "bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-500/50 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
+                    : "bg-white/50 dark:bg-slate-800/50 border-purple-200/50 dark:border-slate-600/50 group-hover:bg-white/80 dark:group-hover:bg-slate-700/60 group-hover:border-purple-300 dark:group-hover:border-purple-500/50 group-hover:scale-110"
                 }`}>
                   {isActive && (
                     <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
@@ -232,7 +232,7 @@ export default function Layout({ children }) {
                 </div>
 
                 <div className={`flex flex-col flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap font-['Prompt'] ${isActive ? 'text-purple-700 translate-x-1' : 'group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap font-['Prompt'] ${isActive ? 'text-purple-700 dark:text-purple-300 translate-x-1' : 'text-slate-700 dark:text-slate-300 group-hover:translate-x-1'} transition-all duration-[300ms]`}>
                     {item.name}
                   </span>
                   {isActive && !isSidebarCollapsed && (
@@ -253,8 +253,8 @@ export default function Layout({ children }) {
                   onClick={handleAdminNavClick}
                   className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
                     isActive 
-                      ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
-                      : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
+                      ? "text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
+                      : "text-slate-600 dark:text-slate-400 hover:text-purple-900 dark:hover:text-purple-200 hover:bg-purple-500/5 dark:hover:bg-purple-500/10"
                   }`}
                 >
                   {linkContent}
@@ -268,8 +268,8 @@ export default function Layout({ children }) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                   isActive 
-                    ? "text-purple-600 bg-purple-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
-                    : "text-slate-600 hover:text-purple-900 hover:bg-purple-500/5"
+                    ? "text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
+                    : "text-slate-600 dark:text-slate-400 hover:text-purple-900 dark:hover:text-purple-200 hover:bg-purple-500/5 dark:hover:bg-purple-500/10"
                 }`}
               >
                 {linkContent}
@@ -279,7 +279,7 @@ export default function Layout({ children }) {
         </nav>
 
         {/* Elite Footer Section */}
-        <div className="mt-auto pt-6 border-t border-white/[0.06] dark:border-white/[0.1] space-y-5">
+        <div className="mt-auto pt-6 border-t border-purple-200/50 dark:border-slate-700/50 space-y-5">
           {currentUser && (
             <div className={`flex flex-col ${isSidebarCollapsed ? 'space-y-4 items-center' : 'space-y-5'}`}>
               <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-4 px-2'} group/avatar transition-all duration-[600ms]`}>
@@ -293,8 +293,8 @@ export default function Layout({ children }) {
                   </div>
                 </div>
                 <div className={`flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
-                  <p className="text-[12px] font-black text-indigo-800 uppercase tracking-[0.2em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
-                  <p className="text-[14px] font-bold text-emerald-600 truncate tracking-tight group-hover/avatar:text-purple-900 transition-colors duration-[300ms]">
+                  <p className="text-[12px] font-black text-indigo-800 dark:text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
+                  <p className="text-[14px] font-bold text-emerald-600 dark:text-emerald-400 truncate tracking-tight group-hover/avatar:text-purple-900 dark:group-hover/avatar:text-purple-300 transition-colors duration-[300ms]">
                     {currentUser.email.split('@')[0]}
                   </p>
                 </div>

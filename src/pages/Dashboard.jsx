@@ -57,6 +57,14 @@ export default function Dashboard() {
         return () => clearInterval(timer);
     }, []);
 
+    // Auto-reload page every 10 seconds to stay up-to-date
+    useEffect(() => {
+        const autoReload = setInterval(() => {
+            window.location.reload();
+        }, 50000);
+        return () => clearInterval(autoReload);
+    }, []);
+
     const formatDate = (date) => {
         return new Intl.DateTimeFormat('th-TH', {
             day: 'numeric',
