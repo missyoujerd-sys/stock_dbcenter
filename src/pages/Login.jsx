@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Form, Button, Alert, Modal } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation, FaCheck } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation } from 'react-icons/fa';
 
 export default function Login() {
     let userRef = useRef();
@@ -13,31 +13,6 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const [isAutoLogin, setIsAutoLogin] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [reporterName, setReporterName] = useState('');
-
-    React.useEffect(() => {
-        const auto = searchParams.get('auto');
-        if (auto === 'repair_itt') {
-            setIsAutoLogin(true);
-            setLoading(true);
-            const doAutoLogin = async () => {
-                try {
-                    await login('itt@nkp.com', 'itt123456');
-                    setShowSuccessModal(true);
-                } catch (err) {
-                    console.error('Auto login error:', err);
-                    setError('การเข้าระบบอัตโนมัติผิดพลาด (itt)');
-                    setShowErrorModal(true);
-                    setIsAutoLogin(false);
-                    setLoading(false);
-                }
-            };
-            doAutoLogin();
-        }
-    }, [searchParams, login]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -70,69 +45,58 @@ export default function Login() {
                 <h4 className="login-title">ระบบจัดการ Stock</h4>
                 <h4 className="login-subtitle"> ห้องซ่อมบำรุงคอมพิวเตอร์ </h4>
 
-                {isAutoLogin ? (
-                    <div className="text-center py-5" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                        <div className="spinner-border text-light mb-3" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
-                        <h5>กำลังเข้าสู่ระบบอัตโนมัติ...</h5>
-                        <p className="mb-0" style={{ fontSize: '0.85rem', opacity: 0.8 }}>สแกน QR อัตโนมัติ (แจ้งซ่อม)</p>
+                <Form onSubmit={handleSubmit}>
+                    <div className="login-input-group">
+                        <FaUser className="login-input-icon" />
+                        <Form.Control
+                            type="text"
+                            ref={userRef}
+                            required
+                            placeholder="User"
+                            className="login-input"
+                        />
                     </div>
-                ) : (
-                    <Form onSubmit={handleSubmit}>
-                        <div className="login-input-group">
-                            <FaUser className="login-input-icon" />
-                            <Form.Control
-                                type="text"
-                                ref={userRef}
-                                required
-                                placeholder="User"
-                                className="login-input"
-                            />
-                        </div>
 
-                        <div className="login-input-group" style={{ position: 'relative' }}>
-                            <FaLock className="login-input-icon" />
-                            <Form.Control
-                                type={showPassword ? 'text' : 'password'}
-                                ref={passwordRef}
-                                required
-                                placeholder="Password"
-                                className="login-input"
-                                style={{ paddingRight: '40px' }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '15px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
+                    <div className="login-input-group" style={{ position: 'relative' }}>
+                        <FaLock className="login-input-icon" />
+                        <Form.Control
+                            type={showPassword ? 'text' : 'password'}
+                            ref={passwordRef}
+                            required
+                            placeholder="Password"
+                            className="login-input"
+                            style={{ paddingRight: '40px' }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '15px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                cursor: 'pointer',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                    </div>
 
-                        <Button disabled={loading} className="login-submit-btn" type="submit">
-                            LOGIN
-                        </Button>
-                    </Form>
-                )}
+                    <Button disabled={loading} className="login-submit-btn" type="submit">
+                        LOGIN
+                    </Button>
+                </Form>
                 
                 <div className="login-footer-info">
                     *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
                 </div>
             </div>
-
             {/* Error Popup Modal */}
             <Modal 
                 show={showErrorModal} 
@@ -152,51 +116,6 @@ export default function Login() {
                         className="login-error-btn px-5 py-2"
                     >
                         ตกลง
-                    </Button>
-                </Modal.Body>
-            </Modal>
-
-            {/* Success Popup Modal for Auto Login */}
-            <Modal 
-                show={showSuccessModal} 
-                onHide={() => {}} 
-                centered 
-                backdrop="static"
-                keyboard={false}
-                className="login-error-modal" // reusing styles
-            >
-                <Modal.Body className="text-center p-4">
-                    <div className="login-error-icon-wrap mb-3" style={{ backgroundColor: '#d1e7dd', color: '#0f5132', border: 'none', width: '70px', height: '70px', fontSize: '2rem', margin: '0 auto' }}>
-                        <FaCheck className="login-error-icon" />
-                    </div>
-                    <h4 className="fw-bold mb-2" style={{ color: '#0f5132' }}>เข้าสู่ระบบสำเร็จ!</h4>
-                    <p className="mb-3 text-dark" style={{ fontSize: '1rem' }}>กรุณาระบุชื่อหรือบริษัทที่แจ้งซ่อมก่อนเข้าใช้งาน</p>
-                    
-                    <Form.Group className="mb-4 text-start">
-                        <Form.Label className="fw-bold" style={{ color: '#ef4444' }}>ชื่อ/บริษัท (หัวหน้า IT ให้กรอกก่อนทุกครั้ง) *</Form.Label>
-                        <Form.Control 
-                            type="text" 
-                            placeholder="พิมพ์ชื่อหรือบริษัทของคุณ..." 
-                            value={reporterName}
-                            onChange={(e) => setReporterName(e.target.value)}
-                            style={{ border: '2px solid #ef4444', borderRadius: '10px', padding: '10px' }}
-                        />
-                    </Form.Group>
-
-                    <Button 
-                        variant="success" 
-                        onClick={() => {
-                            if (!reporterName.trim()) {
-                                alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
-                                return;
-                            }
-                            sessionStorage.setItem('repair_reporterName', reporterName.trim());
-                            navigate('/repair/entry');
-                        }}
-                        className="px-5 py-2 fw-bold w-100"
-                        style={{ borderRadius: '10px' }}
-                    >
-                        ตกลง และเข้าสู่ระบบ
                     </Button>
                 </Modal.Body>
             </Modal>

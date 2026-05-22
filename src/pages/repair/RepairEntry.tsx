@@ -551,11 +551,11 @@ export default function RepairEntry() {
               <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</h1>
               <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</p>
             </div>
-            {/* QR Code for auto login on mobile */}        
+            {/* QR Code for viewing this form publicly on mobile */}        
             <div style={{ position: 'absolute', right: '16px', top: '16px', background: 'white', padding: '6px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.15)' }}>
-               {/* Use the current site origin and point to login with auto repair param */}
-               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/login?auto=repair_itt')}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
-               <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนเพื่อแจ้งซ่อม</div>
+               {/* Point to the public repair search page with the record ID */}
+               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
+               <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
             </div>
           </div>
 
@@ -903,10 +903,10 @@ export default function RepairEntry() {
                 <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
               </div>
 
-              {/* QR Code in PDF Layout */}
+              {/* QR Code in PDF Layout - points to public repair search */}
               <div style={{ position: 'absolute', right: '40px', top: '50%', transform: 'translateY(-50%)', background: 'white', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(window.location.origin + '/login?auto=repair_itt')}`} alt="QR Code" style={{ width: '95px', height: '95px', display: 'block' }} />
-                 <div style={{ fontSize: '11px', textAlign: 'center', marginTop: '4px', fontWeight: 900, color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนเพื่อแจ้งซ่อม</div>
+                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '95px', height: '95px', display: 'block' }} />
+                 <div style={{ fontSize: '11px', textAlign: 'center', marginTop: '4px', fontWeight: 900, color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
               </div>
             </div>
 

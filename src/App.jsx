@@ -12,6 +12,7 @@ import Inventory from './pages/Inventory';
 import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
 import RepairView from './pages/repair/RepairView';
+import RepairPublicSearch from './pages/repair/RepairPublicSearch';
 import BorrowReturn from './pages/BorrowReturn';
 import ChatRoom from './pages/ChatRoom';
 import FloatingChat from './components/FloatingChat';
@@ -32,6 +33,9 @@ function App() {
         <AuthProvider>
           <Routes>
           <Route path="/login" element={<Login />} />
+          {/* Public route - no login required */}
+          <Route path="/repair/public" element={<RepairPublicSearch />} />
+          <Route path="/repair/public/:id" element={<RepairPublicSearch />} />
           <Route path="/" element={
             <PrivateRoute>
               <Dashboard />
