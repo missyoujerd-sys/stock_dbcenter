@@ -557,6 +557,32 @@ export default function RepairEntry() {
                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
                <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
             </div>
+
+            {/* ── เลขที่เอกสาร badge ── */}
+            {formData.docNumber && (
+              <div style={{
+                position: 'absolute',
+                right: '110px',
+                top: '16px',
+                background: formData.isWarranty
+                  ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                  : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                borderRadius: '10px',
+                padding: '6px 14px',
+                textAlign: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                minWidth: '130px',
+              }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                  {formData.docNumber}
+                </div>
+                <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+              </div>
+            )}
           </div>
 
           {/* ── Intro line ── */}
@@ -564,6 +590,12 @@ export default function RepairEntry() {
             <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
               วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
             </p>
+            {!formData.docNumber && (
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }} />
+                เลขที่เอกสารจะถูกสร้างอัตโนมัติเมื่อบันทึก
+              </div>
+            )}
           </div>
 
           {/* ── Section 1: Equipment ── */}

@@ -2,6 +2,27 @@ import { RepairRecord } from '../types/repair';
 import { db } from '../firebase';
 import { ref, set, get, child, remove, update } from 'firebase/database';
 
+// ─── สร้างเลขเอกสารอัตโนมัติ ───────────────────────────────────────────────
+// Format มีประกัน:  WR-{พ.ศ.}-{4หลัก}   เช่น WR-2569-0042
+// Format หมดประกัน: NW-{พ.ศ.}-{4หลัก}   เช่น NW-2569-0013
+// ─────────────────────────────────────────────────────────────────────────────
+async function generateDocNumber(isWarranty: boolean): Promise<string> {
+  const thaiYear = new Date().getFullYear() + 543;
+  const prefix = isWarranty ? 'WR' : 'NW';
+  const counterKey = `counters/repair_${prefix}_${thaiYear}`;
+
+  const dbRef = ref(db);
+  const snapshot = await get(child(dbRef, counterKey));
+  const current = snapshot.exists() ? (snapshot.val() as number) : 0;
+  const next = current + 1;
+
+  // Save back incremented counter
+  await set(ref(db, counterKey), next);
+
+  const seq = String(next).padStart(4, '0');
+  return `${prefix}-${thaiYear}-${seq}`;
+}
+
 export const RepairService = {
   getRepairs: async (): Promise<RepairRecord[]> => {
     try {
@@ -9,7 +30,6 @@ export const RepairService = {
       const snapshot = await get(child(dbRef, `repairs`));
       if (snapshot.exists()) {
         const data = snapshot.val();
-        // Convert object mapping to array
         return Object.values(data);
       } else {
         return [];
@@ -20,12 +40,15 @@ export const RepairService = {
     }
   },
 
-  saveRepair: async (repair: Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<RepairRecord | null> => {
+  saveRepair: async (repair: Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt' | 'docNumber'>): Promise<RepairRecord | null> => {
     try {
       const newId = crypto.randomUUID();
+      const docNumber = await generateDocNumber(repair.isWarranty);
+
       const newRepair: RepairRecord = {
         ...repair,
         id: newId,
+        docNumber,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
