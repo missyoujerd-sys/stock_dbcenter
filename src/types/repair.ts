@@ -1,38 +1,33 @@
-export type RepairStatus = 'รอดำเนินการ' | 'การซ่อมแซม' | 'สมบูรณ์' | 'กลับมาแล้ว' | 'ดำเนินการซ่อมแล้ว' | 'ส่งคืนหมดประกัน' | 'ส่งคืนค่าซ่อมไม่คุ้ม' | 'อื่นๆ';
+export type RepairStatus = 'รอดำเนินการ' | 'การซ่อมแซม' | 'ดำเนินการซ่อมแล้ว' | 'ส่งคืนหมดประกัน' | 'ส่งคืนค่าซ่อมไม่คุ้ม' | 'อื่นๆ' | 'สมบูรณ์' | 'กลับมาแล้ว' | 'pending';
 
 export interface RepairRecord {
   id: string;
-  docNumber: string;       // เลขที่เอกสาร เช่น WR-2569-0001 (มีประกัน) / NW-2569-0001 (หมดประกัน)
-  equipmentModel: string;
+  docNumber?: string;
   assetNumber: string;
+  equipmentModel: string;
   serialNumber: string;
   problemDescription: string;
   
-  // Reported by
   reporterName: string;
   reportedDate: string;
-  reporterSignature?: string;
+  reporterSignature: string;
   
-  // Received for repair
   receiverName: string;
   receivedDate: string;
-  receiverSignature?: string;
+  receiverSignature: string;
   
-  // Staff who received repaired device
   staffReceiptName: string;
   staffReceiptDate: string;
-  staffReceiptSignature?: string;
+  staffReceiptSignature: string;
   
-  // Person who returned the device
   returnerName: string;
   returnDate: string;
-  returnerSignature?: string;
+  returnerSignature: string;
   
-  // Warranty status
   isWarranty: boolean;
-  
   status: RepairStatus;
-  statusDetail?: string;
+  statusDetail: string;
+  
   createdAt: string;
   updatedAt: string;
 }

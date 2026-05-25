@@ -55,7 +55,8 @@ export default function RepairDashboard() {
       const matchesSearch = 
         r.equipmentModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.assetNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.serialNumber.toLowerCase().includes(searchTerm.toLowerCase());
+        r.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (r.docNumber && r.docNumber.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
       
@@ -158,12 +159,10 @@ export default function RepairDashboard() {
         <div>
           <Link 
             to="/" 
-            className="inline-flex items-center gap-3 text-blue-600 hover:text-blue-800 transition-all mb-6 group"
+            className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border-2 border-blue-200/80 hover:border-blue-400 text-blue-600 hover:text-blue-700 px-5 py-2.5 rounded-2xl transition-all mb-6 group shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-white"
           >
-            <div className="w-11 h-11 rounded-2xl bg-white/80 backdrop-blur-sm border border-blue-200 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:bg-white transition-all">
-              <ArrowLeft size={22} className="group-hover:-translate-x-1 transition-transform text-blue-600" />
-            </div>
-            <span className="text-[15px] font-black tracking-wide underline decoration-2 underline-offset-4 group-hover:text-blue-800">ย้อนกลับสู่หน้าหลัก</span>
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[14px] font-bold tracking-wide">ย้อนกลับสู่หน้าหลัก</span>
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -273,9 +272,16 @@ export default function RepairDashboard() {
               ) : filteredRepairs.length > 0 ? filteredRepairs.map((repair) => (
                 <tr key={repair.id} className={`transition-colors group divide-x divide-slate-200 bg-white ${getRowStyle(repair.status)}`}>
                   <td className="px-6 py-4 align-top">
+                    {repair.docNumber && (
+                      <div className="mb-1.5">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${repair.docNumber.startsWith('IN') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                          {repair.docNumber}
+                        </span>
+                      </div>
+                    )}
                     <div className="font-bold text-slate-800 text-[14px]">{repair.equipmentModel}</div>
-                    <div className="text-xs font-semibold text-slate-500 mt-1">{repair.assetNumber}</div>
-                    <div className="text-[10px] text-slate-400 uppercase">{repair.serialNumber}</div>
+                    <div className="text-xs font-semibold text-slate-500 mt-1">ครุภัณฑ์: {repair.assetNumber}</div>
+                    <div className="text-[10px] text-slate-400 uppercase">S/N: {repair.serialNumber}</div>
                   </td>
                   <td className="px-6 py-4 align-top max-w-[250px]">
                     <div className="text-sm text-slate-600 line-clamp-2">{repair.problemDescription}</div>

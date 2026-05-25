@@ -436,13 +436,42 @@ export default function RepairEntry() {
         await RepairService.updateRepair(id, formData);
         setMessage({ type: 'success', text: 'อัปเดตข้อมูลสำเร็จแล้ว' });
       } else {
-        await RepairService.saveRepair(formData);
-        setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จแล้ว' });
+        // Generate Document Number when saving a new record
+        setLoading(true);
+        const allRepairs = await RepairService.getRepairs();
+        
+        const now = new Date();
+        const yy = now.getFullYear().toString().slice(-2);
+        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+        const prefix = formData.isWarranty ? `IN-${yy}${mm}-` : `OUT-${yy}${mm}-`;
+        
+        const relatedRepairs = allRepairs.filter((r: any) => r.docNumber && r.docNumber.startsWith(prefix));
+        let maxNum = 0;
+        relatedRepairs.forEach((r: any) => {
+           const parts = r.docNumber.split('-');
+           if (parts.length === 3) {
+               const num = parseInt(parts[2], 10);
+               if (!isNaN(num) && num > maxNum) maxNum = num;
+           }
+        });
+        
+        const nextNum = (maxNum + 1).toString().padStart(4, '0');
+        const generatedDocNumber = `${prefix}${nextNum}`;
+        
+        const finalData = { ...formData, docNumber: generatedDocNumber };
+        
+        await RepairService.saveRepair(finalData);
+        setMessage({ type: 'success', text: `บันทึกข้อมูลสำเร็จ (เลขที่: ${generatedDocNumber})` });
+        
+        setFormData(finalData); // Update form to show generated docNumber immediately before redirect
+        
         // After saving new, might want to redirect or clear form
-        setTimeout(() => navigate('/repair/dashboard'), 1500);
+        setTimeout(() => navigate('/repair/dashboard'), 2000);
       }
     } catch {
       setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+    } finally {
+      if (!id) setLoading(false);
     }
   };
 
@@ -514,7 +543,7 @@ export default function RepairEntry() {
         <button
           onClick={exportPDF}
           disabled={exporting}
-          className="flex items-center gap-2 bg-gradient-to-br from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-indigo-200 font-bold text-sm"
+          className="flex items-center gap-2 bg-gradient-to-br from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-red-200 font-bold text-sm"
           style={{ fontFamily: 'Prompt, sans-serif' }}
         >
           <Download size={18} />
@@ -522,13 +551,40 @@ export default function RepairEntry() {
         </button>
       </div>
 
-      {/* ── Alert ── */}
+      {/* ── Premium Alert Modal ── */}
       {message && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-semibold ${
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
-        }`}>
-          {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-          {message.text}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center" style={{ animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+            {message.type === 'success' ? (
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 size={40} strokeWidth={3} />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+                <AlertCircle size={40} strokeWidth={3} />
+              </div>
+            )}
+            <h3 className={`text-2xl font-bold mb-2 ${message.type === 'success' ? 'text-emerald-700' : 'text-rose-700'}`} style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.type === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด'}
+            </h3>
+            <p className="text-slate-600 font-medium mb-8 text-base" style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.text}
+            </p>
+            <button 
+              onClick={() => setMessage(null)}
+              className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${message.type === 'success' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-200' : 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-rose-200'}`}
+              style={{ fontFamily: 'Prompt, sans-serif' }}
+            >
+              ตกลง
+            </button>
+          </div>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn { 
+              0% { opacity: 0; transform: scale(0.8) translateY(20px); } 
+              100% { opacity: 1; transform: scale(1) translateY(0); } 
+            }
+          `}</style>
         </div>
       )}
 
@@ -557,32 +613,6 @@ export default function RepairEntry() {
                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
                <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
             </div>
-
-            {/* ── เลขที่เอกสาร badge ── */}
-            {formData.docNumber && (
-              <div style={{
-                position: 'absolute',
-                right: '110px',
-                top: '16px',
-                background: formData.isWarranty
-                  ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
-                  : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
-                border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
-                borderRadius: '10px',
-                padding: '6px 14px',
-                textAlign: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                minWidth: '130px',
-              }}>
-                <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
-                  {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
-                  {formData.docNumber}
-                </div>
-                <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
-              </div>
-            )}
           </div>
 
           {/* ── Intro line ── */}
@@ -594,6 +624,32 @@ export default function RepairEntry() {
               <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }} />
                 เลขที่เอกสารจะถูกสร้างอัตโนมัติเมื่อบันทึก
+              </div>
+            )}
+            
+            {/* ── เลขที่เอกสาร badge moved here ── */}
+            {formData.docNumber && (
+              <div style={{
+                display: 'inline-flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: formData.isWarranty
+                  ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                  : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                borderRadius: '10px',
+                padding: '6px 14px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                minWidth: '130px',
+              }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                  {formData.docNumber}
+                </div>
+                <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
               </div>
             )}
           </div>
@@ -848,16 +904,16 @@ export default function RepairEntry() {
           </datalist>
 
           {/* ── Submit ── */}
-          <div style={{ display: 'flex', justifyItems: 'end', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
             <button
               type="button"
               onClick={handleSubmit as any}
               disabled={!isAdmin}
-              className={`group flex w-full justify-center md:w-auto md:ml-auto items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-xl shadow-blue-200 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
-              style={{ fontFamily: 'Prompt, sans-serif' }}
+              className={`group flex w-full md:w-auto justify-center items-center gap-2 text-white font-bold px-12 py-3.5 rounded-2xl transition-all shadow-xl shadow-emerald-200/50 bg-gradient-to-b from-emerald-400 to-emerald-600 border-b-4 border-emerald-700 hover:brightness-110 active:border-b-0 active:translate-y-1 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{ fontFamily: 'Prompt, sans-serif', fontSize: '16px' }}
             >
-              {id ? 'ยืนยันการบันทึกแก้ไขข้อมูล' : 'ยืนยันการบันทึกแจ้งซ่อม'}
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+              บันทึก
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </button>
           </div>
 
@@ -929,6 +985,31 @@ export default function RepairEntry() {
               <div>
                 <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
                 <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</div>
+                
+                {/* ── เลขที่เอกสาร badge สำหรับ PDF ── */}
+                {formData.docNumber && (
+                  <div style={{
+                    display: 'inline-block',
+                    marginTop: '12px',
+                    background: formData.isWarranty
+                      ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                      : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                    border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                    borderRadius: '10px',
+                    padding: '6px 14px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    minWidth: '130px',
+                  }}>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                      {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                      {formData.docNumber}
+                    </div>
+                    <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+                  </div>
+                )}
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right', paddingRight: '120px' }}>
                 <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
