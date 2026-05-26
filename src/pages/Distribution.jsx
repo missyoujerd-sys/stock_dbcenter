@@ -95,6 +95,7 @@ export default function Distribution() {
     const [boxes, setBoxes] = useState([{ id: 1, name: 'กล่องที่ 1', items: [] }]);
     const [activeBoxId, setActiveBoxId] = useState(1);
     const [nextBoxId, setNextBoxId] = useState(2);
+    const [customBoxName, setCustomBoxName] = useState('');
     const isBoxInitialized = useRef(false);
 
     const StatusSummaryBar = () => (
@@ -192,9 +193,23 @@ export default function Distribution() {
 
     const handleAddBox = () => {
         const newId = nextBoxId;
-        setBoxes([...boxes, { id: newId, name: `กล่องที่ ${newId}`, items: [] }]);
+        let finalName = customBoxName.trim();
+        
+        if (!finalName) {
+             finalName = `กล่องที่ ${newId}`;
+        } else if (/^\d+$/.test(finalName)) {
+             finalName = `กล่องที่ ${finalName}`;
+        }
+
+        if (boxes.some(b => b.name === finalName)) {
+             alert('ชื่อหรือหมายเลขกล่องซ้ำกันครับ กรุณาระบุใหม่');
+             return;
+        }
+
+        setBoxes([...boxes, { id: newId, name: finalName, items: [] }]);
         setNextBoxId(newId + 1);
         setActiveBoxId(newId);
+        setCustomBoxName('');
     };
 
     const handleRemoveBox = (boxId) => {
@@ -575,7 +590,7 @@ export default function Distribution() {
         stock.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const BoxManagerWidget = () => (
+    const renderBoxManagerWidget = () => (
         <div className="box-manager-widget" style={{ 
             background: 'linear-gradient(to bottom, #ffffff, #f8fafc)', 
             backdropFilter: 'blur(20px)', 
@@ -601,16 +616,26 @@ export default function Distribution() {
                         <div style={{ fontSize: '0.7rem', color: '#64748b' }}>จัดเตรียมพัสดุเพื่อจำหน่าย</div>
                     </div>
                 </div>
-                <Button variant="primary" size="sm" onClick={handleAddBox} className="rounded-pill px-2 py-1 d-flex align-items-center gap-1 shadow-sm" style={{ 
-                    fontSize: '0.75rem', fontWeight: '600', 
-                    background: 'linear-gradient(135deg, #ffffff, #f8fafc)', 
-                    color: '#3b82f6', border: '1px solid #bfdbfe', transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff, #f8fafc)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                    <FaPlus size={10} /> เพิ่มกล่อง
-                </Button>
+                <div className="d-flex align-items-center gap-1">
+                    <Form.Control
+                        size="sm"
+                        placeholder="ระบุเลขกล่อง..."
+                        value={customBoxName}
+                        onChange={(e) => setCustomBoxName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddBox(); } }}
+                        style={{ width: '90px', fontSize: '0.75rem', borderRadius: '20px', border: '1px solid #bfdbfe', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}
+                    />
+                    <Button variant="primary" size="sm" onClick={handleAddBox} className="rounded-pill px-2 py-1 d-flex align-items-center gap-1 shadow-sm" style={{ 
+                        fontSize: '0.75rem', fontWeight: '600', 
+                        background: 'linear-gradient(135deg, #ffffff, #f8fafc)', 
+                        color: '#3b82f6', border: '1px solid #bfdbfe', transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #ffffff, #f8fafc)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                        <FaPlus size={10} /> เพิ่ม
+                    </Button>
+                </div>
             </div>
             
             <div className="d-flex gap-2 mb-2 mt-2" style={{ overflowX: 'auto', paddingBottom: '4px', position: 'relative', zIndex: 1 }}>
@@ -734,7 +759,7 @@ export default function Distribution() {
                     <StatusSummaryBar />
                 </div>
                 <div style={{ flex: '0 0 auto', width: '100%', maxWidth: '320px' }}>
-                    <BoxManagerWidget />
+                    {renderBoxManagerWidget()}
                 </div>
             </div>
 

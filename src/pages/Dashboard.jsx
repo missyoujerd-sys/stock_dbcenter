@@ -155,7 +155,9 @@ export default function Dashboard() {
         const term = searchTermDist.toLowerCase();
         return (stock.assetId || '').toLowerCase().includes(term) ||
                (stock.serialNumber || '').toLowerCase().includes(term) ||
-               (stock.brandModel || '').toLowerCase().includes(term);
+               (stock.brandModel || '').toLowerCase().includes(term) ||
+               (stock.distributionBox || '').toLowerCase().includes(term) ||
+               (stock.distributionDate || '').toLowerCase().includes(term);
     }).slice(0, 50);
 
     // Keep backward‑compat alias
@@ -666,7 +668,7 @@ export default function Dashboard() {
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
                                 type="text"
-                                placeholder="ค้นหา ครุภัณฑ์ / SN..."
+                                placeholder="ค้นหา ครุภัณฑ์, SN, กล่อง, วันที่..."
                                 value={searchTermDist}
                                 onChange={(e) => setSearchTermDist(e.target.value)}
                                 style={{ padding: '6px 12px 6px 35px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', color: '#f8fafc', outline: 'none', width: '240px', fontSize: '0.9rem', transition: 'all 0.2s ease' }}
