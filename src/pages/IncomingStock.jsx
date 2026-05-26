@@ -24,6 +24,28 @@ const REMARK_OPTIONS = [
     'เครื่องอายุมากไม่มีอะไหล่ขายแล้ว',
     'ซ่อมไม่คุ้มเพราะอะไหล่แพงพอๆกับซื้อเครื่องใหม่',
 ];
+const GlowingAddon = ({ icon: Icon, text, required }) => (
+    <div style={{
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '0 16px',
+        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 50%)',
+        borderRight: '1px solid rgba(56, 189, 248, 0.2)',
+        whiteSpace: 'nowrap',
+        minHeight: '100%'
+    }}>
+        <Icon style={{ color: '#38bdf8', filter: 'drop-shadow(0 0 3px rgba(56,189,248,0.6))', fontSize: '1.1rem' }} />
+        <span style={{ 
+            background: 'linear-gradient(to right, #bae6fd, #e0f2fe)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent', 
+            fontWeight: '500',
+            letterSpacing: '0.5px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}>
+            {text} {required && <span style={{ color: '#ef4444', WebkitTextFillColor: '#ef4444', marginLeft: '4px' }}>*</span>}
+        </span>
+    </div>
+);
 
 export default function IncomingStock() {
     const { currentUser } = useAuth();
@@ -555,11 +577,10 @@ export default function IncomingStock() {
                         <Row className="mb-4">
                             <Col md={6}>
                                 <Form.Group controlId="surveyDate">
-                                    <Form.Label className="inc-label">
-                                        <FaCalendarAlt className="me-2" /> ว/ด/ป สำรวจ
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaCalendarAlt /></span>
+                                    <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        <GlowingAddon icon={FaCalendarAlt} text="ว/ด/ป สำรวจ" />
                                         <div className="flex-grow-1">
                                             <DatePicker
                                                 selected={formData.surveyDate ? new Date(formData.surveyDate) : null}
@@ -610,11 +631,10 @@ export default function IncomingStock() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="category">
-                                    <Form.Label className="inc-label">
-                                        <FaList className="me-2" /> หมวดหมู่ (Category)
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaList /></span>
+                                    <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        <GlowingAddon icon={FaList} text="หมวดหมู่ (Category)" />
                                         <Form.Select
                                             name="category"
                                             value={formData.category}
@@ -643,11 +663,10 @@ export default function IncomingStock() {
                         <Row className="mb-4">
                             <Col md={4}>
                                 <Form.Group controlId="assetId">
-                                    <Form.Label className="inc-label">
-                                        <FaBarcode className="me-2" /> เลขครุภัณฑ์
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaBarcode /></span>
+                                    <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        <GlowingAddon icon={FaBarcode} text="เลขครุภัณฑ์" required />
                                         <Form.Control
                                             type="text"
                                             name="assetId"
@@ -660,22 +679,24 @@ export default function IncomingStock() {
                                     </div>
                                 </Form.Group>
                             </Col>
-                            <Col md={4}>
+                            <Col md={8}>
                                 <Form.Group controlId="brand">
-                                    <Form.Label className="inc-label">
-                                        <FaTag className="me-2" /> ยี่ห้อ / ประเภท
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaTag /></span>
+                                    <div className="inc-input-group" style={{
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                                    >
+                                        <GlowingAddon icon={FaTag} text="ยี่ห้อ / รุ่น / MODEL" />
                                         <input
                                             type="text"
                                             name="brand"
                                             list="brand-suggestions"
                                             value={formData.brand}
                                             onChange={handleChange}
-                                            placeholder="พิมพ์หรือเลือกยี่ห้อ/ประเภท"
+                                            placeholder="พิมพ์ ยี่ห้อ และ รุ่นรวมกัน (เช่น SSD 512GB)"
                                             required
-                                            className="inc-input"
+                                            className="inc-input w-100"
                                             autoComplete="off"
                                         />
                                         <datalist id="brand-suggestions">
@@ -686,34 +707,15 @@ export default function IncomingStock() {
                                     </div>
                                 </Form.Group>
                             </Col>
-                            <Col md={4}>
-                                <Form.Group controlId="model">
-                                    <Form.Label className="inc-label">
-                                        <FaBox className="me-2" /> รุ่น (Model)
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaBox /></span>
-                                        <Form.Control
-                                            type="text"
-                                            name="model"
-                                            value={formData.model}
-                                            onChange={handleChange}
-                                            placeholder="ระบุรุ่น (ถ้ามี)"
-                                            className="inc-input"
-                                        />
-                                    </div>
-                                </Form.Group>
-                            </Col>
                         </Row>
 
                         <Row className="mb-4">
                             <Col md={4}>
                                 <Form.Group controlId="serialNumber">
-                                    <Form.Label className="inc-label">
-                                        <FaBarcode className="me-2" /> S/N (Serial Number)
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon">#</span>
+                                    <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        <GlowingAddon icon={FaBarcode} text="S/N (Serial Number)" />
                                         <Form.Control
                                             type="text"
                                             name="serialNumber"
@@ -727,11 +729,10 @@ export default function IncomingStock() {
                             </Col>
                             <Col md={4}>
                                 <Form.Group controlId="department">
-                                    <Form.Label className="inc-label">
-                                        <FaBuilding className="me-2" /> หน่วยงาน
-                                    </Form.Label>
-                                    <div className="inc-input-group">
-                                        <span className="inc-input-icon"><FaBuilding /></span>
+                                    <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        <GlowingAddon icon={FaBuilding} text="หน่วยงาน" required />
                                         <Form.Control
                                             type="text"
                                             name="department"
@@ -746,16 +747,20 @@ export default function IncomingStock() {
                             </Col>
                             <Col md={4}>
                                 <Form.Group controlId="remarks">
-                                    <Form.Label className="inc-label">
-                                        <FaStickyNote className="me-2" /> หมายเหตุ
-                                        <span style={{ color: '#ef4444', marginLeft: '6px' }}>*</span>
-                                    </Form.Label>
-                                    <div className="inc-input-group" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '6px' }}>
-                                        {/* Dropdown ตัวเลือกสำเร็จรูป */}
-                                        <div style={{ width: '100%' }}>
+                                    <div className="inc-input-group" style={{ 
+                                        alignItems: 'stretch', flexDirection: 'column', gap: '0',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        padding: '0', overflow: 'hidden'
+                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
+                                        {/* Header area with GlowingAddon and Select */}
+                                        <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                                            <GlowingAddon icon={FaStickyNote} text="หมายเหตุ" required />
                                             <Form.Select
                                                 size="sm"
                                                 className={`inc-select${remarkError ? ' border-danger' : ''}`}
+                                                style={{ borderLeft: 'none', borderRadius: '0' }}
                                                 value={REMARK_OPTIONS.includes(formData.remarks) ? formData.remarks : ''}
                                                 onChange={(e) => handleRemarksChange(e.target.value)}
                                             >
@@ -766,8 +771,7 @@ export default function IncomingStock() {
                                             </Form.Select>
                                         </div>
                                         {/* Input พิมพ์เพิ่มเติม */}
-                                        <div className="inc-input-group" style={{ width: '100%', marginBottom: 0 }}>
-                                            <span className="inc-input-icon" style={{ paddingTop: '0.55rem' }}><FaStickyNote /></span>
+                                        <div style={{ display: 'flex', width: '100%' }}>
                                             <Form.Control
                                                 as="textarea"
                                                 rows={2}
