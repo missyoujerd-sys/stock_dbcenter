@@ -47,6 +47,30 @@ const GlowingAddon = ({ icon: Icon, text, required }) => (
     </div>
 );
 
+const GlowingLabel = ({ icon: Icon, text, style }) => (
+    <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
+        padding: '6px 16px',
+        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.05) 50%)',
+        border: '1px solid rgba(56, 189, 248, 0.3)',
+        borderRadius: '20px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.1)',
+        ...style
+    }}>
+        <Icon style={{ color: '#38bdf8', filter: 'drop-shadow(0 0 3px rgba(56,189,248,0.6))', fontSize: '1.1rem' }} />
+        <span style={{ 
+            background: 'linear-gradient(to right, #bae6fd, #e0f2fe)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent', 
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}>
+            {text}
+        </span>
+    </div>
+);
+
 export default function IncomingStock() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -184,7 +208,7 @@ export default function IncomingStock() {
 
     const handleRemarksChange = (value) => {
         // กรองอักขระต้องห้าม: ตัวเลข 0-9, - * / \ .
-        const filtered = value.replace(/[0-9\-\*\/\\\.]/g, '');
+        const filtered = value.replace(/[\-\*\/\\\.]/g, '');
         setFormData(prev => ({ ...prev, remarks: filtered }));
         if (filtered.trim()) setRemarkError(false);
     };
@@ -799,9 +823,7 @@ export default function IncomingStock() {
                         <Row className="mb-3">
                             {/* Photo capture */}
                             <Col md={6}>
-                                <div className="inc-media-label">
-                                    <FaCamera className="me-2" /> เลือกหมวดหมู่ก่อนเสมอและค่อยถ่ายรูปเลขครุภัณฑ์
-                                </div>
+                                <GlowingLabel icon={FaCamera} text="เลือกหมวดหมู่ก่อนเสมอและค่อยถ่ายรูปเลขครุภัณฑ์" style={{ marginBottom: '0.65rem', width: '100%', justifyContent: 'center' }} />
                                 <div
                                     className="inc-photo-box"
                                     onClick={() => !ocrLoading && photoInputRef.current.click()}
@@ -861,9 +883,7 @@ export default function IncomingStock() {
                                     {/* Header */}
                                     <div className="inc-sig-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div className="d-flex align-items-center gap-3">
-                                            <span className="inc-media-label" style={{ width: 'auto', marginBottom: 0 }}>
-                                                <FaSignature className="me-2" />ลายเซ็นเจ้าหน้าที่
-                                            </span>
+                                            <GlowingLabel icon={FaSignature} text="ลายเซ็นเจ้าหน้าที่" style={{ marginBottom: 0 }} />
                                             <button
                                                 type="button"
                                                 className="btn btn-success shadow-sm"
