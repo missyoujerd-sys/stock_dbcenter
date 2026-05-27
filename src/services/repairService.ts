@@ -49,6 +49,14 @@ export const RepairService = {
     }
     return null;
   },
+
+  async getRepairByDocNumber(docNumber: string): Promise<RepairRecord | null> {
+    const repairs = await this.getRepairs();
+    const found = repairs.find(
+      (r) => r.docNumber && r.docNumber.toLowerCase() === docNumber.toLowerCase()
+    );
+    return found || null;
+  },
   
   async deleteRepair(id: string): Promise<void> {
     const repairRef = ref(db, `${REPAIRS_PATH}/${id}`);

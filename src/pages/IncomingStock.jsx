@@ -253,7 +253,7 @@ export default function IncomingStock() {
                 const text = result.data.text;
                 console.log('OCR raw text:', text); // debug
 
-                // ── 1) ดึงเลขครุภัณฑ์ (ตัวเลข + ขีด/สแลช) ──
+                // ── 1) ดึงเลขครุภัณฑ์ (0-9,ตัวเลข + ขีด/สแลช) ──
                 const numMatches = text.match(/\d[\d\-\/]{2,}\d/g);
                 if (numMatches && numMatches.length > 0) {
                     const extracted = numMatches.reduce((a, b) => (b.length > a.length ? b : a));
@@ -265,7 +265,7 @@ export default function IncomingStock() {
 
                 // ── 2) ดึงข้อความภาษาอังกฤษจากรูป → ใส่ช่องยี่ห้อตรงๆ ──
                 const skipWords = new Set([
-                    'NPH', 'NPIL', 'SN', 'NO', 'IN', 'PC', 'OF', 'THE', 'AND', 'FOR',
+                    'NPH','SN', 'NO', 'IN', 'PC', 'OF', 'THE', 'AND', 'FOR',
                     'TYPE', 'MADE', 'MODEL', 'SERIAL', 'NUMBER', 'LABEL',
                     'INPUT', 'OUTPUT', 'CLASS', 'UNIT', 'WATT', 'VOLT',
                 ]);
