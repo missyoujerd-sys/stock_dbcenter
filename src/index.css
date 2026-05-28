@@ -390,6 +390,47 @@ h6 {
   -webkit-overflow-scrolling: touch; 
 }
 
+/* =====================================================
+   Luxury Sidebar Grid Card Nav Hover
+   ===================================================== */
+.nav-grid-card-hover {
+  display: block;
+  text-decoration: none !important;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 0.35s ease;
+  will-change: transform;
+}
+
+.nav-grid-card-hover:hover {
+  transform: translateY(-4px) scale(1.045);
+  filter: brightness(1.04);
+}
+
+.nav-grid-card-hover:active {
+  transform: scale(0.96);
+  transition-duration: 0.12s;
+}
+
+/* Stagger-in keyframe for grid mode */
+@keyframes gridCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.93);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.nav-grid-card-hover {
+  animation: gridCardIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 .table-responsive {
   border-radius: 0.375rem;
 }

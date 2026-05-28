@@ -31,6 +31,8 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [isGridMode, setIsGridMode] = React.useState(false);
+  const [gridVisible, setGridVisible] = React.useState(false);
 
   // -- สำหรับ Password Lock (Admin Inventory) --
   const [showPasswordModal, setShowPasswordModal] = React.useState(false);
@@ -206,78 +208,232 @@ export default function Layout({ children }) {
           </div>
         </div>
 
+        {/* View Toggle Button - Grid / List */}
+        {!isSidebarCollapsed && (
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-[10px] font-black text-purple-400 dark:text-purple-500 uppercase tracking-[0.25em]">
+              {isGridMode ? 'เมนูหลัก' : 'เมนูหลัก'}
+            </span>
+            <button
+              onClick={() => {
+                if (!isGridMode) {
+                  setIsGridMode(true);
+                  setTimeout(() => setGridVisible(true), 50);
+                } else {
+                  setGridVisible(false);
+                  setTimeout(() => setIsGridMode(false), 400);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all duration-300 border cursor-pointer"
+              style={isGridMode
+                ? { background: 'linear-gradient(135deg,#a855f7,#7c3aed)', color: 'white', borderColor: 'transparent', boxShadow: '0 4px 14px rgba(168,85,247,0.4)' }
+                : { background: 'rgba(168,85,247,0.08)', color: '#9333ea', borderColor: 'rgba(168,85,247,0.2)' }
+              }
+              title={isGridMode ? 'สลับเป็น List' : 'สลับเป็น Grid'}
+            >
+              {isGridMode ? (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              )}
+              {isGridMode ? 'List' : 'Grid'}
+            </button>
+          </div>
+        )}
+
         {/* Elite Glass Navigation */}
-        <nav className="space-y-2.5 flex-1 overflow-y-auto sidebar-scrollbar py-2 pr-1 mr-[-4px]">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            const linkContent = (
-              <>
-                {/* Icon Wrapper Circle */}
-                <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
-                  isActive 
-                    ? "bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-500/50 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
-                    : "bg-white/50 dark:bg-slate-800/50 border-purple-200/50 dark:border-slate-600/50 group-hover:bg-white/80 dark:group-hover:bg-slate-700/60 group-hover:border-purple-300 dark:group-hover:border-purple-500/50 group-hover:scale-110"
-                }`}>
-                  {isActive && (
-                    <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
-                  )}
-                  <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
-                    {item.imgSrc ? (
-                      <img src={item.imgSrc} alt={item.name} className="w-7 h-7 object-contain drop-shadow" />
-                    ) : (
-                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+        <nav className={`flex-1 overflow-y-auto sidebar-scrollbar py-2 pr-1 mr-[-4px] ${isGridMode && !isSidebarCollapsed ? '' : 'space-y-2.5'}`}>
+          {/* GRID MODE */}
+          {isGridMode && !isSidebarCollapsed ? (
+            <div
+              className="grid gap-3"
+              style={{
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                opacity: gridVisible ? 1 : 0,
+                transform: gridVisible ? 'translateY(0)' : 'translateY(16px)',
+                transition: 'opacity 400ms cubic-bezier(0.2,0.8,0.2,1), transform 400ms cubic-bezier(0.2,0.8,0.2,1)',
+              }}
+            >
+              {navItems.map((item, idx) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                const cardColors = [
+                  { bg: 'linear-gradient(135deg,#fdf2f8,#fce7f3)', glow: 'rgba(236,72,153,0.18)', icon: 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'rgba(244,114,182,0.25)', text: '#be185d', shine: '#fdf2f8' },
+                  { bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', glow: 'rgba(139,92,246,0.18)', icon: 'linear-gradient(135deg,#a78bfa,#8b5cf6)', border: 'rgba(167,139,250,0.25)', text: '#6d28d9', shine: '#f5f3ff' },
+                  { bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', glow: 'rgba(59,130,246,0.18)', icon: 'linear-gradient(135deg,#60a5fa,#3b82f6)', border: 'rgba(96,165,250,0.25)', text: '#1d4ed8', shine: '#eff6ff' },
+                  { bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', glow: 'rgba(34,197,94,0.18)', icon: 'linear-gradient(135deg,#4ade80,#22c55e)', border: 'rgba(74,222,128,0.25)', text: '#15803d', shine: '#f0fdf4' },
+                  { bg: 'linear-gradient(135deg,#fff7ed,#ffedd5)', glow: 'rgba(249,115,22,0.18)', icon: 'linear-gradient(135deg,#fb923c,#f97316)', border: 'rgba(251,146,60,0.25)', text: '#c2410c', shine: '#fff7ed' },
+                  { bg: 'linear-gradient(135deg,#fefce8,#fef9c3)', glow: 'rgba(234,179,8,0.18)', icon: 'linear-gradient(135deg,#facc15,#eab308)', border: 'rgba(250,204,21,0.25)', text: '#a16207', shine: '#fefce8' },
+                  { bg: 'linear-gradient(135deg,#f0f9ff,#e0f2fe)', glow: 'rgba(14,165,233,0.18)', icon: 'linear-gradient(135deg,#38bdf8,#0ea5e9)', border: 'rgba(56,189,248,0.25)', text: '#0369a1', shine: '#f0f9ff' },
+                  { bg: 'linear-gradient(135deg,#fdf4ff,#fae8ff)', glow: 'rgba(217,70,239,0.18)', icon: 'linear-gradient(135deg,#e879f9,#d946ef)', border: 'rgba(232,121,249,0.25)', text: '#a21caf', shine: '#fdf4ff' },
+                ];
+                const c = cardColors[idx % cardColors.length];
+                const cardContent = (
+                  <div
+                    className="relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl cursor-pointer select-none group/card overflow-hidden"
+                    style={{
+                      background: isActive
+                        ? c.icon
+                        : c.bg,
+                      border: `1.5px solid ${isActive ? 'rgba(255,255,255,0.4)' : c.border}`,
+                      boxShadow: isActive
+                        ? `0 8px 24px ${c.glow}, 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 1px rgba(255,255,255,0.35)`
+                        : `0 4px 14px ${c.glow}, 0 1px 4px rgba(0,0,0,0.06), inset 0 1px 1px rgba(255,255,255,0.7)`,
+                      minHeight: '88px',
+                      animationDelay: `${idx * 60}ms`,
+                      transition: 'all 0.38s cubic-bezier(0.2,0.8,0.2,1)',
+                    }}
+                  >
+                    {/* Shine sweep */}
+                    <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 pointer-events-none"
+                      style={{ background: 'linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.45) 50%,transparent 70%)', transition: 'opacity 0.4s ease', backgroundSize: '200% 100%' }}
+                    />
+                    {/* Active glow ring */}
+                    {isActive && (
+                      <div className="absolute inset-0 rounded-2xl animate-pulse" style={{ boxShadow: `inset 0 0 20px rgba(255,255,255,0.25)` }} />
+                    )}
+                    {/* Lock badge */}
+                    {item.locked && (
+                      <span className="absolute top-1.5 right-1.5 text-[11px] z-10">🔒</span>
+                    )}
+                    {/* Icon */}
+                    <div
+                      className="relative flex items-center justify-center rounded-xl shadow-sm"
+                      style={{
+                        width: '42px', height: '42px',
+                        background: isActive ? 'rgba(255,255,255,0.28)' : c.icon,
+                        boxShadow: `0 4px 12px ${c.glow}`,
+                        transition: 'transform 0.35s cubic-bezier(0.2,0.8,0.2,1)',
+                      }}
+                    >
+                      {item.imgSrc ? (
+                        <img src={item.imgSrc} alt={item.name} className="w-6 h-6 object-contain drop-shadow" />
+                      ) : (
+                        <Icon size={20} className="text-white drop-shadow" strokeWidth={2.2} />
+                      )}
+                    </div>
+                    {/* Label */}
+                    <span
+                      className="text-center leading-tight font-['Prompt'] font-black"
+                      style={{
+                        fontSize: '10.5px',
+                        color: isActive ? 'rgba(255,255,255,0.95)' : c.text,
+                        letterSpacing: '0.01em',
+                        textShadow: isActive ? '0 1px 4px rgba(0,0,0,0.18)' : 'none',
+                        lineHeight: 1.25,
+                        maxWidth: '80px',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {item.name}
+                    </span>
+                    {/* Active underline dot */}
+                    {isActive && (
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        <div className="w-1 h-1 rounded-full bg-white/80"></div>
+                        <div className="w-1.5 h-1 rounded-full bg-white"></div>
+                        <div className="w-1 h-1 rounded-full bg-white/80"></div>
+                      </div>
                     )}
                   </div>
-                  {/* Glass Shine on Circle */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
-                </div>
+                );
+                if (item.locked) {
+                  return (
+                    <a
+                      key={item.path}
+                      href="#"
+                      onClick={handleAdminNavClick}
+                      className="no-underline block nav-grid-card-hover"
+                      style={{ textDecoration: 'none', animationDelay: `${idx * 60}ms` }}
+                    >
+                      {cardContent}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block nav-grid-card-hover"
+                    style={{ textDecoration: 'none', animationDelay: `${idx * 60}ms` }}
+                  >
+                    {cardContent}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            /* LIST MODE */
+            navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              const linkContent = (
+                <>
+                  {/* Icon Wrapper Circle */}
+                  <div className={`relative shrink-0 flex items-center justify-center w-11 h-11 rounded-full transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] border overflow-hidden ${
+                    isActive 
+                      ? "bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-500/50 shadow-[0_4px_15px_rgba(168,85,247,0.3)] scale-105" 
+                      : "bg-white/50 dark:bg-slate-800/50 border-purple-200/50 dark:border-slate-600/50 group-hover:bg-white/80 dark:group-hover:bg-slate-700/60 group-hover:border-purple-300 dark:group-hover:border-purple-500/50 group-hover:scale-110"
+                  }`}>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-blue-500 opacity-20 blur-[8px] animate-pulse"></div>
+                    )}
+                    <div className={`relative z-10 transition-all duration-[600ms] ${isActive ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-slate-500 group-hover:text-blue-300"}`}>
+                      {item.imgSrc ? (
+                        <img src={item.imgSrc} alt={item.name} className="w-7 h-7 object-contain drop-shadow" />
+                      ) : (
+                        <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms]"></div>
+                  </div>
 
-                <div className={`flex flex-col flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
-                  <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap font-['Prompt'] ${isActive ? 'text-purple-700 dark:text-purple-300 translate-x-1' : 'text-slate-700 dark:text-slate-300 group-hover:translate-x-1'} transition-all duration-[300ms]`}>
-                    {item.name}
-                  </span>
-                  {isActive && !isSidebarCollapsed && (
-                    <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                  <div className={`flex flex-col flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
+                    <span className={`font-bold text-[15px] tracking-tight overflow-hidden whitespace-nowrap font-['Prompt'] ${isActive ? 'text-purple-700 dark:text-purple-300 translate-x-1' : 'text-slate-700 dark:text-slate-300 group-hover:translate-x-1'} transition-all duration-[300ms]`}>
+                      {item.name}
+                    </span>
+                    {isActive && !isSidebarCollapsed && (
+                      <div className="h-[2px] w-6 bg-purple-500 rounded-full mt-0.5 animate-in slide-in-from-left-2 duration-[600ms]"></div>
+                    )}
+                  </div>
+                  {item.locked && (
+                    <span className={`text-amber-500 shrink-0 transition-all duration-[300ms] ${isSidebarCollapsed ? 'absolute -top-1 -right-1 text-[12px] bg-white rounded-full w-5 h-5 flex items-center justify-center border border-purple-200 z-20' : 'text-[16px]'}`}>🔒</span>
                   )}
-                </div>
-                {/* Lock icon badge */}
-                {item.locked && (
-                  <span className={`text-amber-500 shrink-0 transition-all duration-[300ms] ${isSidebarCollapsed ? 'absolute -top-1 -right-1 text-[12px] bg-white rounded-full w-5 h-5 flex items-center justify-center border border-purple-200 z-20' : 'text-[16px]'}`}>🔒</span>
-                )}
-              </>
-            );
-            if (item.locked) {
+                </>
+              );
+              if (item.locked) {
+                return (
+                  <a
+                    key={item.path}
+                    href="#"
+                    onClick={handleAdminNavClick}
+                    className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
+                      isActive 
+                        ? "text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
+                        : "text-slate-600 dark:text-slate-400 hover:text-purple-900 dark:hover:text-purple-200 hover:bg-purple-500/5 dark:hover:bg-purple-500/10"
+                    }`}
+                  >
+                    {linkContent}
+                  </a>
+                );
+              }
               return (
-                <a
+                <Link
                   key={item.path}
-                  href="#"
-                  onClick={handleAdminNavClick}
-                  className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] no-underline ${
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                     isActive 
                       ? "text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
                       : "text-slate-600 dark:text-slate-400 hover:text-purple-900 dark:hover:text-purple-200 hover:bg-purple-500/5 dark:hover:bg-purple-500/10"
                   }`}
                 >
                   {linkContent}
-                </a>
+                </Link>
               );
-            }
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-2 mb-2' : 'gap-4 px-4 py-[0.85rem]'} rounded-[1.25rem] transition-all duration-[600ms] group relative ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
-                  isActive 
-                    ? "text-purple-600 dark:text-purple-300 bg-purple-500/10 dark:bg-purple-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]" 
-                    : "text-slate-600 dark:text-slate-400 hover:text-purple-900 dark:hover:text-purple-200 hover:bg-purple-500/5 dark:hover:bg-purple-500/10"
-                }`}
-              >
-                {linkContent}
-              </Link>
-            );
-          })}
+            })
+          )}
         </nav>
 
         {/* Elite Footer Section */}
