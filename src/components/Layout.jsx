@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { db } from "../firebase";
+import { ref, onValue } from "firebase/database";
 import { 
   Box, 
   ClipboardList, 
@@ -39,7 +41,17 @@ export default function Layout({ children }) {
   const [passwordInput, setPasswordInput] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordShake, setPasswordShake] = React.useState(false);
-  const ADMIN_PASSWORD = '101988';
+  const [adminPassword, setAdminPassword] = React.useState('101988');
+
+  React.useEffect(() => {
+    const passRef = ref(db, 'settings/adminPassword');
+    const unsubscribe = onValue(passRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setAdminPassword(snapshot.val());
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleAdminNavClick = (e) => {
     e.preventDefault();
@@ -49,7 +61,7 @@ export default function Layout({ children }) {
   };
 
   const handlePasswordSubmit = () => {
-    if (passwordInput === ADMIN_PASSWORD) {
+    if (passwordInput === adminPassword) {
       setShowPasswordModal(false);
       setPasswordInput('');
       setPasswordError(false);

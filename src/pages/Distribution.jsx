@@ -36,8 +36,9 @@ export default function Distribution() {
     const [editFormData, setEditFormData] = useState({
         assetId: '', brandModel: '', serialNumber: '', department: '', category: '', remarks: ''
     });
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [adminPassword, setAdminPassword] = useState('101988');
     const [isAssetIdUnlocked, setIsAssetIdUnlocked] = useState(false);
-    const ADMIN_PASSWORD = '101988';
     const handleRefresh = () => {
         setIsRefreshing(true);
         setTimeout(() => setIsRefreshing(false), 600);
@@ -58,8 +59,8 @@ export default function Distribution() {
         setShowEditModal(true);
     };
 
-    const handlePasswordSubmit = () => {
-        if (passwordInput === ADMIN_PASSWORD) {
+    const handlePasswordSubmit = async () => {
+        if (passwordInput === adminPassword) {
             setShowPasswordModal(false);
             setPasswordInput('');
             setPasswordError(false);
@@ -132,6 +133,13 @@ export default function Distribution() {
 
 
     useEffect(() => {
+        const passRef = ref(db, 'settings/adminPassword');
+        onValue(passRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setAdminPassword(snapshot.val());
+            }
+        });
+
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();

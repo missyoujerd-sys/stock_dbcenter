@@ -2,6 +2,10 @@
     "rules": {
         ".read": "auth != null",
         ".write": "auth != null",
+        "users_status": {
+            ".read": true,
+            ".write": true
+        },
         "stocks": {
             ".indexOn": [
                 "status"

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -13,11 +13,30 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     function login(email, password) {
+        const env = import.meta.env;
+        const adminEmails = [
+            env.VITE_ADMIN_EMAIL1, env.VITE_ADMIN_EMAIL2, env.VITE_ADMIN_EMAIL3, 
+            env.VITE_ADMIN_EMAIL4, env.VITE_ADMIN_EMAIL5, env.VITE_ADMIN_EMAIL6, 
+            env.VITE_ADMIN_EMAIL7, env.VITE_ADMIN_EMAIL8, env.VITE_ADMIN_EMAIL9, 
+            env.VITE_ADMIN_EMAIL10
+        ];
+        
+        const lowerEmail = email.toLowerCase();
+        const isAdm = adminEmails.some(adm => adm && lowerEmail === adm.toLowerCase());
+        
+        if (!isAdm) {
+            return Promise.reject(new Error("ท่านไม่มีชื่อในระบบ"));
+        }
+        
         return signInWithEmailAndPassword(auth, email, password);
     }
 
     function logout() {
         return signOut(auth);
+    }
+
+    function resetPassword(email) {
+        return sendPasswordResetEmail(auth, email);
     }
 
     const [isAdmin, setIsAdmin] = useState(false);
@@ -63,7 +82,8 @@ export function AuthProvider({ children }) {
         isAdmin,
         isAdmin_2,
         login,
-        logout
+        logout,
+        resetPassword
     };
 
     return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { ref, onValue, remove, update } from 'firebase/database';
-import { Table, Card, Row, Col, Badge, Button, Form } from 'react-bootstrap';
+import { ref, onValue, remove, update, set } from 'firebase/database';
+import { Table, Card, Row, Col, Badge, Button, Form, Modal } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
 import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash, FaUndo, FaPrint, FaSync } from 'react-icons/fa';
 import * as ExcelJS from 'exceljs';
@@ -16,7 +16,7 @@ export default function Inventory() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
-    const { currentUser, isAdmin, isAdmin_2 } = useAuth();
+    const { currentUser, isAdmin, isAdmin_2, resetPassword } = useAuth();
     const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -24,7 +24,15 @@ export default function Inventory() {
     const [passwordError, setPasswordError] = useState(false);
     const [passwordShake, setPasswordShake] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const ADMIN_PASSWORD = '101988';
+    const [adminPassword, setAdminPassword] = useState('101988');
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [changePasswordError, setChangePasswordError] = useState('');
+    const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
+    
+    const [usersStatusList, setUsersStatusList] = useState([]);
+    const [showUserManageModal, setShowUserManageModal] = useState(false);
 
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -34,6 +42,27 @@ export default function Inventory() {
     };
 
     useEffect(() => {
+        const passRef = ref(db, 'settings/adminPassword');
+        onValue(passRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setAdminPassword(snapshot.val());
+            }
+        });
+
+        const usersStatusRef = ref(db, 'users_status');
+        onValue(usersStatusRef, (snapshot) => {
+            const data = snapshot.val();
+            const list = [];
+            if (data) {
+                for (const key in data) {
+                    if (data[key].locked || data[key].resetRequested) {
+                        list.push({ key, ...data[key] });
+                    }
+                }
+            }
+            setUsersStatusList(list);
+        });
+
         const stocksRef = ref(db, 'stocks');
         const unsubscribe = onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();
@@ -120,7 +149,7 @@ export default function Inventory() {
     };
 
     const handlePasswordSubmit = async () => {
-        if (passwordInput === ADMIN_PASSWORD) {
+        if (passwordInput === adminPassword) {
             setShowPasswordModal(false);
             setPasswordInput('');
             setPasswordError(false);
@@ -300,6 +329,35 @@ export default function Inventory() {
                             letterSpacing: '0.02em',
                         }}>🔐 สำหรับผู้ดูแลระบบ</span>
                     </div>
+                    {(isAdmin || isAdmin_2) && (
+                        <>
+                            <button 
+                                className="btn btn-sm btn-outline-danger position-relative" 
+                                style={{ marginLeft: '10px', borderRadius: '10px', fontWeight: 'bold' }}
+                                onClick={() => setShowUserManageModal(true)}
+                            >
+                                👥 คำขอปลดล็อก User
+                                {usersStatusList.length > 0 && (
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {usersStatusList.length}
+                                    </span>
+                                )}
+                            </button>
+                            <button 
+                                className="btn btn-sm btn-outline-danger" 
+                                style={{ marginLeft: '10px', borderRadius: '10px', fontWeight: 'bold' }}
+                                onClick={() => {
+                                    setNewPassword('');
+                                    setConfirmPassword('');
+                                    setChangePasswordError('');
+                                    setChangePasswordSuccess(false);
+                                    setShowChangePasswordModal(true);
+                                }}
+                            >
+                                <FaTrash style={{ display: 'none' }} /> เปลี่ยนรหัสผ่านคลัง
+                            </button>
+                        </>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
                         <button className="btn-glossy-refresh" onClick={handleRefresh} title="รีเฟรชข้อมูล">
                             <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
@@ -435,6 +493,131 @@ export default function Inventory() {
                     <FaHome className="me-2" /> กลับเมนูหลัก
                 </Button>
             </div>
+
+            {/* Change Password Modal */}
+            {showChangePasswordModal && (
+                <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-t-3xl"></div>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center mb-4 shadow-inner">
+                                <span className="text-3xl">🔑</span>
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-1">เปลี่ยนรหัสผ่านคลัง</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-['Prompt'] mb-4">สำหรับปลดล็อกและลบข้อมูล</p>
+                            
+                            {changePasswordSuccess ? (
+                                <div className="text-green-500 font-bold mb-4 font-['Prompt']">✅ เปลี่ยนรหัสผ่านสำเร็จ!</div>
+                            ) : (
+                                <>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        placeholder="รหัสผ่านใหม่"
+                                        className="w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-3 focus:border-purple-400"
+                                    />
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="ยืนยันรหัสผ่านใหม่"
+                                        className="w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-2 focus:border-purple-400"
+                                    />
+                                    {changePasswordError && (
+                                        <p className="text-red-500 text-sm font-bold font-['Prompt'] mb-2">{changePasswordError}</p>
+                                    )}
+                                </>
+                            )}
+
+                            <div className="flex gap-3 w-full mt-4">
+                                <button
+                                    onClick={() => setShowChangePasswordModal(false)}
+                                    className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors font-['Prompt']"
+                                >
+                                    ปิด
+                                </button>
+                                {!changePasswordSuccess && (
+                                    <button
+                                        onClick={async () => {
+                                            if (!newPassword || newPassword !== confirmPassword) {
+                                                setChangePasswordError('รหัสผ่านไม่ตรงกัน หรือยังไม่ได้ระบุ');
+                                                return;
+                                            }
+                                            try {
+                                                await set(ref(db, 'settings/adminPassword'), newPassword);
+                                                setChangePasswordSuccess(true);
+                                            } catch (err) {
+                                                setChangePasswordError('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+                                            }
+                                        }}
+                                        className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold shadow-lg shadow-purple-500/30 transition-all active:scale-95 font-['Prompt']"
+                                    >
+                                        บันทึก
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Manage Modal */}
+            <Modal show={showUserManageModal} onHide={() => setShowUserManageModal(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ background: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Modal.Title style={{ color: 'white', fontFamily: 'Prompt, sans-serif' }}>จัดการคำขอปลดล็อก User</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ background: '#f8fafc', padding: '1.5rem' }}>
+                    {usersStatusList.length === 0 ? (
+                        <div className="text-center py-5 text-muted">
+                            <h5>ไม่มีคำขอปลดล็อกในขณะนี้</h5>
+                        </div>
+                    ) : (
+                        <Table responsive hover className="shadow-sm bg-white rounded-3 overflow-hidden">
+                            <thead className="table-light">
+                                <tr>
+                                    <th className="font-['Prompt']">อีเมล/Username</th>
+                                    <th className="font-['Prompt'] text-center">สถานะ</th>
+                                    <th className="font-['Prompt'] text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {usersStatusList.map((user) => (
+                                    <tr key={user.key} className="align-middle">
+                                        <td className="font-mono fw-bold text-primary">{user.email || user.key.replace(',', '.')}</td>
+                                        <td className="text-center">
+                                            {user.locked && <Badge bg="danger" className="me-1">ถูกระงับ</Badge>}
+                                            {user.resetRequested && <Badge bg="warning" text="dark">ขอรีเซ็ตรหัสผ่าน</Badge>}
+                                        </td>
+                                        <td className="text-center">
+                                            <Button 
+                                                variant="success" 
+                                                size="sm" 
+                                                className="rounded-pill px-3 font-['Prompt']"
+                                                onClick={async () => {
+                                                    try {
+                                                        const emailToReset = user.email || user.key.replace(',', '.');
+                                                        await resetPassword(emailToReset);
+                                                        await remove(ref(db, `users_status/${user.key}`));
+                                                        alert('ส่งอีเมลรีเซ็ตรหัสผ่านและปลดล็อกเรียบร้อยแล้ว');
+                                                    } catch (error) {
+                                                        console.error(error);
+                                                        alert('เกิดข้อผิดพลาด หรืออีเมลไม่มีอยู่ในระบบ');
+                                                        // Even if email fails, unlock them so they can try again
+                                                        await remove(ref(db, `users_status/${user.key}`));
+                                                    }
+                                                }}
+                                            >
+                                                ปลดล็อก & ส่งลิงก์รีเซ็ต
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    )}
+                </Modal.Body>
+            </Modal>
 
             {/* -------------------- Password Lock Modal -------------------- */}
             {showPasswordModal && (
