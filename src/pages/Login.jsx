@@ -115,10 +115,13 @@ export default function Login() {
         <div className="login-page">
             {/* Dimensional Background Text */}
             <div className="login-bg-text" aria-hidden="true">
-                <span className="login-bg-word login-bg-word--2">NKP</span>
+                <span className="login-bg-word login-bg-word--left">NKP</span>
+                <span className="login-bg-word login-bg-word--right">NKP</span>
            </div>
 
             <div className="login-card">
+                <div className="mourning-sash-left"></div>
+                <div className="mourning-sash-right"></div>
                 <h4 className="login-title">ระบบจัดการ Stock</h4>
                 <h4 className="login-subtitle"> ห้องซ่อมบำรุงคอมพิวเตอร์ </h4>
 
@@ -179,7 +182,7 @@ export default function Login() {
                                 setShowForgotModal(true);
                             }}
                             style={{
-                                flex: 1.5,
+                                flex: 1,
                                 borderRadius: '12px',
                                 border: '2px solid rgba(181, 216, 161, 0.88)',
                                 color: '#131644ff',
@@ -187,15 +190,15 @@ export default function Login() {
                                 fontSize: '1.2rem',
                                 padding: '1rem',
                                 transition: 'all 0.5s ease',
-                                background: 'rgba(153, 209, 22, 0.7)',
+                                background: 'rgba(54, 90, 104, 0.7)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px'
                             }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(153, 209, 22, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(219, 21, 153, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(76, 82, 65, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
                             ลืมรหัสผ่าน
                         </Button>

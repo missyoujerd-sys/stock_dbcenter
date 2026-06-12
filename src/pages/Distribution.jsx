@@ -787,26 +787,7 @@ export default function Distribution() {
                         <span className="latest-panel-title">รายการพัสดุรอจำหน่าย</span>
                         <span className="latest-panel-badge" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.4)' }}>งานซ่อมบำรุงคอมพิวเตอร์</span>
                     </div>
-                    {/* ── ป้ายกลาง ── */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '6px 18px',
-                        borderRadius: '10px',
-                        background: 'rgba(239, 68, 68, 0.12)',
-                        border: '1.5px solid rgba(239, 68, 68, 0.3)',
-                        marginLeft: '8px',
-                    }}>
-                        <span style={{
-                            fontSize: '0.9rem',
-                            fontWeight: 700,
-                            color: '#f87171',
-                            fontFamily: 'Prompt, sans-serif',
-                            whiteSpace: 'nowrap',
-                            letterSpacing: '0.02em',
-                        }}>🖨️ เลือกครุภัณฑ์จำหน่ายลงกล่อง</span>
-                    </div>
+                    
                     <div className="d-flex align-items-center gap-3">
                         <button className="btn-glossy-refresh" onClick={handleRefresh} title="รีเฟรชข้อมูล">
                             <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
