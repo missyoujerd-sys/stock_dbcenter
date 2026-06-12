@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
@@ -466,7 +466,7 @@ export default function Dashboard() {
             </div>
 
             <Row className="g-4 mt-2">
-                <Col xl={6} className="d-flex flex-column">
+                <Col xs={12} className="d-flex flex-column">
                     {/* ══ TABLE 1: รับเข้า ══ */}
                     <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
@@ -597,7 +597,7 @@ export default function Dashboard() {
             </div>
                 </Col>
 
-                <Col xl={6} className="d-flex flex-column">
+                <Col xs={12} className="d-flex flex-column">
                     {/* ══ TABLE 2: จำหน่าย ══ */}
                     <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
@@ -701,6 +701,7 @@ export default function Dashboard() {
                                 <th>วันที่จำหน่าย</th>
                                 <th>หมายเลขครุภัณฑ์</th>
                                 <th>ยี่ห้อ / รุ่น</th>
+                                <th>รูปแบบ</th>
                                 <th>หน่วยงาน</th>
                                 <th>สถานะ</th>
                             </tr>
@@ -734,13 +735,51 @@ export default function Dashboard() {
                                     <td className="latest-brand">
                                         {stock.distributionBox && (
                                             <span className="badge bg-success rounded-pill px-2 py-1 shadow-sm d-inline-flex align-items-center justify-content-center mb-1" style={{ gap: '4px', fontSize: '0.70rem' }}>
-                                                <FaBox size={10} /> {stock.distributionBox}
+                                                {stock.distributionIcon === 'truck' ? <FaTruck size={10} /> : <FaBox size={10} />} {stock.distributionBox}
                                             </span>
                                         )}
                                         <div style={{ marginTop: stock.distributionBox ? '2px' : '0' }}>{stock.brandModel}</div>
                                     </td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <select
+                                            className="form-select form-select-sm"
+                                            style={{
+                                                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                                                color: '#f8fafc',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '8px',
+                                                width: '60px',
+                                                cursor: 'pointer',
+                                                fontSize: '1rem',
+                                                appearance: 'none',
+                                                textAlign: 'center',
+                                                paddingLeft: '0.5rem',
+                                                paddingRight: '0.5rem'
+                                            }}
+                                            value={stock.distributionIcon || 'box'}
+                                            onChange={(e) => {
+                                                e.stopPropagation();
+                                                const stockRef = ref(db, `stocks/${stock.id}`);
+                                                update(stockRef, { distributionIcon: e.target.value });
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <option value="box">📦</option>
+                                            <option value="truck">🚚</option>
+                                        </select>
+                                    </td>
                                     <td className="latest-dept">{stock.department}</td>
-                                    <td><span className="latest-status latest-status--out">จำหน่าย</span></td>
+                                    <td>
+                                        <span 
+                                            className="latest-status"
+                                            style={stock.distributionIcon === 'truck' 
+                                                ? { background: 'rgba(234, 179, 8, 0.15)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.4)' } 
+                                                : { background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }
+                                            }
+                                        >
+                                            {stock.distributionIcon === 'truck' ? 'รอการเคลื่อนย้าย' : 'จำหน่ายไปแล้ว'}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

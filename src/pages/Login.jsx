@@ -154,7 +154,7 @@ export default function Login() {
                                 transform: 'translateY(-50%)',
                                 background: 'transparent',
                                 border: 'none',
-                                color: 'rgba(255, 255, 255, 0.7)',
+                                color: 'rgba(226, 205, 18, 0.7)',
                                 cursor: 'pointer',
                                 padding: 0,
                                 display: 'flex',
@@ -179,23 +179,23 @@ export default function Login() {
                                 setShowForgotModal(true);
                             }}
                             style={{
-                                flex: 1,
+                                flex: 1.5,
                                 borderRadius: '12px',
-                                border: '2px solid rgba(255,255,255,0.2)',
-                                color: 'white',
+                                border: '2px solid rgba(181, 216, 161, 0.88)',
+                                color: '#131644ff',
                                 fontWeight: '700',
                                 fontSize: '1.2rem',
                                 padding: '1rem',
-                                transition: 'all 0.3s ease',
-                                background: 'rgba(255,255,255,0.05)',
+                                transition: 'all 0.5s ease',
+                                background: 'rgba(153, 209, 22, 0.7)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px'
                             }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(153, 209, 22, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
                             ลืมรหัสผ่าน
                         </Button>
