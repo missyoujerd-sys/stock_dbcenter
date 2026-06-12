@@ -476,9 +476,9 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
-                    gap: '15px', minHeight: '80px',
-                    background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.25) 0%, rgba(202, 138, 4, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
+                    gap: '15px', minHeight: '130px',
+                    background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
                     borderBottom: '1px solid rgba(234, 179, 8, 0.2)',
                     boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
                     borderRadius: '0.75rem 0.75rem 0 0'
@@ -503,12 +503,12 @@ export default function Dashboard() {
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#5bc216ff',
+                                color: '#fef08a',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                            }}>📦 ครุภัณฑ์รับเข้า</span>
+                            }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
                         </div>
                         {selectedStocks.length > 0 && (
                             <div style={{ marginLeft: 'auto' }}>
@@ -518,7 +518,7 @@ export default function Dashboard() {
                             </div>
                         )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -538,8 +538,8 @@ export default function Dashboard() {
                     </div>
                 </div>
                 <div className="latest-table-wrap">
-                    <table className="latest-table w-100">
-                        <thead style={{ background: 'linear-gradient(90deg, #1e293b 0%, #0f172a 100%)', borderBottom: '2px solid #334155' }}>
+                    <table className="latest-table">
+                        <thead>
                             <tr>
                                 <th style={{ width: '90px', textAlign: 'center' }}>
                                     <div className="d-flex flex-column align-items-center justify-content-center gap-1">
@@ -553,14 +553,14 @@ export default function Dashboard() {
                                         <span style={{ fontSize: '0.85rem' }}>ลำดับ</span>
                                     </div>
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>วันที่</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>หมายเลขครุภัณฑ์</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>ยี่ห้อ / รุ่น</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>หน่วยงาน</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>สถานะ</th>
+                                <th>วันที่</th>
+                                <th>หมายเลขครุภัณฑ์</th>
+                                <th>ยี่ห้อ / รุ่น</th>
+                                <th>หน่วยงาน</th>
+                                <th>สถานะ</th>
                             </tr>
                         </thead>
-                        <tbody style={{ textAlign: 'right' }}>
+                        <tbody>
                             {loading || isRefreshing ? (
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredIncoming.length === 0 ? (
@@ -607,9 +607,9 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
-                    gap: '15px', minHeight: '80px',
-                    background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.25) 0%, rgba(234, 88, 12, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
+                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
+                    gap: '15px', minHeight: '130px',
+                    background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 88, 12, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
                     borderBottom: '1px solid rgba(249, 115, 22, 0.2)',
                     boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
                     borderRadius: '0.75rem 0.75rem 0 0'
@@ -663,7 +663,7 @@ export default function Dashboard() {
                             </div>
                         )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
@@ -683,8 +683,8 @@ export default function Dashboard() {
                     </div>
                 </div>
                 <div className="latest-table-wrap">
-                    <table className="latest-table w-100">
-                        <thead style={{ background: 'linear-gradient(90deg, #1e293b 0%, #0f172a 100%)', borderBottom: '2px solid #334155' }}>
+                    <table className="latest-table">
+                        <thead>
                             <tr>
                                 <th style={{ width: '90px', textAlign: 'center' }}>
                                     <div className="d-flex flex-column align-items-center justify-content-center gap-1">
@@ -698,15 +698,15 @@ export default function Dashboard() {
                                         <span style={{ fontSize: '0.85rem' }}>ลำดับ</span>
                                     </div>
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>วันที่จำหน่าย</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>หมายเลขครุภัณฑ์</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>ยี่ห้อ / รุ่น</th>
-                                <th style={{ textAlign: 'center', padding: '12px 15px', color: '#e2e8f0' }}>รูปแบบ</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>หน่วยงาน</th>
-                                <th style={{ textAlign: 'right', padding: '12px 15px', color: '#e2e8f0' }}>สถานะ</th>
+                                <th>วันที่จำหน่าย</th>
+                                <th>หมายเลขครุภัณฑ์</th>
+                                <th>ยี่ห้อ / รุ่น</th>
+                                <th>รูปแบบ</th>
+                                <th>หน่วยงาน</th>
+                                <th>สถานะ</th>
                             </tr>
                         </thead>
-                        <tbody style={{ textAlign: 'right' }}>
+                        <tbody>
                             {loading || isRefreshingDist ? (
                                 <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredDistributed.length === 0 ? (

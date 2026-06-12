@@ -72,7 +72,7 @@ body {
 }
 
 .login-page {
-  background: radial-gradient(circle at 0% 0%, #1a1a1a 0%, #000000 100%);
+  background: radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -106,75 +106,34 @@ body {
   animation-direction: alternate;
 }
 
-/* Word - "NKP" Left */
-.login-bg-word--left {
-  font-size: clamp(100px, 20vw, 250px);
-  top: 50%;
-  left: 5%;
-  transform: translateY(-50%) rotate(-5deg);
-  color: rgba(255, 255, 255, 0.08);
-  font-family: 'Prompt', sans-serif;
-  text-shadow: 0 0 20px rgba(255,255,255,0.05);
+/* Word 1 — "STOCK" (huge, top-left, outline only) */
+.login-bg-word--1 {
+  font-size: clamp(100px, 18vw, 220px);
+  top: -4%;
+  left: -6%;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
+  transform: rotate(-8deg);
+  animation-name: float-1;
+  animation-duration: 12s;
 }
 
-/* Word - "NKP" Right */
-.login-bg-word--right {
-  font-size: clamp(100px, 20vw, 250px);
-  top: 50%;
-  right: 5%;
-  transform: translateY(-50%) rotate(5deg);
-  color: rgba(255, 255, 255, 0.08);
-  font-family: 'Prompt', sans-serif;
-  text-shadow: 0 0 20px rgba(255,255,255,0.05);
-}
-
-/* Mourning Sash */
-.mourning-sash-left {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  z-index: 10;
-  border-radius: 32px 0 0 0;
-}
-.mourning-sash-left::before {
-  content: "";
-  position: absolute;
-  top: 15px;
-  left: -40px;
-  width: 160px;
-  height: 25px;
-  background-color: #050505;
-  transform: rotate(-45deg);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.mourning-sash-right {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  z-index: 10;
-  border-radius: 0 32px 0 0;
-}
-.mourning-sash-right::before {
-  content: "";
-  position: absolute;
-  top: 15px;
-  right: -40px;
-  width: 160px;
-  height: 25px;
-  background-color: #050505;
-  transform: rotate(45deg);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  border-top: 1px solid rgba(255,255,255,0.05);
+/* Word 2 — "SYSTEM" */
+.login-bg-word--2 {
+  font-size: clamp(70px, 11vw, 150px);
+  top: 30%;
+  right: -5%;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: rotate(4deg);
+  animation-name: float-2;
+  animation-duration: 15s;
 }
 
 .login-card {

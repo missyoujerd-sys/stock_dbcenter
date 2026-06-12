@@ -163,13 +163,13 @@ export default function Layout({ children }) {
   ];
 
   const SidebarContent = () => (
-    <div className={`flex flex-col h-full bg-[#050505] dark:bg-[#000000] text-slate-200 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-slate-800 dark:border-slate-800 select-none w-full shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
+    <div className={`flex flex-col h-full bg-[#f3e8ff] dark:bg-[#0d1117] text-slate-800 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-purple-200 dark:border-slate-700/60 select-none w-full shadow-[30px_0_70px_rgba(147,51,234,0.15)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.5)]`}>
       {/* Moving Glass Shine Effect */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
+      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
-      {/* Elite Atmospheric Lighting (Grayscale for mourning) */}
-      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-white/[0.03] dark:bg-white/[0.03] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
-      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-white/[0.02] dark:bg-white/[0.02] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      {/* Elite Atmospheric Lighting */}
+      <div className="absolute top-[-10%] right-[-15%] w-[120%] h-[40%] bg-purple-400/[0.15] dark:bg-blue-500/[0.08] blur-[140px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
+      <div className="absolute bottom-[-10%] left-[-15%] w-[100%] h-[30%] bg-fuchsia-400/[0.15] dark:bg-indigo-500/[0.08] blur-[120px] rounded-full pointer-events-none transition-colors duration-[1000ms]"></div>
       
       {/* Micro-light Edge */}
       <div className="absolute right-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent opacity-[0.25]"></div>

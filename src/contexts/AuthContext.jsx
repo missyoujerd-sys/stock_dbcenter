@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -28,8 +28,7 @@ export function AuthProvider({ children }) {
             return Promise.reject(new Error("ท่านไม่มีชื่อในระบบ"));
         }
         
-        return setPersistence(auth, browserSessionPersistence)
-            .then(() => signInWithEmailAndPassword(auth, email, password));
+        return signInWithEmailAndPassword(auth, email, password);
     }
 
     function logout() {
