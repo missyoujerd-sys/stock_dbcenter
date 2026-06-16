@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
-import { Table, Card, Row, Col, Badge, Button } from 'react-bootstrap';
+import { Table, Card, Row, Col, Badge, Button, Modal } from 'react-bootstrap';
 import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
     FaWarehouse, FaBox, FaCheckCircle,
-    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint, FaFileExcel, FaTruck, FaSync
+    FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint, FaFileExcel, FaTruck, FaSync, FaLock, FaExclamationTriangle
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
 import MultiPrintModal from '../components/MultiPrintModal';
@@ -18,6 +19,7 @@ import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 export default function Dashboard() {
+    const { isAdmin } = useAuth();
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -30,6 +32,10 @@ export default function Dashboard() {
     const [showDistPrintModal, setShowDistPrintModal] = useState(false);
     const [selectedDistributed, setSelectedDistributed] = useState([]);
 
+    // Confirm icon change modal
+    const [showIconConfirm, setShowIconConfirm] = useState(false);
+    const [pendingIconChange, setPendingIconChange] = useState(null); // { stockId, newValue, oldValue }
+
     const [summary, setSummary] = useState({
         total: 0,
         available: 0,
@@ -39,6 +45,33 @@ export default function Dashboard() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isRefreshingDist, setIsRefreshingDist] = useState(false);
+
+    // Handler for icon change with admin check + confirm
+    const handleIconChangeRequest = (e, stock) => {
+        e.stopPropagation();
+        const newValue = e.target.value;
+        if (!isAdmin) {
+            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+            // Reset select back
+            e.target.value = stock.distributionIcon || 'box';
+            return;
+        }
+        setPendingIconChange({ stockId: stock.id, newValue, oldValue: stock.distributionIcon || 'box', stock });
+        setShowIconConfirm(true);
+    };
+
+    const handleIconConfirm = () => {
+        if (!pendingIconChange) return;
+        const stockRef = ref(db, `stocks/${pendingIconChange.stockId}`);
+        update(stockRef, { distributionIcon: pendingIconChange.newValue });
+        setShowIconConfirm(false);
+        setPendingIconChange(null);
+    };
+
+    const handleIconCancel = () => {
+        setShowIconConfirm(false);
+        setPendingIconChange(null);
+    };
 
     const handleRefreshIncoming = () => {
         setIsRefreshing(true);
@@ -466,7 +499,7 @@ export default function Dashboard() {
             </div>
 
             <Row className="g-4 mt-2">
-                <Col xs={12} className="d-flex flex-column">
+                <Col xs={12} className="d-flex flex-column">   
                     {/* ══ TABLE 1: รับเข้า ══ */}
                     <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
@@ -476,12 +509,9 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
-                    gap: '15px', minHeight: '130px',
-                    background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
-                    borderBottom: '1px solid rgba(234, 179, 8, 0.2)',
-                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
-                    borderRadius: '0.75rem 0.75rem 0 0'
+                  <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
+                    gap: '15px', minHeight: '80px',
+                    background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.25) 0%, rgba(202, 138, 4, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
                 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
@@ -503,12 +533,12 @@ export default function Dashboard() {
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#fef08a',
+                                color: '#5bc216ff',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                            }}>📦 ครุภัณฑ์เตรียมแพ็คลงกล่อง</span>
+                            }}>📦 ครุภัณฑ์รับเข้า</span>
                         </div>
                         {selectedStocks.length > 0 && (
                             <div style={{ marginLeft: 'auto' }}>
@@ -553,11 +583,11 @@ export default function Dashboard() {
                                         <span style={{ fontSize: '0.85rem' }}>ลำดับ</span>
                                     </div>
                                 </th>
-                                <th>วันที่</th>
-                                <th>หมายเลขครุภัณฑ์</th>
-                                <th>ยี่ห้อ / รุ่น</th>
-                                <th>หน่วยงาน</th>
-                                <th>สถานะ</th>
+                                <th style={{ textAlign: 'center' }}>วันที่</th>
+                                <th style={{ textAlign: 'center' }}>หมายเลขครุภัณฑ์</th>
+                                <th style={{ textAlign: 'center' }}>ยี่ห้อ / รุ่น</th>
+                                <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
+                                <th style={{ textAlign: 'center' }}>สถานะ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -579,16 +609,16 @@ export default function Dashboard() {
                                             <span>{idx + 1}</span>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td style={{ textAlign: 'center' }}>
                                         <div className="latest-date">{stock.importDate}</div>
                                         {stock.timestamp && (
                                             <div className="latest-time">{new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.</div>
                                         )}
                                     </td>
-                                    <td className="latest-asset-id">{stock.assetId || '—'}</td>
-                                    <td className="latest-brand">{stock.brandModel}</td>
-                                    <td className="latest-dept">{stock.department}</td>
-                                    <td><span className="latest-status latest-status--in">รับเข้า</span></td>
+                                    <td className="latest-asset-id" style={{ textAlign: 'center' }}>{stock.assetId || '—'}</td>
+                                    <td className="latest-brand" style={{ textAlign: 'center' }}>{stock.brandModel}</td>
+                                    <td className="latest-dept" style={{ textAlign: 'center' }}>{stock.department}</td>
+                                    <td style={{ textAlign: 'center' }}><span className="latest-status latest-status--in">รับเข้า</span></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -597,7 +627,7 @@ export default function Dashboard() {
             </div>
                 </Col>
 
-                <Col xs={12} className="d-flex flex-column">
+                 <Col xs={12} className="d-flex flex-column">
                     {/* ══ TABLE 2: จำหน่าย ══ */}
                     <div className="section-header-container mt-0">
                 <div className="section-accent"></div>
@@ -607,12 +637,9 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-column justify-content-between" style={{ 
-                    gap: '15px', minHeight: '130px',
-                    background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 88, 12, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%)',
-                    borderBottom: '1px solid rgba(249, 115, 22, 0.2)',
-                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 15px rgba(0, 0, 0, 0.2)',
-                    borderRadius: '0.75rem 0.75rem 0 0'
+                <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
+                    gap: '15px', minHeight: '80px',
+                    background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.25) 0%, rgba(234, 88, 12, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
                 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                         <div className="latest-panel-title-wrap">
@@ -664,7 +691,7 @@ export default function Dashboard() {
                         )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
-                        <div style={{ position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
                                 type="text"
@@ -698,12 +725,12 @@ export default function Dashboard() {
                                         <span style={{ fontSize: '0.85rem' }}>ลำดับ</span>
                                     </div>
                                 </th>
-                                <th>วันที่จำหน่าย</th>
-                                <th>หมายเลขครุภัณฑ์</th>
-                                <th>ยี่ห้อ / รุ่น</th>
-                                <th>รูปแบบ</th>
-                                <th>หน่วยงาน</th>
-                                <th>สถานะ</th>
+                                <th style={{ textAlign: 'center' }}>วันที่จำหน่าย</th>
+                                <th style={{ textAlign: 'center' }}>หมายเลขครุภัณฑ์</th>
+                                <th style={{ textAlign: 'center' }}>ยี่ห้อ / รุ่น</th>
+                                <th style={{ textAlign: 'center' }}>รูปแบบ</th>
+                                <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
+                                <th style={{ textAlign: 'center' }}>สถานะ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -725,14 +752,14 @@ export default function Dashboard() {
                                             <span>{idx + 1}</span>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td style={{ textAlign: 'center' }}>
                                         <div className="latest-date">{stock.distributionDate || stock.importDate}</div>
                                         {stock.timestamp && (
                                             <div className="latest-time">{new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.</div>
                                         )}
                                     </td>
-                                    <td className="latest-asset-id">{stock.assetId || '—'}</td>
-                                    <td className="latest-brand">
+                                    <td className="latest-asset-id" style={{ textAlign: 'center' }}>{stock.assetId || '—'}</td>
+                                    <td className="latest-brand" style={{ textAlign: 'center' }}>
                                         {stock.distributionBox && (
                                             <span className="badge bg-success rounded-pill px-2 py-1 shadow-sm d-inline-flex align-items-center justify-content-center mb-1" style={{ gap: '4px', fontSize: '0.70rem' }}>
                                                 {stock.distributionIcon === 'truck' ? <FaTruck size={10} /> : <FaBox size={10} />} {stock.distributionBox}
@@ -741,35 +768,37 @@ export default function Dashboard() {
                                         <div style={{ marginTop: stock.distributionBox ? '2px' : '0' }}>{stock.brandModel}</div>
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
-                                        <select
-                                            className="form-select form-select-sm"
-                                            style={{
-                                                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                                                color: '#f8fafc',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                borderRadius: '8px',
-                                                width: '60px',
-                                                cursor: 'pointer',
-                                                fontSize: '1rem',
-                                                appearance: 'none',
-                                                textAlign: 'center',
-                                                paddingLeft: '0.5rem',
-                                                paddingRight: '0.5rem'
-                                            }}
-                                            value={stock.distributionIcon || 'box'}
-                                            onChange={(e) => {
-                                                e.stopPropagation();
-                                                const stockRef = ref(db, `stocks/${stock.id}`);
-                                                update(stockRef, { distributionIcon: e.target.value });
-                                            }}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <option value="box">📦</option>
-                                            <option value="truck">🚚</option>
-                                        </select>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            {!isAdmin && (
+                                                <FaLock size={10} style={{ color: '#f87171', flexShrink: 0 }} title="เฉพาะ Admin" />
+                                            )}
+                                            <select
+                                                className="form-select form-select-sm"
+                                                style={{
+                                                    backgroundColor: isAdmin ? 'rgba(15, 23, 42, 0.6)' : 'rgba(30,30,50,0.5)',
+                                                    color: '#f8fafc',
+                                                    border: isAdmin ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(248,113,113,0.3)',
+                                                    borderRadius: '8px',
+                                                    width: '60px',
+                                                    cursor: isAdmin ? 'pointer' : 'not-allowed',
+                                                    fontSize: '1rem',
+                                                    appearance: 'none',
+                                                    textAlign: 'center',
+                                                    paddingLeft: '0.5rem',
+                                                    paddingRight: '0.5rem',
+                                                    opacity: isAdmin ? 1 : 0.6
+                                                }}
+                                                value={stock.distributionIcon || 'box'}
+                                                onChange={(e) => handleIconChangeRequest(e, stock)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <option value="box">📦</option>
+                                                <option value="truck">🚚</option>
+                                            </select>
+                                        </div>
                                     </td>
-                                    <td className="latest-dept">{stock.department}</td>
-                                    <td>
+                                    <td className="latest-dept" style={{ textAlign: 'center' }}>{stock.department}</td>
+                                    <td style={{ textAlign: 'center' }}>
                                         <span 
                                             className="latest-status"
                                             style={stock.distributionIcon === 'truck' 
@@ -805,6 +834,41 @@ export default function Dashboard() {
                 onHide={() => setShowDistPrintModal(false)}
                 items={selectedDistributed}
             />
+
+            {/* Confirm Icon Change Modal */}
+            <Modal show={showIconConfirm} onHide={handleIconCancel} centered size="sm" backdrop="static">
+                <Modal.Header className="border-0 pb-0" style={{ background: '#1e293b' }}>
+                    <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: '#f8fafc', fontSize: '1rem' }}>
+                        <div style={{ background: 'rgba(234,179,8,0.2)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FaExclamationTriangle style={{ color: '#facc15' }} size={16} />
+                        </div>
+                        ยืนยันการเปลี่ยนรูปแบบ
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ background: '#1e293b', color: '#cbd5e1', paddingTop: '0.75rem' }}>
+                    {pendingIconChange && (
+                        <div>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '0.75rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '4px' }}>ครุภัณฑ์</div>
+                                <div style={{ fontWeight: 700, color: '#f1f5f9' }}>{pendingIconChange.stock?.assetId || '—'}</div>
+                                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{pendingIconChange.stock?.brandModel}</div>
+                            </div>
+                            <div className="d-flex align-items-center justify-content-center gap-3" style={{ fontSize: '1.5rem' }}>
+                                <span title="ก่อน">{pendingIconChange.oldValue === 'truck' ? '🚚' : '📦'}</span>
+                                <span style={{ color: '#64748b', fontSize: '1rem' }}>→</span>
+                                <span title="หลัง">{pendingIconChange.newValue === 'truck' ? '🚚' : '📦'}</span>
+                            </div>
+                            <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8', marginTop: '6px' }}>
+                                {pendingIconChange.oldValue === 'truck' ? 'รอการเคลื่อนย้าย' : 'จำหน่ายไปแล้ว'} → {pendingIconChange.newValue === 'truck' ? 'รอการเคลื่อนย้าย' : 'จำหน่ายไปแล้ว'}
+                            </div>
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer className="border-0 d-flex gap-2" style={{ background: '#1e293b' }}>
+                    <Button variant="outline-secondary" onClick={handleIconCancel} className="rounded-pill flex-grow-1" style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#94a3b8' }}>ยกเลิก</Button>
+                    <Button variant="warning" onClick={handleIconConfirm} className="rounded-pill fw-bold flex-grow-1" style={{ color: '#1e293b' }}>✅ ยืนยัน</Button>
+                </Modal.Footer>
+            </Modal>
             <style>{`
                 .btn-glossy-refresh {
                     width: 36px;

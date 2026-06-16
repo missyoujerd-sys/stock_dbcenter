@@ -72,7 +72,7 @@ body {
 }
 
 .login-page {
-  background: radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%);
+   background: radial-gradient(circle at 0% 0%, #1a1a1a 0%, #000000 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -90,7 +90,7 @@ body {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  opacity: 0.4;
+  opacity: 1; /* Made fully visible */
 }
 
 .login-bg-word {
@@ -109,23 +109,23 @@ body {
 /* Word 1 — "STOCK" (huge, top-left, outline only) */
 .login-bg-word--1 {
   font-size: clamp(100px, 18vw, 220px);
-  top: -4%;
-  left: -6%;
+  top: 15%;
+  left: -2%;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
-  transform: rotate(-8deg);
+  -webkit-text-stroke: 3px rgba(255, 255, 255, 0.15); /* More visible stroke */
+  transform: rotate(-5deg);
   animation-name: float-1;
   animation-duration: 12s;
 }
 
 /* Word 2 — "SYSTEM" */
 .login-bg-word--2 {
-  font-size: clamp(70px, 11vw, 150px);
-  top: 30%;
-  right: -5%;
+  font-size: clamp(80px, 15vw, 180px);
+  top: 25%;
+  right: -2%;
   background: linear-gradient(
     135deg,
-    rgba(59, 130, 246, 0.1) 0%,
+    rgba(255, 255, 255, 0.12) 0%,
     rgba(255, 255, 255, 0.03) 100%
   );
   -webkit-background-clip: text;
@@ -151,6 +151,41 @@ body {
   position: relative;
   z-index: 1;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative; /* required for absolute ribbons inside */
+}
+
+/* === Mourning Ribbons === */
+.mourning-ribbon {
+  position: absolute;
+  width: 160px;
+  height: 32px;
+  background: linear-gradient(to bottom, #111, #000, #111);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.9);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mourning-ribbon::after {
+  content: "";
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mourning-ribbon.top-left {
+  top: 26px;
+  left: -42px;
+  transform: rotate(-45deg);
+}
+
+.mourning-ribbon.top-right {
+  top: 26px;
+  right: -42px;
+  transform: rotate(45deg);
 }
 
 .login-title {

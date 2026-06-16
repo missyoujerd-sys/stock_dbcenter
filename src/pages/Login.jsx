@@ -115,10 +115,14 @@ export default function Login() {
         <div className="login-page">
             {/* Dimensional Background Text */}
             <div className="login-bg-text" aria-hidden="true">
+                <span className="login-bg-word login-bg-word--1">NKP</span>
                 <span className="login-bg-word login-bg-word--2">NKP</span>
            </div>
 
-            <div className="login-card">
+            <div className="login-card overflow-hidden">
+                {/* Mourning Ribbons */}
+                <div className="mourning-ribbon top-left"></div>
+                <div className="mourning-ribbon top-right"></div>
                 <h4 className="login-title">ระบบจัดการ Stock</h4>
                 <h4 className="login-subtitle"> ห้องซ่อมบำรุงคอมพิวเตอร์ </h4>
 
@@ -187,7 +191,7 @@ export default function Login() {
                                 fontSize: '1.2rem',
                                 padding: '1rem',
                                 transition: 'all 0.5s ease',
-                                background: 'rgba(153, 209, 22, 0.7)',
+                                background: 'rgba(128, 161, 61, 0.7)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -195,7 +199,7 @@ export default function Login() {
                                 letterSpacing: '1px'
                             }}
                             onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(153, 209, 22, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(126, 138, 97, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
                             ลืมรหัสผ่าน
                         </Button>

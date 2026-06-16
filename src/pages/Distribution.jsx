@@ -829,7 +829,7 @@ export default function Distribution() {
                     <table className="latest-table">
                         <thead>
                             <tr>
-                                <th style={{ width: '50px', paddingLeft: '1.5rem' }}>
+                                <th style={{ width: '50px', paddingLeft: '1.5rem', textAlign: 'center' }}>
                                     <Form.Check
                                         type="checkbox"
                                         checked={filteredStocks.length > 0 && filteredStocks.every(s => !!getAssignedBox(s.id))}
@@ -838,12 +838,12 @@ export default function Distribution() {
                                     />
                                 </th>
                                 <th style={{ width: '90px', textAlign: 'center' }}>ลำดับ (กล่อง)</th>
-                                <th>วันที่สำรวจ</th>
-                                <th>หมายเลขครุภัณฑ์</th>
-                                <th>ยี่ห้อ/รุ่น</th>
-                                <th>S/N</th>
-                                <th>หน่วยงาน</th>
-                                <th>สถานะ</th>
+                                <th style={{ textAlign: 'center' }}>วันที่สำรวจ</th>
+                                <th style={{ textAlign: 'center' }}>หมายเลขครุภัณฑ์</th>
+                                <th style={{ textAlign: 'center' }}>ยี่ห้อ/รุ่น</th>
+                                <th style={{ textAlign: 'center' }}>S/N</th>
+                                <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
+                                <th style={{ textAlign: 'center' }}>สถานะ</th>
                                 <th className="text-center">จัดการ</th>
                                 <th className="text-center">รายละเอียด</th>
                             </tr>
@@ -859,7 +859,7 @@ export default function Distribution() {
                                         key={stock.id}
                                         className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
                                     >
-                                        <td style={{ paddingLeft: '1.5rem' }}>
+                                        <td style={{ textAlign: 'center', paddingLeft: '1.5rem' }}>
                                             <Form.Check
                                                 type="checkbox"
                                                 checked={!!getAssignedBox(stock.id)}
@@ -875,12 +875,12 @@ export default function Distribution() {
                                                 idx + 1
                                             )}
                                         </td>
-                                        <td>{stock.importDate}</td>
-                                        <td className="latest-asset-id">{stock.assetId}</td>
-                                        <td className="latest-brand">{stock.brandModel}</td>
-                                        <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>{stock.serialNumber}</td>
-                                        <td className="latest-dept">{stock.department}</td>
-                                        <td>
+                                        <td style={{ textAlign: 'center' }}>{stock.importDate}</td>
+                                        <td className="latest-asset-id" style={{ textAlign: 'center' }}>{stock.assetId}</td>
+                                        <td className="latest-brand" style={{ textAlign: 'center' }}>{stock.brandModel}</td>
+                                        <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', textAlign: 'center' }}>{stock.serialNumber}</td>
+                                        <td className="latest-dept" style={{ textAlign: 'center' }}>{stock.department}</td>
+                                        <td style={{ textAlign: 'center' }}>
                                             <span className="latest-status latest-status--in">
                                                 รับเข้า (Available)
                                             </span>
