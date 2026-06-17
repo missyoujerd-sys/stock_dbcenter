@@ -177,6 +177,7 @@ export default function Distribution() {
                     }
                 }
             }
+            loadedStocks.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             setStocks(loadedStocks);
             setSummary({ total, available, distributed });
             setLoading(false);
@@ -963,7 +964,7 @@ export default function Distribution() {
                         </span>
                     </div>
                     
-                    <div className="selected-items-box mb-4 p-3 rounded-4 shadow-sm" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef', maxHeight: '220px', overflowY: 'auto' }}>
+                    <div className="selected-items-box mb-4 p-3 rounded-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)', border: 'none', maxHeight: '220px', overflowY: 'auto', boxShadow: 'inset 0 4px 15px rgba(0,0,0,0.1)' }}>
                         {boxes.filter(b => b.items.length > 0).map(box => (
                             <div key={box.id} className="mb-3 bg-white p-2 rounded-3 shadow-sm" style={{ borderLeft: '4px solid #0d6efd' }}>
                                 <h6 className="text-primary fw-bold mb-2 border-bottom pb-2 d-flex align-items-center gap-2" style={{ fontSize: '0.95rem' }}>
@@ -996,37 +997,25 @@ export default function Distribution() {
                             style={{ border: '1px solid #ced4da', boxShadow: 'none', transition: 'all 0.2s', backgroundColor: '#fff', cursor: 'pointer' }}
                         />
                     </Form.Group>
-
-                    <div className="p-3 rounded-4" style={{ backgroundColor: 'rgba(13, 110, 253, 0.05)', border: '1px dashed rgba(13, 110, 253, 0.3)' }}>
-                        <div className="d-flex align-items-start gap-3">
-                            <div className="bg-primary bg-opacity-10 p-2 rounded-circle mt-1">
-                                <FaInfoCircle className="text-primary" size={20} />
-                            </div>
-                            <div>
-                                <h6 className="fw-bold text-primary mb-1" style={{ fontSize: '0.95rem' }}>ตัวเลือกการจำหน่าย</h6>
-                                <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
-                                    ระบบจะเปลี่ยนสถานะพัสดุเป็น <strong>"จำหน่าย"</strong> โดยท่านสามารถเลือกได้ว่าจะ <strong className="text-success">บันทึกและดาวน์โหลด Excel</strong> หรือ <strong className="text-primary">บันทึกจำหน่ายลงในรายการไว้ก่อน</strong>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </Modal.Body>
                 <Modal.Footer className="border-0 bg-light rounded-bottom px-4 py-3 d-flex flex-column align-items-center gap-3">
                     <div className="text-center w-100 bounce-animation">
                         <span className="fw-bold text-primary" style={{ fontSize: '1rem' }}>
-                            ✨เลือกรูปแบบการจำหน่ายด้านล่างนี้ได้เลยครับ✨
+                            ✨เลือกรูปแบบการจำหน่าย✨
                         </span>
                     </div>
-                    <div className="d-flex justify-content-between align-items-center w-100">
-                        <Button variant="outline-secondary" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-pill fw-semibold border-0 bg-white shadow-sm" style={{ transition: 'all 0.2s' }}>
-                            ยกเลิก
-                        </Button>
-                        <div className="d-flex gap-2 flex-wrap justify-content-end">
-                            <Button variant="primary" onClick={() => handleDistribute(false)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', border: 'none' }}>
-                                <FaTruck /> จำหน่ายลงรายการไว้ก่อน
+                    <div className="d-flex flex-column gap-3 w-100">
+                        <div className="d-flex justify-content-between align-items-center w-100">
+                            <Button variant="primary" onClick={() => handleDistribute(false)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', border: 'none',backgroundColor: '#a57020ff'  }}>
+                                <FaTruck /> จำหน่ายลงรายการ
                             </Button>
-                            <Button variant="success" onClick={() => handleDistribute(true)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn" style={{ transition: 'all 0.2s', border: 'none' }}>
+                            <Button onClick={() => handleDistribute(true)} className="px-3 py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-2 distribute-btn text-white" style={{ transition: 'all 0.2s', border: 'none', backgroundColor: '#1eaa48ff' }}>
                                 <FaFileExcel /> จำหน่าย & โหลด Excel
+                            </Button>
+                        </div>
+                        <div className="d-flex justify-content-end w-100">
+                            <Button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-pill fw-bold border-0 shadow-sm text-white" style={{ transition: 'all 0.2s', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
+                                ยกเลิก
                             </Button>
                         </div>
                     </div>

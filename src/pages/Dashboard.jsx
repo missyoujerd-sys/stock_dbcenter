@@ -6,7 +6,7 @@ import { decryptData } from '../utils/encryption';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
-    FaWarehouse, FaBox, FaCheckCircle,
+    FaWarehouse, FaBox, FaCheckCircle, FaTimesCircle,
     FaFileImport, FaFileExport, FaListAlt, FaArrowCircleRight, FaSearch, FaPrint, FaFileExcel, FaTruck, FaSync, FaLock, FaExclamationTriangle
 } from 'react-icons/fa';
 import ItemDetailModal from '../components/ItemDetailModal';
@@ -85,6 +85,18 @@ export default function Dashboard() {
         setTimeout(() => setIsRefreshingDist(false), 600);
     };
 
+    const toggleHasItem = (e, stock) => {
+        e.stopPropagation();
+        const stockRef = ref(db, `stocks/${stock.id}`);
+        update(stockRef, { hasItem: !stock.hasItem });
+    };
+
+    const togglePendingSurvey = (e, stock) => {
+        e.stopPropagation();
+        const stockRef = ref(db, `stocks/${stock.id}`);
+        update(stockRef, { pendingSurvey: !stock.pendingSurvey });
+    };
+
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
@@ -147,8 +159,11 @@ export default function Dashboard() {
                 }
             }
             loadedStocks.sort((a, b) => {
+                if (a.status !== b.status) {
+                    return a.status.localeCompare(b.status);
+                }
                 // If both are distributed items, sort by box number (least to greatest)
-                if (a.status === 'จำหน่าย' && b.status === 'จำหน่าย') {
+                if (a.status === 'จำหน่าย') {
                     const boxA = parseInt(a.distributionBox?.match(/\d+/)?.[0] || 0);
                     const boxB = parseInt(b.distributionBox?.match(/\d+/)?.[0] || 0);
                     
@@ -509,7 +524,7 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                  <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
+                  <div className="latest-panel-header d-flex justify-content-between align-items-center" style={{ 
                     gap: '15px', minHeight: '80px',
                     background: 'linear-gradient(145deg, rgba(234, 179, 8, 0.25) 0%, rgba(202, 138, 4, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
                 }}>
@@ -550,13 +565,12 @@ export default function Dashboard() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
-                            <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
                                 type="text"
                                 placeholder="ค้นหา ครุภัณฑ์ / SN..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ padding: '6px 12px 6px 35px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', color: '#f8fafc', outline: 'none', width: '240px', fontSize: '0.9rem', transition: 'all 0.2s ease' }}
+                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', color: '#f8fafc', outline: 'none', width: '240px', fontSize: '0.9rem', transition: 'all 0.2s ease' }}
                                 onFocus={(e) => { e.target.style.border = '1px solid #4ade80'; }}
                                 onBlur={(e) => { e.target.style.border = '1px solid rgba(255,255,255,0.1)'; }}
                             />
@@ -587,14 +601,16 @@ export default function Dashboard() {
                                 <th style={{ textAlign: 'center' }}>หมายเลขครุภัณฑ์</th>
                                 <th style={{ textAlign: 'center' }}>ยี่ห้อ / รุ่น</th>
                                 <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
+                                <th style={{ textAlign: 'center' }}>มีครุภัณฑ์</th>
+                                <th style={{ textAlign: 'center' }}>รอสำรวจ</th>
                                 <th style={{ textAlign: 'center' }}>สถานะ</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading || isRefreshing ? (
-                                <tr><td colSpan="6" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colSpan="8" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
                             ) : filteredIncoming.length === 0 ? (
-                                <tr><td colSpan="6" className="latest-empty">ไม่พบรายการพัสดุรับเข้า</td></tr>
+                                <tr><td colSpan="8" className="latest-empty">ไม่พบรายการพัสดุรับเข้า</td></tr>
                             ) : filteredIncoming.map((stock, idx) => (
                                 <tr key={stock.id} onClick={() => handleRowClick(stock)}
                                     className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
@@ -618,6 +634,16 @@ export default function Dashboard() {
                                     <td className="latest-asset-id" style={{ textAlign: 'center' }}>{stock.assetId || '—'}</td>
                                     <td className="latest-brand" style={{ textAlign: 'center' }}>{stock.brandModel}</td>
                                     <td className="latest-dept" style={{ textAlign: 'center' }}>{stock.department}</td>
+                                    <td style={{ textAlign: 'center' }} onClick={(e) => toggleHasItem(e, stock)}>
+                                        <div style={{ display: 'inline-block', padding: '4px', cursor: 'pointer', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}>
+                                            {stock.hasItem !== false ? <FaCheckCircle className="text-success" size={18} /> : <FaTimesCircle className="text-secondary" size={18} />}
+                                        </div>
+                                    </td>
+                                    <td style={{ textAlign: 'center' }} onClick={(e) => togglePendingSurvey(e, stock)}>
+                                        <div style={{ display: 'inline-block', padding: '4px', cursor: 'pointer', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}>
+                                            {stock.pendingSurvey ? <FaCheckCircle className="text-danger" size={18} /> : <FaTimesCircle className="text-secondary" size={18} />}
+                                        </div>
+                                    </td>
                                     <td style={{ textAlign: 'center' }}><span className="latest-status latest-status--in">รับเข้า</span></td>
                                 </tr>
                             ))}
@@ -637,7 +663,7 @@ export default function Dashboard() {
                 </h4>
             </div>
             <div className="latest-panel latest-panel--dark d-flex flex-column h-100">
-                <div className="latest-panel-header d-flex flex-row-reverse justify-content-between align-items-center" style={{ 
+                <div className="latest-panel-header d-flex justify-content-between align-items-center" style={{ 
                     gap: '15px', minHeight: '80px',
                     background: 'linear-gradient(145deg, rgba(249, 115, 22, 0.25) 0%, rgba(234, 88, 12, 0.1) 50%, rgba(30, 41, 59, 0.6) 100%)',
                 }}>
@@ -692,13 +718,12 @@ export default function Dashboard() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
                                 type="text"
                                 placeholder="ค้นหา ครุภัณฑ์, SN, กล่อง, วันที่..."
                                 value={searchTermDist}
                                 onChange={(e) => setSearchTermDist(e.target.value)}
-                                style={{ padding: '6px 12px 6px 35px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', color: '#f8fafc', outline: 'none', width: '240px', fontSize: '0.9rem', transition: 'all 0.2s ease' }}
+                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', color: '#f8fafc', outline: 'none', width: '240px', fontSize: '0.9rem', transition: 'all 0.2s ease' }}
                                 onFocus={(e) => { e.target.style.border = '1px solid #f87171'; }}
                                 onBlur={(e) => { e.target.style.border = '1px solid rgba(255,255,255,0.1)'; }}
                             />
