@@ -46,12 +46,13 @@ export default function Dashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isRefreshingDist, setIsRefreshingDist] = useState(false);
 
-    // Handler for icon change with admin check + confirm
+    const [showScaryAlert, setShowScaryAlert] = useState(false);
+
     const handleIconChangeRequest = (e, stock) => {
         e.stopPropagation();
         const newValue = e.target.value;
         if (!isAdmin) {
-            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+            setShowScaryAlert(true);
             // Reset select back
             e.target.value = stock.distributionIcon || 'box';
             return;
@@ -88,9 +89,10 @@ export default function Dashboard() {
     const toggleHasItem = (e, stock) => {
         e.stopPropagation();
         if (!isAdmin) {
-            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนสถานะได้');
+            setShowScaryAlert(true);
             return;
         }
+        // Admin can toggle freely
         const stockRef = ref(db, `stocks/${stock.id}`);
         update(stockRef, { hasItem: !stock.hasItem });
     };
@@ -98,9 +100,10 @@ export default function Dashboard() {
     const togglePendingSurvey = (e, stock) => {
         e.stopPropagation();
         if (!isAdmin) {
-            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนสถานะได้');
+            setShowScaryAlert(true);
             return;
         }
+        // Admin can toggle freely
         const stockRef = ref(db, `stocks/${stock.id}`);
         update(stockRef, { pendingSurvey: !stock.pendingSurvey });
     };
@@ -965,7 +968,41 @@ export default function Dashboard() {
                     <Button variant="warning" onClick={handleIconConfirm} className="rounded-pill fw-bold flex-grow-1" style={{ color: '#1e293b' }}>✅ ยืนยัน</Button>
                 </Modal.Footer>
             </Modal>
+            {/* Scary Alert Modal */}
+            <Modal show={showScaryAlert} onHide={() => setShowScaryAlert(false)} centered size="sm" backdrop="static">
+                <div style={{
+                    background: '#0a0a0a',
+                    border: '2px solid #ef4444',
+                    boxShadow: '0 0 30px rgba(239, 68, 68, 0.4)',
+                    borderRadius: '12px',
+                    overflow: 'hidden'
+                }}>
+                    <Modal.Body className="text-center p-4">
+                        <div style={{ fontSize: '4rem', animation: 'pulse-scary 1s infinite' }}>⚠️</div>
+                        <h2 style={{ color: '#ef4444', fontWeight: '900', textShadow: '0 0 10px rgba(239,68,68,0.5)', marginTop: '10px', fontSize: '1.6rem', fontFamily: 'Prompt, sans-serif' }}>
+                            หยุดเดี๋ยวนี้!
+                        </h2>
+                        <p style={{ color: '#ffffff', fontSize: '1rem', marginTop: '15px', fontWeight: '500' }}>
+                            ไม่สามารถเปลี่ยนแปลงได้แล้ว<br/>
+                            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>เฉพาะ Admin เท่านั้นที่มีสิทธิ์แก้ไขข้อมูลส่วนนี้</span>
+                        </p>
+                        <Button 
+                            variant="danger" 
+                            className="mt-3 w-100 fw-bold" 
+                            onClick={() => setShowScaryAlert(false)}
+                            style={{ background: '#ef4444', border: 'none', boxShadow: '0 4px 10px rgba(239,68,68,0.3)', textTransform: 'uppercase', letterSpacing: '1px' }}
+                        >
+                            รับทราบ
+                        </Button>
+                    </Modal.Body>
+                </div>
+            </Modal>
             <style>{`
+                @keyframes pulse-scary {
+                    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239,68,68,0.8)); }
+                    50% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(239,68,68,1)); }
+                    100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239,68,68,0.8)); }
+                }
                 .btn-glossy-refresh {
                     width: 36px;
                     height: 36px;
