@@ -466,6 +466,16 @@ export default function IncomingStock() {
             const stocksRef = ref(db, 'stocks');
             const newStockRef = push(stocksRef);
 
+            let autoPendingSurvey = false;
+            let autoHasItem = true;
+
+            if (formData.assetId.trim() === '-') {
+                autoPendingSurvey = true;
+                autoHasItem = false;
+            } else if (formData.assetId.trim().startsWith('7440') || formData.assetId.trim().startsWith('7430')) {
+                autoHasItem = true;
+            }
+
             const stockData = {
                 importDate: formData.surveyDate, // ว/ด/ป สำรวจ
                 building: encryptData(formData.building),
@@ -488,6 +498,9 @@ export default function IncomingStock() {
                 status: 'รับเข้า',
                 distributor: '', // Empty initially
                 distributionDate: '',
+
+                hasItem: autoHasItem,
+                pendingSurvey: autoPendingSurvey,
 
                 receiverId: currentUser.uid,
                 timestamp: Date.now()

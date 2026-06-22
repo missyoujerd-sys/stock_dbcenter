@@ -87,12 +87,20 @@ export default function Dashboard() {
 
     const toggleHasItem = (e, stock) => {
         e.stopPropagation();
+        if (!isAdmin) {
+            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนสถานะได้');
+            return;
+        }
         const stockRef = ref(db, `stocks/${stock.id}`);
         update(stockRef, { hasItem: !stock.hasItem });
     };
 
     const togglePendingSurvey = (e, stock) => {
         e.stopPropagation();
+        if (!isAdmin) {
+            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนสถานะได้');
+            return;
+        }
         const stockRef = ref(db, `stocks/${stock.id}`);
         update(stockRef, { pendingSurvey: !stock.pendingSurvey });
     };
@@ -143,13 +151,34 @@ export default function Dashboard() {
                     if (item.status === 'รับเข้า') available++;
                     if (item.status === 'จำหน่าย') distributed++;
 
+                    const decAssetId = decryptData(item.assetId) || '';
+                    
+                    let currentHasItem = item.hasItem;
+                    let currentPendingSurvey = item.pendingSurvey;
+
+                    if (currentPendingSurvey === undefined || currentPendingSurvey === null) {
+                        currentPendingSurvey = decAssetId.trim() === '-';
+                    }
+
+                    if (currentHasItem === undefined || currentHasItem === null) {
+                        if (decAssetId.trim() === '-') {
+                            currentHasItem = false;
+                        } else if (decAssetId.trim().startsWith('7440') || decAssetId.trim().startsWith('7430')) {
+                            currentHasItem = true;
+                        } else {
+                            currentHasItem = true; // Original default
+                        }
+                    }
+
                     loadedStocks.push({
                         id: key,
                         ...item,
+                        hasItem: currentHasItem,
+                        pendingSurvey: currentPendingSurvey,
                         building: decryptData(item.building),
                         department: decryptData(item.department),
                         serialNumber: decryptData(item.serialNumber),
-                        assetId: decryptData(item.assetId),
+                        assetId: decAssetId,
                         category: decryptData(item.category || ''),
                         brandModel: decryptData(item.brandModel),
                         computerName: decryptData(item.computerName || ''),
@@ -697,6 +726,48 @@ export default function Dashboard() {
                         {selectedDistributed.length > 0 && (
                             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
                                 <Button
+                                    size="sm"
+                                    onClick={() => {
+                                        if (!isAdmin) {
+                                            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+                                            return;
+                                        }
+                                        if (window.confirm(`ยืนยันการเปลี่ยนสถานะของพัสดุจำนวน ${selectedDistributed.length} รายการเป็น รอการเคลื่อนย้าย (🚚) หรือไม่?`)) {
+                                            selectedDistributed.forEach(stock => {
+                                                const stockRef = ref(db, `stocks/${stock.id}`);
+                                                update(stockRef, { distributionIcon: 'truck' });
+                                            });
+                                            setSelectedDistributed([]);
+                                        }
+                                    }}
+                                    className="d-flex align-items-center gap-2 shadow-sm"
+                                    style={{ borderRadius: '8px', background: 'linear-gradient(135deg,#f59e0b,#d97706)', border: 'none', color: '#fff', fontWeight: 600 }}
+                                    title="เปลี่ยนสถานะที่เลือกเป็น รอการเคลื่อนย้าย"
+                                >
+                                    <FaTruck /> รอการเคลื่อนย้าย ({selectedDistributed.length})
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    onClick={() => {
+                                        if (!isAdmin) {
+                                            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+                                            return;
+                                        }
+                                        if (window.confirm(`ยืนยันการเปลี่ยนสถานะของพัสดุจำนวน ${selectedDistributed.length} รายการเป็น กล่อง (📦) หรือไม่?`)) {
+                                            selectedDistributed.forEach(stock => {
+                                                const stockRef = ref(db, `stocks/${stock.id}`);
+                                                update(stockRef, { distributionIcon: 'box' });
+                                            });
+                                            setSelectedDistributed([]);
+                                        }
+                                    }}
+                                    className="d-flex align-items-center gap-2 shadow-sm"
+                                    style={{ borderRadius: '8px', background: 'linear-gradient(135deg,#64748b,#475569)', border: 'none', color: '#fff', fontWeight: 600 }}
+                                    title="เปลี่ยนสถานะที่เลือกเป็น กล่อง"
+                                >
+                                    <FaBox /> กล่อง ({selectedDistributed.length})
+                                </Button>
+                                <Button
                                     variant="primary"
                                     size="sm"
                                     onClick={() => setShowDistPrintModal(true)}
@@ -711,7 +782,7 @@ export default function Dashboard() {
                                     className="d-flex align-items-center gap-2 shadow-sm"
                                     style={{ borderRadius: '8px', background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 600 }}
                                 >
-                                    <FaFileExcel /> Export Excel ใบเบิก ({selectedDistributed.length})
+                                    <FaFileExcel /> Export Excel ({selectedDistributed.length})
                                 </Button>
                             </div>
                         )}

@@ -519,10 +519,20 @@ export default function Layout({ children }) {
           </div>
 
           {/* Centered Department Title */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex flex-col justify-center items-center gap-1.5 mt-0.5">
-            <span className="whitespace-nowrap text-[22px] lg:text-[25px] font-[900] bg-gradient-to-r from-slate-800 via-rose-700 to-rose-900 dark:from-white dark:via-rose-400 dark:to-rose-600 bg-clip-text text-transparent font-['Prompt'] tracking-tight leading-none drop-shadow-sm">
-              ห้องซ่อมบำรุงคอมพิวเตอร์
-            </span>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex flex-col justify-center items-center mt-0.5">
+            <div className="flex items-center gap-4 mb-1.5">
+              {/* Mourning Ribbon Left */}
+              <svg fill="#111111" viewBox="0 0 330 330" className="w-5 h-5 md:w-6 md:h-6 drop-shadow-md">
+                <path d="M228.665,99.967c0-35.034-28.503-63.537-63.537-63.537s-63.537,28.503-63.537,63.537c0,27.148,22.868,54.89,68.032,82.531L75.529,322.253l25.864,15.111l63.734-109.079l64.129,109.756l25.864-15.111l-94.489-161.761C205.805,134.786,228.665,116.592,228.665,99.967z M165.127,159.263c-30.82-20.732-33.537-41.979-33.537-59.295c0-18.492,15.045-33.537,33.537-33.537s33.537,15.045,33.537,33.537C198.665,116.653,195.962,138.455,165.127,159.263z"/>
+              </svg>
+              <span className="whitespace-nowrap text-[22px] lg:text-[25px] font-[900] bg-gradient-to-r from-slate-800 via-rose-700 to-rose-900 dark:from-white dark:via-rose-400 dark:to-rose-600 bg-clip-text text-transparent font-['Prompt'] tracking-tight leading-none drop-shadow-sm">
+                ห้องซ่อมบำรุงคอมพิวเตอร์
+              </span>
+              {/* Mourning Ribbon Right */}
+              <svg fill="#111111" viewBox="0 0 330 330" className="w-5 h-5 md:w-6 md:h-6 drop-shadow-md">
+                <path d="M228.665,99.967c0-35.034-28.503-63.537-63.537-63.537s-63.537,28.503-63.537,63.537c0,27.148,22.868,54.89,68.032,82.531L75.529,322.253l25.864,15.111l63.734-109.079l64.129,109.756l25.864-15.111l-94.489-161.761C205.805,134.786,228.665,116.592,228.665,99.967z M165.127,159.263c-30.82-20.732-33.537-41.979-33.537-59.295c0-18.492,15.045-33.537,33.537-33.537s33.537,15.045,33.537,33.537C198.665,116.653,195.962,138.455,165.127,159.263z"/>
+              </svg>
+            </div>
             <div className="flex items-center gap-2 px-0.5">
               <div className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500/40 opacity-100"></span>
@@ -578,9 +588,14 @@ export default function Layout({ children }) {
         <header className="lg:hidden h-16 bg-pink-100/90 dark:bg-pink-950/80 backdrop-blur-md border-b border-pink-200 dark:border-pink-900 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-7 object-contain drop-shadow-sm mb-0.5" />
-            <span className="text-[11px] font-black bg-gradient-to-r from-rose-500 via-rose-700 to-rose-900 dark:from-rose-400 dark:via-rose-300 dark:to-rose-500 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none whitespace-nowrap">
-              ห้องซ่อมบำรุงคอมพิวเตอร์
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-black bg-gradient-to-r from-rose-500 via-rose-700 to-rose-900 dark:from-rose-400 dark:via-rose-300 dark:to-rose-500 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none whitespace-nowrap">
+                ห้องซ่อมบำรุงคอมพิวเตอร์
+              </span>
+              <svg fill="#111111" viewBox="0 0 330 330" className="w-3.5 h-3.5 drop-shadow-sm">
+                <path d="M228.665,99.967c0-35.034-28.503-63.537-63.537-63.537s-63.537,28.503-63.537,63.537c0,27.148,22.868,54.89,68.032,82.531L75.529,322.253l25.864,15.111l63.734-109.079l64.129,109.756l25.864-15.111l-94.489-161.761C205.805,134.786,228.665,116.592,228.665,99.967z M165.127,159.263c-30.82-20.732-33.537-41.979-33.537-59.295c0-18.492,15.045-33.537,33.537-33.537s33.537,15.045,33.537,33.537C198.665,116.653,195.962,138.455,165.127,159.263z"/>
+              </svg>
+            </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm transition-all active:scale-95">
                 <Eye size={10} className="text-blue-500" />
