@@ -19,7 +19,7 @@ import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 export default function Dashboard() {
-    const { isAdmin } = useAuth();
+    const { isAdmin, isAdmin_2 } = useAuth();
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -51,7 +51,7 @@ export default function Dashboard() {
     const handleIconChangeRequest = (e, stock) => {
         e.stopPropagation();
         const newValue = e.target.value;
-        if (!isAdmin) {
+        if (!isAdmin_2) {
             setShowScaryAlert(true);
             // Reset select back
             e.target.value = stock.distributionIcon || 'box';
@@ -88,7 +88,7 @@ export default function Dashboard() {
 
     const toggleHasItem = (e, stock) => {
         e.stopPropagation();
-        if (!isAdmin) {
+        if (!isAdmin_2) {
             setShowScaryAlert(true);
             return;
         }
@@ -99,7 +99,7 @@ export default function Dashboard() {
 
     const togglePendingSurvey = (e, stock) => {
         e.stopPropagation();
-        if (!isAdmin) {
+        if (!isAdmin_2) {
             setShowScaryAlert(true);
             return;
         }
@@ -732,7 +732,7 @@ export default function Dashboard() {
                                     size="sm"
                                     onClick={() => {
                                         if (!isAdmin) {
-                                            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+                                            alert('🔒 เปลี่ยนแปลงไม่ได้!');
                                             return;
                                         }
                                         if (window.confirm(`ยืนยันการเปลี่ยนสถานะของพัสดุจำนวน ${selectedDistributed.length} รายการเป็น รอการเคลื่อนย้าย (🚚) หรือไม่?`)) {
@@ -753,7 +753,7 @@ export default function Dashboard() {
                                     size="sm"
                                     onClick={() => {
                                         if (!isAdmin) {
-                                            alert('🔒 เฉพาะ Admin เท่านั้นที่สามารถเปลี่ยนรูปแบบได้');
+                                            alert('🔒 เปลี่ยนแปลงไม่ได้!');
                                             return;
                                         }
                                         if (window.confirm(`ยืนยันการเปลี่ยนสถานะของพัสดุจำนวน ${selectedDistributed.length} รายการเป็น กล่อง (📦) หรือไม่?`)) {
@@ -979,12 +979,12 @@ export default function Dashboard() {
                 }}>
                     <Modal.Body className="text-center p-4">
                         <div style={{ fontSize: '4rem', animation: 'pulse-scary 1s infinite' }}>⚠️</div>
-                        <h2 style={{ color: '#ef4444', fontWeight: '900', textShadow: '0 0 10px rgba(239,68,68,0.5)', marginTop: '10px', fontSize: '1.6rem', fontFamily: 'Prompt, sans-serif' }}>
-                            หยุดเดี๋ยวนี้!
+                        <h2 style={{ color: '#ef9744ff', fontWeight: '900', textShadow: '0 0 10px rgba(239,68,68,0.5)', marginTop: '10px', fontSize: '1.6rem', fontFamily: 'Prompt, sans-serif' }}>
+                            หยุดก่อน !
                         </h2>
                         <p style={{ color: '#ffffff', fontSize: '1rem', marginTop: '15px', fontWeight: '500' }}>
-                            ไม่สามารถเปลี่ยนแปลงได้แล้ว<br/>
-                            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>เฉพาะ Admin เท่านั้นที่มีสิทธิ์แก้ไขข้อมูลส่วนนี้</span>
+                            ไม่สามารถเปลี่ยนแปลงได้<br/>
+                            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>เนื่องจากข้อมูลถูกบันทึกลงฐานข้อมูลเป็นที่เรียบร้อยแล้ว !</span>
                         </p>
                         <Button 
                             variant="danger" 

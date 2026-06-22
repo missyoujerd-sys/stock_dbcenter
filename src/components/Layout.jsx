@@ -190,8 +190,8 @@ export default function Layout({ children }) {
         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
           <div className="relative shrink-0">
             {/* Pulsing Core Glow */}
-            <div className={`relative bg-white p-[3px] rounded-full shadow-sm border border-purple-200/50 transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105 flex items-center justify-center`}>
-              <img src="/โลโก้ ร.พ.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain rounded-full drop-shadow-sm" style={{ filter: 'brightness(1.1)' }} />
+            <div className={`relative bg-white p-[-1px] rounded-full shadow-sm border border-purple-200/50 transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105 flex items-center justify-center`}>
+              <img src="/โลโก้ ร.พ ข้างขวา.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain rounded-full drop-shadow-sm" style={{ filter: 'brightness(1.1)' }} />
             </div>
           </div>
           <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
@@ -511,7 +511,7 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto main-scrollbar scroll-smooth bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
         
         {/* Desktop Quick Header */}
-        <div className="hidden lg:flex h-20 items-center justify-between pl-8 pr-6 sticky top-0 z-40 bg-pink-100/90 dark:bg-pink-950/80 backdrop-blur-md border-b border-pink-200 dark:border-pink-900 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
+        <div className="hidden lg:flex h-20 items-center justify-between pl-8 pr-6 sticky top-0 z-40 bg-slate-200/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
           
           {/* Left Branding */}
           <div className="flex items-center">
@@ -551,7 +551,7 @@ export default function Layout({ children }) {
                   <div className="relative shrink-0">
                     <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border border-slate-200 dark:border-slate-600 shadow-sm bg-white flex items-center justify-center p-[2px]">
                      {/*Header (บนขวา) * */}
-                      <img src="/โลโก้ ร.พ.png" alt="Profile" className="w-full h-full object-contain rounded-full" />
+                      <img src="/รูปโบว์ไว้อาลัย.png" alt="Profile" className="w-full h-full object-contain rounded-full" />
                     </div>
                   </div>
                   <div className="flex flex-col leading-tight mr-1">
@@ -585,7 +585,7 @@ export default function Layout({ children }) {
           </div>
         </div>
         {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-pink-100/90 dark:bg-pink-950/80 backdrop-blur-md border-b border-pink-200 dark:border-pink-900 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+        <header className="lg:hidden h-16 bg-slate-200/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-7 object-contain drop-shadow-sm mb-0.5" />
             <div className="flex items-center gap-2">
