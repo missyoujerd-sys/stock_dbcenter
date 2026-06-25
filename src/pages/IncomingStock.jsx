@@ -144,18 +144,18 @@ export default function IncomingStock() {
        
        
         "จอคอมพิวเตอร์": [
-            "จอคอมพิวเตอร์ Acer",
-            "จอคอมพิวเตอร์ Asus",
-            "จอคอมพิวเตอร์ AOC ",
-            "จอคอมพิวเตอร์ ZOWIE",
-            "จอคอมพิวเตอร์ BenQ ",
-            "จอคอมพิวเตอร์ Xiaomi ",
-            "จอคอมพิวเตอร์ Viewsonic ",
-            "จอคอมพิวเตอร์ SAMSUNG ",
-            "จอคอมพิวเตอร์ MSI ",
-            "จอคอมพิวเตอร์ Alienware ",
-            "จอคอมพิวเตอร์ LG ",
-            "จอคอมพิวเตอร์ Lenovo ",
+            "Acer",
+            "Asus",
+            "AOC ",
+            "ZOWIE",
+            "BenQ ",
+            "Xiaomi ",
+            "Viewsonic ",
+            "SAMSUNG ",
+            "MSI ",
+            "Alienware ",
+            "LG ",
+            "Lenovo ",
         ],
         "TV": ["LG", "Samsung", "Philips"],
         "Tablet": ["Samsung", "Apple"],
@@ -180,14 +180,14 @@ export default function IncomingStock() {
         "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
 
         "สแกนเนอร์": [
-            "สแกนเนอร์ Canon PIXMA ",
-            "สแกนเนอร์ Epson Scaner ",
-            "สแกนเนอร์ FUJITSU ",
-            "สแกนเนอร์ Brother ",
-            "สแกนเนอร์ Aibecy ",
-            "สแกนเนอร์ Canon Laserjet",
-            "สแกนเนอร์ HP Laserjet ",
-            "สแกนเนอร์ Brother Scanner ",],
+            "Canon PIXMA ",
+            "Epson Scaner ",
+            "FUJITSU ",
+            "Brother ",
+            "Aibecy ",
+            "Canon Laserjet",
+            "HP Laserjet ",
+            "Brother Scanner ",],
 
         "Switc Hub": [
             "TP-Link",
@@ -931,6 +931,7 @@ export default function IncomingStock() {
                                             width={700}
                                             height={150}
                                             className="inc-sig-canvas"
+    style={{ backgroundColor: "#f8f9fa" }}
                                             onMouseDown={sigStart}
                                             onMouseMove={sigMove}
                                             onMouseUp={sigEnd}
@@ -961,10 +962,10 @@ export default function IncomingStock() {
                                                 <option value="ฉันทวัฒน์ สุทธิพงษ์" />
                                                 <option value="ณรงค์ รวมสุข" />
                                                 <option value="ณัฐวุฒิ อินต๊ะผัด" />
-                                                <option value="ทรงกลด สิงห์สันต์" />
-                                                <option value="ธนากร ลุงหม่อง" />
                                                 <option value="บรรเจิด สลักพิศพักตร์" />
                                                 <option value="พัชชามาศ กาแก้ว" />
+                                                <option value="ทรงกลด สิงห์สันต์" />
+                                                <option value="ธนากร ลุงหม่อง" />
                                                 <option value="ภาณุพงศ์ เชื่อมชิต" />
                                                 <option value="มนตรี เครือซุย" />
                                                 <option value="รสริน อุทิศเวทศักดิ์" />
