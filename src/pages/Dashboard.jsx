@@ -632,10 +632,11 @@ export default function Dashboard() {
                                 <th style={{ textAlign: 'center' }}>วันที่</th>
                                 <th style={{ textAlign: 'center' }}>หมายเลขครุภัณฑ์</th>
                                 <th style={{ textAlign: 'center' }}>ยี่ห้อ / รุ่น</th>
+                                <th style={{ textAlign: 'center' }}>Serial Number</th>
                                 <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
                                 <th style={{ textAlign: 'center' }}>มีครุภัณฑ์</th>
                                 <th style={{ textAlign: 'center' }}>รอสำรวจ</th>
-                                <th style={{ textAlign: 'center' }}>สถานะ</th>
+                                <th style={{ textAlign: 'center' }}>สถานะ / รายละเอียด</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -665,6 +666,9 @@ export default function Dashboard() {
                                     </td>
                                     <td className="latest-asset-id" style={{ textAlign: 'center' }}>{stock.assetId || '—'}</td>
                                     <td className="latest-brand" style={{ textAlign: 'center' }}>{stock.brandModel}</td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <span style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#60a5fa', letterSpacing: '0.03em' }}>{stock.serialNumber || '—'}</span>
+                                    </td>
                                     <td className="latest-dept" style={{ textAlign: 'center' }}>{stock.department}</td>
                                     <td style={{ textAlign: 'center' }} onClick={(e) => toggleHasItem(e, stock)}>
                                         <div style={{ display: 'inline-block', padding: '4px', cursor: 'pointer', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}>
@@ -676,7 +680,20 @@ export default function Dashboard() {
                                             {stock.pendingSurvey ? <FaCheckCircle className="text-danger" size={18} /> : <FaTimesCircle className="text-secondary" size={18} />}
                                         </div>
                                     </td>
-                                    <td style={{ textAlign: 'center' }}><span className="latest-status latest-status--in">รับเข้า</span></td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <div className="d-flex align-items-center justify-content-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                            <span className="latest-status latest-status--in">รับเข้า</span>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleRowClick(stock); }}
+                                                style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(96,165,250,0.4)', background: 'rgba(59,130,246,0.15)', color: '#60a5fa', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.3)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; }}
+                                                title="ดูรายละเอียด"
+                                            >
+                                                <span style={{ fontSize: "1.0rem" }}>📋</span>   
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

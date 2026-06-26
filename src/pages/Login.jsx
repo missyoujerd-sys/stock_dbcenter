@@ -200,7 +200,7 @@ export default function Login() {
                             คุณใช้ภาษาไทยนะครับ
                         </div>
                         <div style={{ color: '#64748b', fontSize: '0.9rem', fontFamily: 'Prompt, sans-serif' }}>
-                            ผมเปลี่ยนเป็นภาษาอังกฤษแล้วนะครับ
+                            ผมเปลี่ยนเป็นภาษาอังกฤษให้แล้วนะครับ
                         </div>
                     </div>
                 </div>
