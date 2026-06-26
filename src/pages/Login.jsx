@@ -15,6 +15,46 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    // Thai Keyboard Detection States
+    const [showThaiWarning, setShowThaiWarning] = useState(false);
+    const warningTimeoutRef = useRef(null);
+
+    const thaiCharMap = {
+        'ๅ': '1', '/': '2', '-': '3', 'ภ': '4', 'ถ': '5', 'ุ': '6', 'ึ': '7', 'ค': '8', 'ต': '9', 'จ': '0', 'ข': '-', 'ช': '=',
+        'ๆ': 'q', 'ไ': 'w', 'ำ': 'e', 'พ': 'r', 'ะ': 't', 'ั': 'y', 'ี': 'u', 'ร': 'i', 'น': 'o', 'ย': 'p', 'บ': '[', 'ล': ']', 'ฃ': '\\',
+        'ฟ': 'a', 'ห': 's', 'ก': 'd', 'ด': 'f', 'เ': 'g', '้': 'h', '่': 'j', 'า': 'k', 'ส': 'l', 'ว': ';', 'ง': '\'',
+        'ผ': 'z', 'ป': 'x', 'แ': 'c', 'อ': 'v', 'ิ': 'b', 'ื': 'n', 'ท': 'm', 'ม': ',', 'ใ': '.', 'ฝ': '/',
+        '+': '!', '๑': '@', '๒': '#', '๓': '$', '๔': '%', 'ู': '^', '฿': '&', '๕': '*', '๖': '(', '๗': ')', '๘': '_', '๙': '+',
+        '๐': 'Q', '"': 'W', 'ฎ': 'E', 'ฑ': 'R', 'ธ': 'T', 'ํ': 'Y', '๊': 'U', 'ณ': 'I', 'ฯ': 'O', 'ญ': 'P', 'ฐ': '{', ',': '}', 'ฅ': '|',
+        'ฤ': 'A', 'ฆ': 'S', 'ฏ': 'D', 'โ': 'F', 'ฌ': 'G', '็': 'H', '๋': 'J', 'ษ': 'K', 'ศ': 'L', 'ซ': ':', '.': '"',
+        '(': 'Z', ')': 'X', 'ฉ': 'C', 'ฮ': 'V', 'ฺ': 'B', '์': 'N', '?': 'M', 'ฒ': '<', 'ฬ': '>', 'ฦ': '?'
+    };
+
+    const handleInputChange = (e) => {
+        let val = e.target.value;
+        const hasThai = /[\u0E00-\u0E7F]/.test(val);
+        
+        if (hasThai) {
+            const cursorStart = e.target.selectionStart;
+            const cursorEnd = e.target.selectionEnd;
+            
+            let converted = '';
+            for (let i = 0; i < val.length; i++) {
+                converted += thaiCharMap[val[i]] || val[i];
+            }
+            e.target.value = converted;
+            e.target.setSelectionRange(cursorStart, cursorEnd);
+            
+            setShowThaiWarning(true);
+            if (warningTimeoutRef.current) {
+                clearTimeout(warningTimeoutRef.current);
+            }
+            warningTimeoutRef.current = setTimeout(() => {
+                setShowThaiWarning(false);
+            }, 4000);
+        }
+    };
+
     // Forgot Password States
     const [showForgotModal, setShowForgotModal] = useState(false);
     const [forgotUser, setForgotUser] = useState('');
@@ -119,7 +159,52 @@ export default function Login() {
                 <span className="login-bg-word login-bg-word--2">NKP</span>
            </div>
 
-            <div className="login-card overflow-hidden">
+            <div className="login-card overflow-hidden" style={{ position: 'relative' }}>
+                {/* Beautiful Thai Warning Toast */}
+                <div style={{
+                    position: 'absolute',
+                    top: showThaiWarning ? '20px' : '-80px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '12px 24px',
+                    borderRadius: '50px',
+                    boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.3), 0 8px 10px -6px rgba(239, 68, 68, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    zIndex: 100,
+                    transition: 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+                    opacity: showThaiWarning ? 1 : 0,
+                    pointerEvents: 'none',
+                    width: 'max-content'
+                }}>
+                    <div style={{
+                        width: '28px',
+                        height: '28px',
+                        background: '#f34009ff',
+                        borderRadius: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '20px',
+                        flexShrink: 0
+                    }}>
+                        <FaExclamation />
+                    </div>
+                    <div>
+                        <div style={{ color: '#1e293b', fontWeight: '800', fontSize: '1.2rem', fontFamily: 'Prompt, sans-serif' }}>
+                            คุณใช้ภาษาไทยนะครับ
+                        </div>
+                        <div style={{ color: '#64748b', fontSize: '0.9rem', fontFamily: 'Prompt, sans-serif' }}>
+                            ผมเปลี่ยนเป็นภาษาอังกฤษแล้วนะครับ
+                        </div>
+                    </div>
+                </div>
+
                 {/* Mourning Ribbons */}
                 <div className="mourning-ribbon top-left"></div>
                 <div className="mourning-ribbon top-right"></div>
@@ -135,6 +220,7 @@ export default function Login() {
                             required
                             placeholder="User"
                             className="login-input"
+                            onChange={handleInputChange}
                         />
                     </div>
 
@@ -147,6 +233,7 @@ export default function Login() {
                             placeholder="Password"
                             className="login-input"
                             style={{ paddingRight: '40px' }}
+                            onChange={handleInputChange}
                         />
                         <button
                             type="button"
@@ -183,15 +270,15 @@ export default function Login() {
                                 setShowForgotModal(true);
                             }}
                             style={{
-                                flex: 1.5,
-                                borderRadius: '12px',
-                                border: '2px solid rgba(181, 216, 161, 0.88)',
-                                color: '#131644ff',
-                                fontWeight: '700',
+                                flex: 1.0,
+                                borderRadius: '10px',
+                                border: '1px solid rgba(226, 188, 63, 0.88)',
+                                color: '#f8f8f5ff',
+                                fontWeight: '200',
                                 fontSize: '1.2rem',
                                 padding: '1rem',
                                 transition: 'all 0.5s ease',
-                                background: 'rgba(128, 161, 61, 0.7)',
+                                background: 'rgba(196, 136, 47, 0.7)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -199,9 +286,9 @@ export default function Login() {
                                 letterSpacing: '1px'
                             }}
                             onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(126, 138, 97, 0.7)'; e.currentTarget.style.borderColor = 'rgba(90, 184, 35, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(126, 138, 97, 0.7)'; e.currentTarget.style.borderColor = 'rgba(145, 224, 99, 0.96)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
-                            ลืมรหัสผ่าน
+                            บัญชีถูกล็อก
                         </Button>
                     </div>
                 </Form>
