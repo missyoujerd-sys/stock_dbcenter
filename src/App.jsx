@@ -9,6 +9,11 @@ import Dashboard from './pages/Dashboard';
 import IncomingStock from './pages/IncomingStock';
 import Distribution from './pages/Distribution';
 import Inventory from './pages/Inventory';
+import History from './pages/History';
+import Users from './pages/Users';
+import ItDashboard from './pages/it-equipment/ItDashboard';
+import ItReceive from './pages/it-equipment/ItReceive';
+import ItIssue from './pages/it-equipment/ItIssue';
 import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
 import RepairView from './pages/repair/RepairView';
@@ -56,6 +61,31 @@ function App() {
           <Route path="/inventory" element={
             <PrivateRoute>
               <Inventory />
+            </PrivateRoute>
+          } />
+          <Route path="/history" element={
+            <PrivateRoute>
+              <History />
+            </PrivateRoute>
+          } />
+          <Route path="/users" element={
+            <PrivateRoute>
+              <Users />
+            </PrivateRoute>
+          } />
+          <Route path="/it-equipment" element={
+            <PrivateRoute>
+              <ItDashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/it-equipment/receive" element={
+            <PrivateRoute>
+              <ItReceive />
+            </PrivateRoute>
+          } />
+          <Route path="/it-equipment/issue" element={
+            <PrivateRoute>
+              <ItIssue />
             </PrivateRoute>
           } />
           <Route path="/borrow" element={
