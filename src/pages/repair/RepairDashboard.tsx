@@ -10,8 +10,10 @@ import {
   Plus,
   Trash2,
   Pencil,
-  ArrowLeft
+  ArrowLeft,
+  Camera
 } from 'lucide-react';
+import { QrReader } from 'react-qr-reader';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
 import { Link } from 'react-router-dom';
@@ -23,6 +25,7 @@ export default function RepairDashboard() {
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
   const [repairs, setRepairs] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showScanner, setShowScanner] = useState(false);
   const { currentUser, isAdmin, isAdmin_2 } = useAuth();
 
   useEffect(() => {
@@ -76,6 +79,25 @@ export default function RepairDashboard() {
       } catch (error) {
         console.error("Failed to delete repair:", error);
         alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+      }
+    }
+  };
+
+  const handleScanFinish = async (result, error) => {
+    if (result) {
+      const text = result?.text || result;
+      if (text && text.startsWith('REPAIR:')) {
+        setShowScanner(false);
+        const scannedId = text.split(':')[1];
+        if (window.confirm('คุณต้องการปิดงานซ่อมนี้ใช่หรือไม่?')) {
+          try {
+            await RepairService.updateRepair(scannedId, { status: 'สมบูรณ์' });
+            setRepairs(prev => prev.map(r => r.id === scannedId ? { ...r, status: 'สมบูรณ์' } : r));
+            alert('ปิดงานสำเร็จ');
+          } catch (e) {
+            alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+          }
+        }
       }
     }
   };
@@ -172,13 +194,22 @@ export default function RepairDashboard() {
               </h1>
               <p className="text-slate-500 font-medium text-sm mt-1">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
             </div>
-            <Link 
-              to="/repair/entry"
-              className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(59,130,246,0.4)] group font-black text-base border-2 border-white/20"
-            >
-              <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
-              เพิ่มรายการแจ้งซ่อมใหม่
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => setShowScanner(true)}
+                className="flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(16,185,129,0.4)] group font-black text-base border-2 border-white/20"
+              >
+                <Camera size={22} className="group-hover:scale-110 transition-transform duration-300" />
+                สแกนปิดงาน
+              </button>
+              <Link 
+                to="/repair/entry"
+                className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(59,130,246,0.4)] group font-black text-base border-2 border-white/20"
+              >
+                <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
+                เพิ่มรายการแจ้งซ่อมใหม่
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -343,6 +374,29 @@ export default function RepairDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Scanner Modal */}
+      {showScanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 w-[400px] max-w-[90vw] shadow-2xl relative">
+            <h2 className="text-xl font-bold mb-4 text-center">สแกน QR Code เพื่อปิดงาน</h2>
+            <div className="rounded-xl overflow-hidden mb-4 border-2 border-emerald-500">
+              <QrReader
+                onResult={handleScanFinish}
+                constraints={{ facingMode: 'environment' }}
+                containerStyle={{ width: '100%' }}
+              />
+            </div>
+            <button 
+              onClick={() => setShowScanner(false)}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );
