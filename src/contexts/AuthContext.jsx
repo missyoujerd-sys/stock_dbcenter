@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -32,21 +32,6 @@ export function AuthProvider({ children }) {
             .then(() => signInWithEmailAndPassword(auth, email, password));
     }
 
-    async function loginWithQRCode(qrCode) {
-        const email = `${qrCode}@qrcode.nkp.com`;
-        const password = `QR_${qrCode}_!@#`;
-        
-        try {
-            await setPersistence(auth, browserSessionPersistence);
-            return await signInWithEmailAndPassword(auth, email, password);
-        } catch (error) {
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
-                return await createUserWithEmailAndPassword(auth, email, password);
-            }
-            throw error;
-        }
-    }
-
     function logout() {
         return signOut(auth);
     }
@@ -57,7 +42,6 @@ export function AuthProvider({ children }) {
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdmin_2, setIsAdmin_2] = useState(false);
-    const [isQRCodeUser, setIsQRCodeUser] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -83,11 +67,9 @@ export function AuthProvider({ children }) {
 
                 setIsAdmin(isAdm);
                 setIsAdmin_2(isAdm2);
-                setIsQRCodeUser(email?.endsWith('@qrcode.nkp.com'));
             } else {
                 setIsAdmin(false);
                 setIsAdmin_2(false);
-                setIsQRCodeUser(false);
             }
             
             setLoading(false);
@@ -100,9 +82,7 @@ export function AuthProvider({ children }) {
         currentUser,
         isAdmin,
         isAdmin_2,
-        isQRCodeUser,
         login,
-        loginWithQRCode,
         logout,
         resetPassword
     };
