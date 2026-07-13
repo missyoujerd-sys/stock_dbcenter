@@ -98,7 +98,7 @@ export default function ItReceive() {
                                         name="equipmentName" 
                                         value={formData.equipmentName} 
                                         onChange={handleChange} 
-                                        placeholder="เช่น จอ Dell 24 นิ้ว, เมาส์ Logitech"
+                                        placeholder="เช่น เมาส์ Logitech"
                                         className="py-2 px-3 border-0 bg-light rounded-3"
                                         style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
                                     />
