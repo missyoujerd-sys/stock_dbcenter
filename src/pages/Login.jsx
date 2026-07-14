@@ -5,13 +5,60 @@ import { db } from '../firebase';
 import { ref, get, update } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation } from 'react-icons/fa';
+import { QrReader } from 'react-qr-reader';
 
 export default function Login() {
     let userRef = useRef();
     const passwordRef = useRef();
-    const { login } = useAuth();
+    const { login, loginWithQRCode } = useAuth();
     const [error, setError] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
+    
+    // QR Code Login States
+    const [deviceType, setDeviceType] = useState("");
+    const [qrData, setQrData] = useState("");
+    const [scanQR, setScanQR] = useState(false);
+
+    const handleQRResult = async (result, error) => {
+        if (result) {
+            const qrText = result?.text || result;
+            setQrData(qrText);
+            setScanQR(false);
+
+            if (!deviceType) {
+                setError("กรุณาเลือกประเภทอุปกรณ์ก่อนสแกน");
+                setShowErrorModal(true);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                const payload = {
+                    qrCode: qrText,
+                    deviceType: deviceType,
+                    loginTime: new Date().toISOString(),
+                };
+                console.log("QR Login Payload:", payload);
+                // Example API Call
+                /*
+                const res = await fetch("https://your-api.com/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                */
+
+                await loginWithQRCode(qrText);
+                navigate('/repair/entry?model=' + encodeURIComponent(deviceType));
+            } catch (err) {
+                setError('เข้าสู่ระบบด้วย QR Code ล้มเหลว: ' + err.message);
+                setShowErrorModal(true);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -197,10 +244,10 @@ export default function Login() {
                     </div>
                     <div>
                         <div style={{ color: '#1e293b', fontWeight: '800', fontSize: '1.2rem', fontFamily: 'Prompt, sans-serif' }}>
-                            คุณใช้ภาษาไทยนะครับ
+                            คุณใช้ภาษาไทย
                         </div>
                         <div style={{ color: '#64748b', fontSize: '0.9rem', fontFamily: 'Prompt, sans-serif' }}>
-                            ผมเปลี่ยนเป็นภาษาอังกฤษให้แล้วนะครับ
+                            เปลี่ยนเป็นภาษาอังกฤษให้แล้ว
                         </div>
                     </div>
                 </div>
@@ -261,6 +308,92 @@ export default function Login() {
                             LOGIN
                         </Button>
                     </div>
+
+                    <div className="w-100 mt-3 d-flex align-items-center justify-content-center" style={{ gap: '10px' }}>
+                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.2)', flex: 1 }}></div>
+                        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>--- สำหรับบริษัทนอกที่มารับอุปกรณ์ใน ร.พ. ไปซ่อม --- </span>
+                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.2)', flex: 1 }}></div>
+                    </div>
+
+                    <div className="w-100 mt-3 d-flex flex-column align-items-center">
+                        <Form.Select
+                            value={deviceType}
+                            onChange={(e) => setDeviceType(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                marginBottom: '10px',
+                                border: '1px solid #3b82f6',
+                                background: 'rgba(255,255,255,0.9)',
+                                color: '#1e3a8a',
+                                fontWeight: 'bold'
+                                
+                            }}
+                        >
+                            <option value="" style={{ textAlign: 'center' }}>
+                                --- เลือกประเภทอุปกรณ์ที่จะรับไปซ่อม ---</option>       
+                            <option value="เครื่องคอมพิวเตอร์" style={{ textAlign: 'center' }}>เครื่องคอมพิวเตอร์</option>
+                            <option value="จอคอมพิวเตอร์" style={{ textAlign: 'center' }}>จอคอมพิวเตอร์</option>
+                            <option value="เครื่องพิมพ์/ปริ๊นเตอร์" style={{ textAlign: 'center' }}>เครื่องพิมพ์/ปริ้นเตอร์</option>
+                            <option value="โน๊ตบุ๊ค/แท็บเล็ต" style={{ textAlign: 'center' }}>โน๊ตบุ๊ค/แท็บเล็ต</option>
+                            <option value="เครื่องสำรองไฟ/UPS" style={{ textAlign: 'center' }}>เครื่องสำรองไฟ</option>
+                            
+                        </Form.Select>
+                        
+                        {!scanQR && (
+                            <Button 
+                                type="button" 
+                                disabled={loading}
+                                onClick={() => {
+                                    if (!deviceType) {
+                                        setError("กรุณาเลือกประเภทอุปกรณ์ก่อนสแกน");
+                                        setShowErrorModal(true);
+                                        return;
+                                    }
+                                    setScanQR(true);
+                                }}
+                                style={{ 
+                                    width: '100%', 
+                                    background: 'linear-gradient(to right, #1e3a8a, #1e40af)',
+                                    border: '1px solid #3b82f6',
+                                    borderRadius: '12px',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    boxShadow: '0 4px 15px rgba(30, 58, 138, 0.5)',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(30, 58, 138, 0.7)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(30, 58, 138, 0.5)'; }}
+                            >
+                                <div style={{ 
+                                    width: '25px', height: '25px', 
+                                    background: '#ca7229ff', borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '14px', color: '#1e3a8a', fontWeight: 'bold'
+                                }}>
+                                    📱
+                                </div>
+                                <span style={{ fontWeight: 'bold', fontSize: '1.1rem', letterSpacing: '1px', color: 'white' }}>สแกนเพื่อสร้างใบแจ้งซ่อม</span>
+                            </Button>
+                        )}
+                        {scanQR && (
+                            <div style={{ width: '100%', marginTop: '10px', background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                                <div style={{ padding: '10px', background: '#f4f4f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#333' }}>สแกน QR Code</span>
+                                    <Button variant="danger" size="sm" onClick={() => setScanQR(false)}>ปิด</Button>
+                                </div>
+                                <QrReader
+                                    constraints={{ facingMode: "environment" }}
+                                    onResult={handleQRResult}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </Form>
 
                 <div className="login-footer-info">
@@ -283,6 +416,8 @@ export default function Login() {
                     </span>
                 </div>
             </div>
+
+
 
             {/* Error Popup Modal */}
             <Modal

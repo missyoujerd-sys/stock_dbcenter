@@ -1,228 +1,341 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { ref, push, onValue } from 'firebase/database';
-import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
-import { FaArrowUp, FaCheckCircle, FaArrowLeft, FaExclamationTriangle } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { ref, push, onValue, set } from 'firebase/database';
+import { useNavigate } from 'react-router-dom';
 
 export default function ItIssue() {
     const navigate = useNavigate();
-    const [availableItems, setAvailableItems] = useState([]);
     
-    const [formData, setFormData] = useState({
-        equipmentName: '',
-        quantity: 1,
-        department: '',
-        receiver: '',
-        remarks: ''
-    });
+    // Form State
+    const [docNo, setDocNo] = useState('');
+    const [docDate, setDocDate] = useState(new Date().toISOString().split('T')[0]);
+    const [requester, setRequester] = useState('');
+    const [remarks, setRemarks] = useState('');
     
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState('');
-
+    // Grid State
+    const [lines, setLines] = useState([
+        { id: Date.now(), itemCode: '', itemName: '', unit: '', qty: 1, price: 0, total: 0 }
+    ]);
+    
+    // Master Data
+    const [employees, setEmployees] = useState([]);
+    const [items, setItems] = useState([]);
+    
     useEffect(() => {
-        // Fetch current stock to show suggestions (optional, but good for premium feel)
-        const itRef = ref(db, 'it_equipment_tx');
-        onValue(itRef, (snapshot) => {
+        // Auto-generate Doc No
+        const generateDocNo = () => {
+            const date = new Date();
+            const year = date.getFullYear() + 543; // Thai year
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+            setDocNo(`TI-${year}${month}-${random}`);
+        };
+        generateDocNo();
+
+        // Fetch Employees
+        const empRef = ref(db, 'it_employees');
+        onValue(empRef, (snapshot) => {
             const data = snapshot.val();
-            const itemsMap = new Map();
-            
+            const empList = [];
             if (data) {
-                for (const key in data) {
-                    const tx = data[key];
-                    const eqName = tx.equipmentName;
-                    const currentQty = itemsMap.get(eqName) || 0;
-                    if (tx.type === 'IN') {
-                        itemsMap.set(eqName, currentQty + tx.quantity);
-                    } else if (tx.type === 'OUT') {
-                        itemsMap.set(eqName, currentQty - tx.quantity);
-                    }
+                for (let key in data) {
+                    empList.push({ id: key, ...data[key] });
                 }
             }
-            
-            const available = [];
-            itemsMap.forEach((qty, name) => {
-                if (qty > 0) available.push({ name, qty });
-            });
-            setAvailableItems(available);
+            setEmployees(empList);
+        });
+
+        // Fetch Items (from office_items or it_equipment_tx to build stock)
+        const itemsRef = ref(db, 'office_items');
+        onValue(itemsRef, (snapshot) => {
+            const data = snapshot.val();
+            const itemList = [];
+            if (data) {
+                for (let key in data) {
+                    itemList.push({ id: key, ...data[key] });
+                }
+            } else {
+                // Mock data if empty
+                itemList.push(
+                    { id: 'IT001', code: 'IT001', name: 'เมาส์', unit: 'อัน', price: 200 },
+                    { id: 'IT002', code: 'IT002', name: 'คีย์บอร์ด', unit: 'อัน', price: 350 },
+                    { id: 'IT003', code: 'IT003', name: 'กระดาษ A4', unit: 'รีม', price: 120 }
+                );
+            }
+            setItems(itemList);
         });
     }, []);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSelectEquipment = (e) => {
-        setFormData({ ...formData, equipmentName: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setSuccess(false);
-
-        if (!formData.equipmentName.trim()) {
-            setError('กรุณาระบุชื่ออุปกรณ์ที่ต้องการเบิก');
-            setLoading(false);
-            return;
-        }
-        if (formData.quantity < 1) {
-            setError('จำนวนต้องมากกว่า 0');
-            setLoading(false);
-            return;
+    const handleLineChange = (index, field, value) => {
+        const newLines = [...lines];
+        newLines[index][field] = value;
+        
+        // Auto-fill from item selection
+        if (field === 'itemCode' || field === 'itemName') {
+            const selectedItem = items.find(it => it.code === value || it.name === value);
+            if (selectedItem) {
+                newLines[index].itemCode = selectedItem.code;
+                newLines[index].itemName = selectedItem.name;
+                newLines[index].unit = selectedItem.unit;
+                newLines[index].price = selectedItem.price;
+            }
         }
         
-        // Check stock
-        const selectedItem = availableItems.find(item => item.name === formData.equipmentName.trim());
-        if (!selectedItem || selectedItem.qty < formData.quantity) {
-            setError(`จำนวนอุปกรณ์ในคลังไม่เพียงพอ (คงเหลือ: ${selectedItem ? selectedItem.qty : 0})`);
-            setLoading(false);
-            return;
+        // Calculate Total
+        if (field === 'qty' || field === 'price' || field === 'itemCode' || field === 'itemName') {
+            newLines[index].total = Number(newLines[index].qty || 0) * Number(newLines[index].price || 0);
         }
+        
+        setLines(newLines);
+    };
 
+    const addLine = () => {
+        setLines([...lines, { id: Date.now(), itemCode: '', itemName: '', unit: '', qty: 1, price: 0, total: 0 }]);
+    };
+    
+    const removeLine = (index) => {
+        if (lines.length > 1) {
+            const newLines = lines.filter((_, i) => i !== index);
+            setLines(newLines);
+        }
+    };
+
+    const handleSave = async () => {
         try {
-            const txRef = ref(db, 'it_equipment_tx');
-            await push(txRef, {
-                type: 'OUT',
-                timestamp: Date.now(),
-                equipmentName: formData.equipmentName.trim(),
-                quantity: Number(formData.quantity),
-                department: formData.department.trim(),
-                receiver: formData.receiver.trim(),
-                remarks: formData.remarks.trim(),
+            // Check required
+            if (!requester) {
+                alert('กรุณาเลือกผู้เบิก');
+                return;
+            }
+            
+            const validLines = lines.filter(l => l.itemName && l.qty > 0);
+            if (validLines.length === 0) {
+                alert('กรุณาระบุรายการวัสดุอย่างน้อย 1 รายการ');
+                return;
+            }
+
+            // Save Document Master
+            const docRef = push(ref(db, 'documents'));
+            const docId = docRef.key;
+            
+            await set(docRef, {
+                docNo,
+                docDate,
+                requester,
+                remarks,
+                type: 'ISSUE',
+                timestamp: Date.now()
             });
 
-            setSuccess(true);
-            setFormData({ equipmentName: '', quantity: 1, department: '', receiver: '', remarks: '' });
-            setTimeout(() => setSuccess(false), 3000);
+            // Save Document Lines & Update Stock Transactions
+            for (let line of validLines) {
+                // Line
+                await push(ref(db, 'document_lines'), {
+                    docId,
+                    itemCode: line.itemCode,
+                    itemName: line.itemName,
+                    qty: Number(line.qty),
+                    price: Number(line.price),
+                    total: Number(line.total)
+                });
+                
+                // Update transaction for backwards compatibility
+                await push(ref(db, 'it_equipment_tx'), {
+                    type: 'OUT',
+                    timestamp: Date.now(),
+                    equipmentName: line.itemName,
+                    quantity: Number(line.qty),
+                    department: '', // Can pull from emp if needed
+                    receiver: requester,
+                    remarks: remarks || `เบิกตามเอกสาร ${docNo}`,
+                    docNo: docNo
+                });
+            }
+            
+            alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+            
+            // Reset
+            setLines([{ id: Date.now(), itemCode: '', itemName: '', unit: '', qty: 1, price: 0, total: 0 }]);
+            setDocNo(`IT-${new Date().getFullYear()+543}${String(new Date().getMonth()+1).padStart(2,'0')}-${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`);
+            setRemarks('');
+            
         } catch (err) {
             console.error(err);
-            setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        } finally {
-            setLoading(false);
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
         }
     };
 
-    const glassCardStyle = {
-        background: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        borderRadius: '20px'
-    };
+    // Calculate Grand Total
+    const grandTotalQty = lines.reduce((sum, line) => sum + Number(line.qty || 0), 0);
+    const grandTotalAmount = lines.reduce((sum, line) => sum + Number(line.total || 0), 0);
 
     return (
-        <div className="container-fluid py-4" style={{ fontFamily: 'Inter, Prompt, sans-serif', minHeight: '100vh', background: 'linear-gradient(135deg, #f0f4fd 0%, #fef5f9 100%)' }}>
-            <div className="d-flex align-items-center mb-4 gap-3">
-                <Button variant="light" onClick={() => navigate('/it-equipment')} className="rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                    <FaArrowLeft />
-                </Button>
-                <div>
-                    <h2 className="fw-bold mb-0 text-danger d-flex align-items-center gap-2">
-                        <FaArrowUp /> เบิกจ่ายอุปกรณ์ IT
-                    </h2>
+        <div style={{ padding: '20px', fontFamily: '"MS Sans Serif", Tahoma, sans-serif', backgroundColor: '#c0c0c0', minHeight: '100vh' }}>
+            <div style={{ border: '2px solid #fff', borderRightColor: '#808080', borderBottomColor: '#808080', backgroundColor: '#e0dfdf', maxWidth: '1000px', margin: '0 auto', boxShadow: '2px 2px 5px rgba(0,0,0,0.3)' }}>
+                
+                {/* Header Title Bar (Dark Red) */}
+                <div style={{ backgroundColor: '#800000', color: 'white', padding: '5px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #fff' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>📝 ระบบเบิกจ่ายวัสดุ</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <button onClick={() => window.print()} style={{ padding: '2px 10px', backgroundColor: '#d4d0c8', border: '1px solid #fff', borderRightColor: '#808080', borderBottomColor: '#808080', cursor: 'pointer', color: 'black' }}>พิมพ์</button>
+                        <button onClick={handleSave} style={{ padding: '2px 10px', backgroundColor: '#d4d0c8', border: '1px solid #fff', borderRightColor: '#808080', borderBottomColor: '#808080', cursor: 'pointer', color: 'black' }}>บันทึก</button>
+                        <button onClick={() => navigate('/it-equipment')} style={{ padding: '2px 10px', backgroundColor: '#d4d0c8', border: '1px solid #fff', borderRightColor: '#808080', borderBottomColor: '#808080', cursor: 'pointer', color: 'black' }}>ออก</button>
+                    </div>
                 </div>
+
+                {/* Master Section (Teal) */}
+                <div style={{ backgroundColor: '#008080', padding: '15px', color: 'black' }}>
+                    <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', width: '300px' }}>
+                            <span style={{ width: '80px', color: 'white', fontSize: '14px' }}>เลขที่เอกสาร</span>
+                            <input type="text" value={docNo} readOnly style={{ flex: 1, padding: '2px 5px', border: '1px solid #000' }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', width: '300px' }}>
+                            <span style={{ width: '80px', color: 'white', fontSize: '14px' }}>วันที่ขอ</span>
+                            <input type="date" value={docDate} onChange={(e) => setDocDate(e.target.value)} style={{ flex: 1, padding: '2px 5px', border: '1px solid #000' }} />
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', width: '400px' }}>
+                        <span style={{ width: '80px', color: 'white', fontSize: '14px' }}>ผู้เบิก</span>
+                        <select 
+                            value={requester} 
+                            onChange={(e) => setRequester(e.target.value)}
+                            style={{ flex: 1, padding: '2px 5px', border: '1px solid #000', backgroundColor: 'white' }}
+                        >
+                            <option value="">-- เลือกผู้เบิก --</option>
+                            {employees.map(emp => (
+                                <option key={emp.id} value={emp.name}>{emp.name} ({emp.department})</option>
+                            ))}
+                            {employees.length === 0 && <option value="พนักงาน A (แผนก IT)">พนักงาน A (แผนก IT)</option>}
+                        </select>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'flex-start', width: '500px' }}>
+                        <span style={{ width: '80px', color: 'white', fontSize: '14px' }}>หมายเหตุ</span>
+                        <textarea 
+                            value={remarks}
+                            onChange={(e) => setRemarks(e.target.value)}
+                            rows={3} 
+                            style={{ flex: 1, padding: '2px 5px', border: '1px solid #000' }} 
+                        />
+                    </div>
+                </div>
+
+                {/* Grid Section */}
+                <div style={{ backgroundColor: '#c0c0c0', padding: '5px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000', backgroundColor: 'white' }}>
+                        <thead>
+                            <tr style={{ backgroundColor: '#000080', color: 'white', fontSize: '13px' }}>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '30px' }}>#</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '120px' }}>รหัสวัสดุ</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px' }}>ชื่อวัสดุ</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '80px' }}>หน่วยนับ</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '80px' }}>จำนวน</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '100px' }}>ราคาต่อหน่วย</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '120px' }}>จำนวนเงิน</th>
+                                <th style={{ border: '1px solid #fff', padding: '3px', width: '40px' }}>ลบ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {lines.map((line, index) => (
+                                <tr key={line.id} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f0f0f0', fontSize: '13px' }}>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px', textAlign: 'center' }}>
+                                        <div style={{ width: '10px', height: '10px', backgroundColor: 'black', borderRadius: '50%', margin: '0 auto', opacity: index === lines.length - 1 ? 1 : 0 }}></div>
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px' }}>
+                                        <input 
+                                            type="text" 
+                                            value={line.itemCode} 
+                                            onChange={(e) => handleLineChange(index, 'itemCode', e.target.value)}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+                                        />
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px' }}>
+                                        <select 
+                                            value={line.itemName} 
+                                            onChange={(e) => handleLineChange(index, 'itemName', e.target.value)}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+                                        >
+                                            <option value=""></option>
+                                            {items.map(it => (
+                                                <option key={it.id} value={it.name}>{it.name}</option>
+                                            ))}
+                                            {/* Support custom typing by allowing input if not selected */}
+                                        </select>
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px' }}>
+                                        <input 
+                                            type="text" 
+                                            value={line.unit} 
+                                            onChange={(e) => handleLineChange(index, 'unit', e.target.value)}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', textAlign: 'center' }}
+                                        />
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px' }}>
+                                        <input 
+                                            type="number" 
+                                            min="1"
+                                            value={line.qty} 
+                                            onChange={(e) => handleLineChange(index, 'qty', e.target.value)}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', textAlign: 'right' }}
+                                        />
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px' }}>
+                                        <input 
+                                            type="number" 
+                                            min="0"
+                                            value={line.price} 
+                                            onChange={(e) => handleLineChange(index, 'price', e.target.value)}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', textAlign: 'right' }}
+                                        />
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px', textAlign: 'right', paddingRight: '5px' }}>
+                                        {line.total.toFixed(2)}
+                                    </td>
+                                    <td style={{ border: '1px solid #c0c0c0', padding: '2px', textAlign: 'center' }}>
+                                        <button onClick={() => removeLine(index)} style={{ padding: '0 5px', fontSize: '10px' }}>X</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    
+                    <div style={{ marginTop: '5px' }}>
+                        <button onClick={addLine} style={{ padding: '2px 10px', backgroundColor: '#d4d0c8', border: '1px solid #fff', borderRightColor: '#808080', borderBottomColor: '#808080', cursor: 'pointer', fontSize: '12px' }}>
+                            + เพิ่มรายการ
+                        </button>
+                    </div>
+
+                    {/* Footer Totals */}
+                    <div style={{ display: 'flex', backgroundColor: '#000080', color: 'white', marginTop: '10px', fontSize: '13px', fontWeight: 'bold' }}>
+                        <div style={{ flex: 1, padding: '3px 10px' }}>Record: {lines.length}</div>
+                        <div style={{ width: '80px', padding: '3px', textAlign: 'right' }}>{grandTotalQty}</div>
+                        <div style={{ width: '100px', padding: '3px' }}></div>
+                        <div style={{ width: '120px', padding: '3px', textAlign: 'right', paddingRight: '10px' }}>{grandTotalAmount.toFixed(2)}</div>
+                        <div style={{ width: '40px' }}></div>
+                    </div>
+                </div>
+
             </div>
-
-            <Row className="justify-content-center">
-                <Col md={8} lg={6}>
-                    <Card style={glassCardStyle}>
-                        <Card.Body className="p-5">
-                            {error && <Alert variant="danger" className="rounded-3"><FaExclamationTriangle className="me-2"/> {error}</Alert>}
-                            {success && <Alert variant="success" className="rounded-3"><FaCheckCircle className="me-2"/> บันทึกการเบิกจ่ายสำเร็จ</Alert>}
-                            
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group className="mb-4">
-                                    <Form.Label className="fw-bold text-muted small">เลือกอุปกรณ์ที่มีในคลัง (Available Equipment) *</Form.Label>
-                                    <Form.Select 
-                                        name="equipmentSelect" 
-                                        onChange={handleSelectEquipment}
-                                        value={formData.equipmentName}
-                                        className="py-2 px-3 border-0 bg-light rounded-3 mb-2"
-                                        style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
-                                    >
-                                        <option value="">-- เลือกอุปกรณ์ --</option>
-                                        {availableItems.map((item, idx) => (
-                                            <option key={idx} value={item.name}>{item.name} (คงเหลือ: {item.qty})</option>
-                                        ))}
-                                    </Form.Select>
-                                    
-                                    <Form.Control 
-                                        type="text" 
-                                        name="equipmentName" 
-                                        value={formData.equipmentName} 
-                                        onChange={handleChange} 
-                                        placeholder="หรือพิมพ์ชื่ออุปกรณ์เอง..."
-                                        className="py-2 px-3 border-0 bg-light rounded-3"
-                                    />
-                                </Form.Group>
-
-                                <Form.Group className="mb-4">
-                                    <Form.Label className="fw-bold text-muted small">จำนวนที่เบิก *</Form.Label>
-                                    <Form.Control 
-                                        type="number" 
-                                        name="quantity" 
-                                        min="1"
-                                        value={formData.quantity} 
-                                        onChange={handleChange} 
-                                        className="py-2 px-3 border-0 bg-light rounded-3 fw-bold text-danger w-50"
-                                    />
-                                </Form.Group>
-
-                                <Row>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-4">
-                                            <Form.Label className="fw-bold text-muted small">แผนกที่ขอเบิก</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="department" 
-                                                value={formData.department} 
-                                                onChange={handleChange} 
-                                                className="py-2 px-3 border-0 bg-light rounded-3"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-4">
-                                            <Form.Label className="fw-bold text-muted small">ผู้รับอุปกรณ์</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="receiver" 
-                                                value={formData.receiver} 
-                                                onChange={handleChange} 
-                                                className="py-2 px-3 border-0 bg-light rounded-3"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <Form.Group className="mb-5">
-                                    <Form.Label className="fw-bold text-muted small">หมายเหตุ (เหตุผลการเบิก)</Form.Label>
-                                    <Form.Control 
-                                        as="textarea" 
-                                        rows={3}
-                                        name="remarks" 
-                                        value={formData.remarks} 
-                                        onChange={handleChange} 
-                                        className="py-2 px-3 border-0 bg-light rounded-3"
-                                    />
-                                </Form.Group>
-
-                                <Button 
-                                    type="submit" 
-                                    className="w-100 rounded-pill py-3 fw-bold fs-5 shadow-sm border-0" 
-                                    style={{ background: 'linear-gradient(45deg, #ef4444, #f87171)' }}
-                                    disabled={loading}
-                                >
-                                    {loading ? 'กำลังบันทึก...' : 'ยืนยันการเบิกจ่าย'}
-                                </Button>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+            
+            {/* Print Styles */}
+            <style>
+                {`
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    .container-fluid, .container-fluid * {
+                        visibility: visible;
+                    }
+                    button { display: none !important; }
+                    input, select, textarea { border: none !important; border-bottom: 1px solid #000 !important; }
+                }
+                `}
+            </style>
         </div>
     );
 }
