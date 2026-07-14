@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ExternalAuthProvider, useExternalAuth } from './contexts/ExternalAuthContext';
 import Layout from './components/Layout';
 
 // Placeholder Pages (will be implemented shortly)
@@ -24,9 +25,20 @@ import FloatingChat from './components/FloatingChat';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
+// External company pages
+import ExternalLogin from './pages/external/ExternalLogin';
+import ExternalRepairForm from './pages/external/ExternalRepairForm';
+import ExternalRepairList from './pages/external/ExternalRepairList';
+
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
   return currentUser ? <Layout>{children}</Layout> : <Navigate to="/login" />;
+}
+
+// Guard: ต้อง login external ก่อน ถ้าไม่ได้ login redirect ไป /external/login
+function ExternalRoute({ children }) {
+  const { isExternalLoggedIn } = useExternalAuth();
+  return isExternalLoggedIn ? children : <Navigate to="/external/login" />;
 }
 
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -35,9 +47,20 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
+        <ExternalAuthProvider>
         <AuthProvider>
           <Routes>
           <Route path="/login" element={<Login />} />
+
+          {/* ─── External Company Routes (แยกอิสระ ไม่ใช้ Firebase Auth) ─── */}
+          <Route path="/external/login" element={<ExternalLogin />} />
+          <Route path="/external/repair" element={
+            <ExternalRoute><ExternalRepairForm /></ExternalRoute>
+          } />
+          <Route path="/external/repair/list" element={
+            <ExternalRoute><ExternalRepairList /></ExternalRoute>
+          } />
+
           {/* Public route - no login required */}
           <Route path="/repair/public" element={<RepairPublicSearch />} />
           <Route path="/repair/public/:id" element={<RepairPublicSearch />} />
@@ -127,6 +150,7 @@ function App() {
         {/* Floating Chat Bubble - available on all authenticated pages */}
         <FloatingChat />
         </AuthProvider>
+        </ExternalAuthProvider>
       </ThemeProvider>
     </Router>
   );
