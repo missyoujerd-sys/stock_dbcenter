@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { 
   Search, 
   Filter, 
@@ -13,11 +13,57 @@ import {
   ArrowLeft,
   Camera
 } from 'lucide-react';
-import { QrReader } from 'react-qr-reader';
+import { Html5Qrcode } from 'html5-qrcode';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+
+// ── QR Scanner Component (ใช้ html5-qrcode แทน react-qr-reader) ──
+function QrScannerModal({ onResult, onClose }: { onResult: (text: string) => void; onClose: () => void }) {
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const elementId = 'qr-reader-element';
+
+  useEffect(() => {
+    const scanner = new Html5Qrcode(elementId);
+    scannerRef.current = scanner;
+
+    scanner
+      .start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          onResult(decodedText);
+        },
+        () => { /* ignore scan errors */ }
+      )
+      .catch((err) => console.error('QR start error:', err));
+
+    return () => {
+      scanner
+        .stop()
+        .then(() => scanner.clear())
+        .catch(() => {});
+    };
+  }, [onResult]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-[400px] max-w-[90vw] shadow-2xl relative">
+        <h2 className="text-xl font-bold mb-4 text-center">สแกน QR Code เพื่อปิดงาน</h2>
+        <div className="rounded-xl overflow-hidden mb-4 border-2 border-emerald-500">
+          <div id={elementId} style={{ width: '100%' }} />
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+        >
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  );
+}
 
 
 export default function RepairDashboard() {
@@ -83,24 +129,21 @@ export default function RepairDashboard() {
     }
   };
 
-  const handleScanFinish = async (result, error) => {
-    if (result) {
-      const text = result?.text || result;
-      if (text && text.startsWith('REPAIR:')) {
-        setShowScanner(false);
-        const scannedId = text.split(':')[1];
-        if (window.confirm('คุณต้องการปิดงานซ่อมนี้ใช่หรือไม่?')) {
-          try {
-            await RepairService.updateRepair(scannedId, { status: 'สมบูรณ์' });
-            setRepairs(prev => prev.map(r => r.id === scannedId ? { ...r, status: 'สมบูรณ์' } : r));
-            alert('ปิดงานสำเร็จ');
-          } catch (e) {
-            alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
-          }
+  const handleScanResult = useCallback(async (text: string) => {
+    if (text && text.startsWith('REPAIR:')) {
+      setShowScanner(false);
+      const scannedId = text.split(':')[1];
+      if (window.confirm('คุณต้องการปิดงานซ่อมนี้ใช่หรือไม่?')) {
+        try {
+          await RepairService.updateRepair(scannedId, { status: 'สมบูรณ์' });
+          setRepairs(prev => prev.map(r => r.id === scannedId ? { ...r, status: 'สมบูรณ์' } : r));
+          alert('ปิดงานสำเร็จ');
+        } catch (e) {
+          alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
         }
       }
     }
-  };
+  }, []);
 
   const getStatusBadge = (status: RepairStatus) => {
     const styles: Record<string, string> = {
@@ -377,24 +420,10 @@ export default function RepairDashboard() {
 
       {/* Scanner Modal */}
       {showScanner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 w-[400px] max-w-[90vw] shadow-2xl relative">
-            <h2 className="text-xl font-bold mb-4 text-center">สแกน QR Code เพื่อปิดงาน</h2>
-            <div className="rounded-xl overflow-hidden mb-4 border-2 border-emerald-500">
-              <QrReader
-                onResult={handleScanFinish}
-                constraints={{ facingMode: 'environment' }}
-                containerStyle={{ width: '100%' }}
-              />
-            </div>
-            <button 
-              onClick={() => setShowScanner(false)}
-              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
-            >
-              ยกเลิก
-            </button>
-          </div>
-        </div>
+        <QrScannerModal
+          onResult={handleScanResult}
+          onClose={() => setShowScanner(false)}
+        />
       )}
 
       </div>
