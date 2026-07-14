@@ -14,8 +14,6 @@ import Users from './pages/Users';
 import ItDashboard from './pages/it-equipment/ItDashboard';
 import ItReceive from './pages/it-equipment/ItReceive';
 import ItIssue from './pages/it-equipment/ItIssue';
-import ItReports from './pages/it-equipment/ItReports';
-import ItEmployees from './pages/it-equipment/ItEmployees';
 import RepairEntry from './pages/repair/RepairEntry';
 import RepairDashboard from './pages/repair/RepairDashboard';
 import RepairView from './pages/repair/RepairView';
@@ -88,16 +86,6 @@ function App() {
           <Route path="/it-equipment/issue" element={
             <PrivateRoute>
               <ItIssue />
-            </PrivateRoute>
-          } />
-          <Route path="/it-equipment/reports" element={
-            <PrivateRoute>
-              <ItReports />
-            </PrivateRoute>
-          } />
-          <Route path="/it-equipment/employees" element={
-            <PrivateRoute>
-              <ItEmployees />
             </PrivateRoute>
           } />
           <Route path="/borrow" element={
