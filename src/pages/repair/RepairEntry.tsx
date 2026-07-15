@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { QRCodeSVG } from 'qrcode.react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   Camera, 
   User, 
@@ -295,8 +294,6 @@ export default function RepairEntry() {
   });
 
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const modelFromUrl = searchParams.get('model');
   const navigate = useNavigate();
   const { isAdmin, isAdmin_2 } = useAuth();
   const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
@@ -321,13 +318,6 @@ export default function RepairEntry() {
     }
     return () => {};
   }, []);
-
-  // Pre-fill model from URL if new
-  useEffect(() => {
-    if (modelFromUrl && !id) {
-        setFormData(prev => ({...prev, equipmentModel: modelFromUrl}));
-    }
-  }, [modelFromUrl, id]);
 
   // Fetch data if editing
   useEffect(() => {
@@ -619,8 +609,8 @@ export default function RepairEntry() {
             </div>
             {/* QR Code for viewing this form publicly on mobile */}        
             <div style={{ position: 'absolute', right: '16px', top: '16px', background: 'white', padding: '6px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.15)' }}>
-               {/* Render real QR Code containing the record ID */}
-               <QRCodeSVG value={id ? `REPAIR:${id}` : (formData.docNumber ? `REPAIR:${formData.docNumber}` : 'NEW_RECORD')} size={80} style={{ display: 'block' }} />
+               {/* Point to the public repair search page with the record ID */}
+               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
                <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
             </div>
           </div>

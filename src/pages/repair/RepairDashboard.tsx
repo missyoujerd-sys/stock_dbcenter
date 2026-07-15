@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -10,60 +10,12 @@ import {
   Plus,
   Trash2,
   Pencil,
-  ArrowLeft,
-  Camera
+  ArrowLeft
 } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
 import { RepairService } from '../../services/repairService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-
-// ── QR Scanner Component (ใช้ html5-qrcode แทน react-qr-reader) ──
-function QrScannerModal({ onResult, onClose }: { onResult: (text: string) => void; onClose: () => void }) {
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const elementId = 'qr-reader-element';
-
-  useEffect(() => {
-    const scanner = new Html5Qrcode(elementId);
-    scannerRef.current = scanner;
-
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          onResult(decodedText);
-        },
-        () => { /* ignore scan errors */ }
-      )
-      .catch((err) => console.error('QR start error:', err));
-
-    return () => {
-      scanner
-        .stop()
-        .then(() => scanner.clear())
-        .catch(() => {});
-    };
-  }, [onResult]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl p-6 w-[400px] max-w-[90vw] shadow-2xl relative">
-        <h2 className="text-xl font-bold mb-4 text-center">สแกน QR Code เพื่อปิดงาน</h2>
-        <div className="rounded-xl overflow-hidden mb-4 border-2 border-emerald-500">
-          <div id={elementId} style={{ width: '100%' }} />
-        </div>
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
-        >
-          ยกเลิก
-        </button>
-      </div>
-    </div>
-  );
-}
 
 
 export default function RepairDashboard() {
@@ -71,7 +23,6 @@ export default function RepairDashboard() {
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
   const [repairs, setRepairs] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showScanner, setShowScanner] = useState(false);
   const { currentUser, isAdmin, isAdmin_2 } = useAuth();
 
   useEffect(() => {
@@ -128,22 +79,6 @@ export default function RepairDashboard() {
       }
     }
   };
-
-  const handleScanResult = useCallback(async (text: string) => {
-    if (text && text.startsWith('REPAIR:')) {
-      setShowScanner(false);
-      const scannedId = text.split(':')[1];
-      if (window.confirm('คุณต้องการปิดงานซ่อมนี้ใช่หรือไม่?')) {
-        try {
-          await RepairService.updateRepair(scannedId, { status: 'สมบูรณ์' });
-          setRepairs(prev => prev.map(r => r.id === scannedId ? { ...r, status: 'สมบูรณ์' } : r));
-          alert('ปิดงานสำเร็จ');
-        } catch (e) {
-          alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
-        }
-      }
-    }
-  }, []);
 
   const getStatusBadge = (status: RepairStatus) => {
     const styles: Record<string, string> = {
@@ -237,22 +172,13 @@ export default function RepairDashboard() {
               </h1>
               <p className="text-slate-500 font-medium text-sm mt-1">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={() => setShowScanner(true)}
-                className="flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(16,185,129,0.4)] group font-black text-base border-2 border-white/20"
-              >
-                <Camera size={22} className="group-hover:scale-110 transition-transform duration-300" />
-                สแกนปิดงาน
-              </button>
-              <Link 
-                to="/repair/entry"
-                className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(59,130,246,0.4)] group font-black text-base border-2 border-white/20"
-              >
-                <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
-                เพิ่มรายการแจ้งซ่อมใหม่
-              </Link>
-            </div>
+            <Link 
+              to="/repair/entry"
+              className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl transition-all hover:scale-105 shadow-[0_8px_30px_rgba(59,130,246,0.4)] group font-black text-base border-2 border-white/20"
+            >
+              <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
+              เพิ่มรายการแจ้งซ่อมใหม่
+            </Link>
           </div>
         </div>
 
@@ -417,15 +343,6 @@ export default function RepairDashboard() {
           </table>
         </div>
       </div>
-
-      {/* Scanner Modal */}
-      {showScanner && (
-        <QrScannerModal
-          onResult={handleScanResult}
-          onClose={() => setShowScanner(false)}
-        />
-      )}
-
       </div>
     </div>
   );

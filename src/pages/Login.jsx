@@ -256,31 +256,45 @@ export default function Login() {
                         </button>
                     </div>
 
-                    <div className="w-100 mt-2">
-                        <Button disabled={loading} className="login-submit-btn" type="submit" style={{ width: '100%' }}>
+                    <div className="d-flex gap-3 w-100 mt-2">
+                        <Button disabled={loading} className="login-submit-btn" type="submit" style={{ flex: 1 }}>
                             LOGIN
+                        </Button>
+                        <Button
+                            variant="outline-light"
+                            type="button"
+                            onClick={() => {
+                                setForgotUser('');
+                                setForgotMessage('');
+                                setIsForgotSuccess(false);
+                                setShowForgotModal(true);
+                            }}
+                            style={{
+                                flex: 1.0,
+                                borderRadius: '10px',
+                                border: '1px solid rgba(226, 188, 63, 0.88)',
+                                color: '#f8f8f5ff',
+                                fontWeight: '200',
+                                fontSize: '1.2rem',
+                                padding: '1rem',
+                                transition: 'all 0.5s ease',
+                                background: 'rgba(196, 136, 47, 0.7)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(126, 138, 97, 0.7)'; e.currentTarget.style.borderColor = 'rgba(145, 224, 99, 0.96)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                        >
+                            บัญชีถูกล็อก
                         </Button>
                     </div>
                 </Form>
 
                 <div className="login-footer-info">
                     *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
-                </div>
-                
-                <div className="text-center mt-2">
-                    <span 
-                        style={{ cursor: 'pointer', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', textDecoration: 'underline' }}
-                        onClick={() => {
-                            setForgotUser('');
-                            setForgotMessage('');
-                            setIsForgotSuccess(false);
-                            setShowForgotModal(true);
-                        }}
-                        onMouseOver={(e) => e.target.style.color = 'rgba(255,255,255,1)'}
-                        onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.6)'}
-                    >
-                        บัญชีถูกล็อก
-                    </span>
                 </div>
             </div>
 
