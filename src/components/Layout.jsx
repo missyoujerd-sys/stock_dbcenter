@@ -21,9 +21,7 @@ import {
   Calendar,
   Clock,
   ArrowLeftRight,
-  MessageSquare,
-  Users,
-  Server
+  MessageSquare
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -157,17 +155,15 @@ export default function Layout({ children }) {
     { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/หน้าหลัก.png" },
     { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
-    { name: "เบิก-จ่าย อุปกรณ์ IT", path: "/it-equipment", icon: Server, imgSrc: "/เบิก-จ่าย.png" },
-    // ...(isAdmin ? [{ name: "จัดการผู้ใช้งาน", path: "/users", icon: Users }] : []),
     ...(isAdmin_2 ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true }] : []),
     { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
-    { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare,imgSrc: "/ห้องพูดคุย.png" },
+    { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare },
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
   ];
 
   const SidebarContent = () => (
-      <div className={`flex flex-col h-full bg-gradient-to-b from-[#ffffff] via-[#f8fafc] to-[#e2e8f0] dark:from-[#1e293b] dark:via-[#0f172a] dark:to-[#020617] text-slate-800 dark:text-slate-200 transition-all duration-[600ms] relative overflow-hidden border-r border-slate-200 dark:border-slate-800 select-none w-full shadow-[30px_0_70px_rgba(0,0,0,0.05)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
+      <div className={`flex flex-col h-full bg-[#050505] dark:bg-[#000000] text-slate-200 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-slate-800 dark:border-slate-800 select-none w-full shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
@@ -207,7 +203,7 @@ export default function Layout({ children }) {
                 <img 
                   src="/it nkp-transparent.png" 
                   alt="IT NKP" 
-                  className="h-[50px] object-contain opacity-90 block" 
+                  className="h-[28px] object-contain opacity-90 block" 
                   style={{ clipPath: 'inset(2px)' }}
                 />
               </div>
@@ -512,7 +508,7 @@ export default function Layout({ children }) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto main-scrollbar scroll-smooth bg-gradient-to-br from-[#f3f4f6] via-[#e5e7eb] to-[#d1d5db] dark:from-[#1e293b] dark:via-[#111827] dark:to-[#030712] transition-colors duration-500">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto main-scrollbar scroll-smooth bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
         
         {/* Desktop Quick Header */}
         <div className="hidden lg:flex h-20 items-center justify-between pl-8 pr-6 sticky top-0 z-40 bg-slate-200/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
