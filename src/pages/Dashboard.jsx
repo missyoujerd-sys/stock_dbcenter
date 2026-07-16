@@ -997,11 +997,11 @@ export default function Dashboard() {
                     <Modal.Body className="text-center p-4">
                         <div style={{ fontSize: '4rem', animation: 'pulse-scary 1s infinite' }}>⚠️</div>
                         <h2 style={{ color: '#ef9744ff', fontWeight: '900', textShadow: '0 0 10px rgba(239,68,68,0.5)', marginTop: '10px', fontSize: '1.6rem', fontFamily: 'Prompt, sans-serif' }}>
-                            หยุดก่อน !
+                            หยุด
                         </h2>
                         <p style={{ color: '#ffffff', fontSize: '1rem', marginTop: '15px', fontWeight: '500' }}>
                             ไม่สามารถเปลี่ยนแปลงได้<br/>
-                            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>เนื่องจากข้อมูลถูกบันทึกลงฐานข้อมูลเป็นที่เรียบร้อยแล้ว !</span>
+                            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>ข้อมูลถูกบันทึกแล้ว !</span>
                         </p>
                         <Button 
                             variant="danger" 
