@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+ HEAD
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -104,7 +104,7 @@ function App() {
 }
 
 export default App;
-=======
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -263,5 +263,4 @@ function App() {
   );
 }
 
-export default App;
->>>>>>> 88dcb55bb4f66f823f2e5f88ca273c8d57dca09c
+export default App; 88dcb55bb4f66f823f2e5f88ca273c8d57dca09c
