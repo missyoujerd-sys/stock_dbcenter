@@ -1,0 +1,720 @@
+import React, { useState, useEffect } from 'react';
+import { db } from '../firebase';
+import { ref, onValue, remove, update, set } from 'firebase/database';
+import { Table, Card, Row, Col, Badge, Button, Form, Modal } from 'react-bootstrap';
+import { decryptData } from '../utils/encryption';
+import { FaWarehouse, FaSearch, FaHome, FaTruck, FaTrash, FaUndo, FaPrint, FaSync } from 'react-icons/fa';
+import * as ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { useNavigate } from 'react-router-dom';
+import ItemDetailModal from '../components/ItemDetailModal';
+import { useAuth } from '../contexts/AuthContext';
+export default function Inventory() {
+    const [stocks, setStocks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const navigate = useNavigate();
+    const { currentUser, isAdmin, isAdmin_2, resetPassword } = useAuth();
+    const [summary, setSummary] = useState({ total: 0, available: 0, distributed: 0 });
+
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+    const [passwordShake, setPasswordShake] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [adminPassword, setAdminPassword] = useState('101988');
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [changePasswordError, setChangePasswordError] = useState('');
+    const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
+    
+    const [usersStatusList, setUsersStatusList] = useState([]);
+    const [showUserManageModal, setShowUserManageModal] = useState(false);
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        setTimeout(() => setIsRefreshing(false), 600);
+    };
+
+    useEffect(() => {
+        const passRef = ref(db, 'settings/adminPassword');
+        onValue(passRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setAdminPassword(snapshot.val());
+            }
+        });
+
+        const usersStatusRef = ref(db, 'users_status');
+        onValue(usersStatusRef, (snapshot) => {
+            const data = snapshot.val();
+            const list = [];
+            if (data) {
+                for (const key in data) {
+                    if (data[key].locked || data[key].resetRequested) {
+                        list.push({ key, ...data[key] });
+                    }
+                }
+            }
+            setUsersStatusList(list);
+        });
+
+        const stocksRef = ref(db, 'stocks');
+        const unsubscribe = onValue(stocksRef, (snapshot) => {
+            const data = snapshot.val();
+            const loadedStocks = [];
+            let total = 0, available = 0, distributed = 0;
+
+            if (data) {
+                for (const key in data) {
+                    const item = data[key];
+                    total++;
+                    if (item.status === 'รับเข้า') available++;
+                    if (item.status === 'จำหน่าย') distributed++;
+
+                    loadedStocks.push({
+                        id: key,
+                        ...item,
+                        department: decryptData(item.department),
+                        serialNumber: decryptData(item.serialNumber),
+                        assetId: decryptData(item.assetId),
+                        category: decryptData(item.category || ''),
+                        brandModel: decryptData(item.brandModel),
+                        remarks: decryptData(item.remarks || '-'),
+                        status: item.status
+                    });
+                }
+            }
+            // Sort by timestamp desc
+            loadedStocks.sort((a, b) => b.timestamp - a.timestamp);
+            setStocks(loadedStocks);
+            setSummary({ total, available, distributed });
+            setLoading(false);
+        });
+
+        return unsubscribe;
+    }, []);
+
+    const StatusSummaryBar = () => (
+        <div className="status-summary-bar">
+            <div className="status-badge-pill status-pill-total">
+                <div className="status-badge-icon">
+                    <FaWarehouse />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">พัสดุทั้งหมด (Total)</span>
+                    <span className="status-badge-value">{summary.total}</span>
+                </div>
+            </div>
+            <div className="status-badge-pill status-pill-available">
+                <div className="status-badge-icon">
+                    <FaWarehouse />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">คงเหลือ (Available)</span>
+                    <span className="status-badge-value">{summary.available}</span>
+                </div>
+            </div>
+            <div className="status-badge-pill status-pill-distributed">
+                <div className="status-badge-icon">
+                    <FaTruck />
+                </div>
+                <div className="status-badge-info">
+                    <span className="status-badge-label">จำหน่ายแล้ว (Distributed)</span>
+                    <span className="status-badge-value">{summary.distributed}</span>
+                </div>
+            </div>
+        </div>
+    );
+
+    const handleRowClick = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handleDeleteClick = (e, stockId) => {
+        e.stopPropagation();
+        if (!isAdmin && !isAdmin_2) {
+            alert('ลบได้เฉพาะ Admin เท่านั้น');
+            return;
+        }
+        setItemToDelete(stockId);
+        setPasswordInput('');
+        setPasswordError(false);
+        setShowPasswordModal(true);
+    };
+
+    const handlePasswordSubmit = async () => {
+        if (passwordInput === adminPassword) {
+            setShowPasswordModal(false);
+            setPasswordInput('');
+            setPasswordError(false);
+            
+            if (itemToDelete) {
+                if (!window.confirm('ต้องการลบรายการนี้ออกจากระบบ?')) {
+                    setItemToDelete(null);
+                    return;
+                }
+                try {
+                    await remove(ref(db, `stocks/${itemToDelete}`));
+                    setItemToDelete(null);
+                } catch (err) {
+                    console.error('ลบไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาด ไม่สามารถลบรายการได้');
+                    setItemToDelete(null);
+                }
+            }
+        } else {
+            setPasswordError(true);
+            setPasswordShake(true);
+            setPasswordInput('');
+            setTimeout(() => setPasswordShake(false), 600);
+        }
+    };
+
+    const generateExcelLabel = async (stock) => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Label');
+
+        // Page Setup for Zebra Sticker (4" x 3")
+        worksheet.pageSetup = {
+            paperSize: 256,
+            orientation: 'landscape',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 1,
+            margins: { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0, footer: 0 }
+        };
+
+        worksheet.columns = [
+            { width: 18 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, 
+            { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
+        ];
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('th-TH');
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} น.`;
+
+        // Top Right: Date & Time
+        worksheet.mergeCells('I1:J1');
+        worksheet.getCell('I1').value = `วันที่: ${dateStr}`;
+        worksheet.getCell('I1').font = { size: 10 };
+        worksheet.getCell('I1').alignment = { horizontal: 'right' };
+
+        worksheet.mergeCells('I2:J2');
+        worksheet.getCell('I2').value = `เวลา: ${timeStr}`;
+        worksheet.getCell('I2').font = { size: 10 };
+        worksheet.getCell('I2').alignment = { horizontal: 'right' };
+
+        // Header: คลังพัสดุ
+        worksheet.mergeCells('A2:H3');
+        const titleCell = worksheet.getCell('A2');
+        titleCell.value = stock.status === 'จำหน่าย' ? 'จำหน่าย' : 'คลังพัสดุ';
+        titleCell.font = { size: 20, bold: true, underline: true };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        // Detail
+        const fields = [
+            { label: 'หน่วยงาน:', value: `${stock.department}  เบอร์โทร. 2299` },
+            { label: 'ประเภทครุภัณฑ์:', value: stock.category || '-' },
+            { label: 'Serial Number:', value: stock.serialNumber || '-' },
+            { label: 'เลขครุภัณฑ์:', value: stock.assetId || '-' },
+            { label: 'ยี่ห้อ/รุ่น:', value: stock.brandModel || '-' },
+            { label: 'หมายเหตุ:', value: stock.remarks || '-' }
+        ];
+
+        fields.forEach((f, i) => {
+            const r = 5 + (i * 1.5);
+            worksheet.getCell(`A${Math.floor(r)}`).value = f.label;
+            worksheet.getCell(`A${Math.floor(r)}`).font = { size: 11, bold: true };
+            worksheet.mergeCells(`C${Math.floor(r)}:J${Math.floor(r)}`);
+            const vCell = worksheet.getCell(`C${Math.floor(r)}`);
+            vCell.value = f.value;
+            vCell.font = { size: 11 };
+            vCell.alignment = { horizontal: 'left' };
+            vCell.border = { bottom: { style: 'dotted' } };
+        });
+
+        // Signature
+        const fRow = 15;
+        worksheet.mergeCells(`F${fRow}:J${fRow}`);
+        worksheet.getCell(`F${fRow}`).value = `(..........................................)`;
+        worksheet.getCell(`F${fRow}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 1}:J${fRow + 1}`);
+        worksheet.getCell(`F${fRow + 1}`).value = `${stock.officerName || '................................'}`;
+        worksheet.getCell(`F${fRow + 1}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 2}:J${fRow + 2}`);
+        worksheet.getCell(`F${fRow + 2}`).value = `${dateStr}`;
+        worksheet.getCell(`F${fRow + 2}`).alignment = { horizontal: 'center' };
+        worksheet.mergeCells(`F${fRow + 3}:J${fRow + 3}`);
+        worksheet.getCell(`F${fRow + 3}`).value = `เจ้าหน้าที่คอมพิวเตอร์`;
+        worksheet.getCell(`F${fRow + 3}`).alignment = { horizontal: 'center' };
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `Label_Inventory_${stock.assetId}.xlsx`);
+    };
+
+    const handleRevertStatus = async (e, stockId) => {
+        e.stopPropagation();
+        if (!isAdmin_2) {
+            alert('คืนสถานะได้เฉพาะ Admin เท่านั้น');
+            return;
+        }
+        if (!window.confirm('ต้องการคืนสถานะรายการนี้เป็น "รับเข้า" ?')) return;
+        try {
+            await update(ref(db, `stocks/${stockId}`), {
+                status: 'รับเข้า',
+                distributionDate: null,
+                distributor: null,
+                qt_distributed: 0,
+                qt_balance: 1
+            });
+        } catch (err) {
+            console.error('คืนสถานะไม่สำเร็จ:', err);
+            alert('เกิดข้อผิดพลาด ไม่สามารถคืนสถานะได้');
+        }
+    };
+
+    const filteredStocks = stocks.filter(stock =>
+        stock.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.brandModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        stock.department.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <div className="container-fluid py-2">
+            <div className="page-header-container d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div className="page-title-badge">
+                    <div className="page-icon-box">
+                        <FaWarehouse />
+                    </div>
+                    <h2 className="page-title-text">
+                        คลังพัสดุทั้งหมด <small>(Inventory)</small>
+                    </h2>
+                </div>
+            </div>
+
+            <StatusSummaryBar />
+
+            <div className="latest-panel">
+                {/* Panel Header */}
+                <div className="latest-panel-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', backgroundColor: '#fca5a5' }}>
+                    <div className="latest-panel-title-wrap">
+                        <div className="latest-panel-dot" style={{ backgroundColor: '#b91c1c' }}></div>
+                        <span className="latest-panel-title">ข้อมูลพัสดุในระบบ</span>
+                        <span className="latest-panel-badge" style={{ backgroundColor: '#ffffff', color: '#b91c1c', border: '1px solid #ef4444' }}>INVENTORY DATA</span>
+                    </div>
+                    {/* ── ป้ายกลาง ── */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 18px',
+                        borderRadius: '10px',
+                        background: 'rgba(185,28,28,0.12)',
+                        border: '1.5px solid rgba(185,28,28,0.35)',
+                        marginLeft: '8px',
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#7f1d1d',
+                            fontFamily: 'Prompt, sans-serif',
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.02em',
+                        }}>🔐 สำหรับผู้ดูแลระบบ</span>
+                    </div>
+                    {(isAdmin || isAdmin_2) && (
+                        <>
+                            <button 
+                                className="btn btn-sm btn-outline-danger position-relative" 
+                                style={{ marginLeft: '10px', borderRadius: '10px', fontWeight: 'bold' }}
+                                onClick={() => setShowUserManageModal(true)}
+                            >
+                                👥 คำขอปลดล็อก User
+                                {usersStatusList.length > 0 && (
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {usersStatusList.length}
+                                    </span>
+                                )}
+                            </button>
+                            <button 
+                                className="btn btn-sm btn-outline-danger" 
+                                style={{ marginLeft: '10px', borderRadius: '10px', fontWeight: 'bold' }}
+                                onClick={() => {
+                                    setNewPassword('');
+                                    setConfirmPassword('');
+                                    setChangePasswordError('');
+                                    setChangePasswordSuccess(false);
+                                    setShowChangePasswordModal(true);
+                                }}
+                            >
+                                <FaTrash style={{ display: 'none' }} /> เปลี่ยนรหัสผ่านคลัง
+                            </button>
+                        </>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
+                        <button className="btn-glossy-refresh" onClick={handleRefresh} title="รีเฟรชข้อมูล">
+                            <FaSync size={18} className={isRefreshing ? 'spin-animation' : ''} />
+                        </button>
+                        <span className="latest-panel-count" style={{ color: '#ff4d4f', fontWeight: 'bold', textShadow: '0 0 5px rgba(255, 77, 79, 0.3)' }}>{loading ? '...' : `${filteredStocks.length} รายการ`}</span>
+                        {/* Search */}
+                        <div className="inv-search-wrap">
+                            <FaSearch className="inv-search-icon" />
+                            <input
+                                type="text"
+                                className="inv-search-input"
+                                placeholder="ค้นหา Asset ID, ยี่ห้อ, S/N, หน่วยงาน..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="latest-table-wrap">
+                    <table className="latest-table">
+                        <thead>
+                            <tr>
+                                <th style={{ width: '60px', textAlign: 'center' }}>ลำดับ</th>
+                                <th>วันที่</th>
+                                <th>หมายเลขครุภัณฑ์</th>
+                                <th>ยี่ห้อ / รุ่น</th>
+                                <th>S/N</th>
+                                <th>หน่วยงาน / อาคาร</th>
+                                <th>สถานะ</th>
+                                <th>Print</th>
+                                 {(isAdmin || isAdmin_2) && <th style={{ width: '130px', textAlign: 'center' }}>ลบออกจากฐานข้อมูล</th>}
+                                 {isAdmin_2 && <th style={{ width: '100px' }}>คืนสถานะ</th>}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading || isRefreshing ? (
+                                <tr><td colSpan="10" className="latest-empty">กำลังโหลดข้อมูล...</td></tr>
+                            ) : filteredStocks.length === 0 ? (
+                                <tr><td colSpan="10" className="latest-empty">ไม่พบข้อมูลพัสดุ</td></tr>
+                            ) : filteredStocks.map((stock, idx) => (
+                                <tr
+                                    key={stock.id}
+                                    onClick={() => handleRowClick(stock)}
+                                    className={`latest-row latest-row--${idx % 2 === 0 ? 'even' : 'odd'}`}
+                                    title="คลิกเพื่อดูรายละเอียด"
+                                >
+                                    <td className="text-center font-semibold text-slate-500" style={{ textAlign: 'center' }}>{idx + 1}</td>
+                                    <td>
+                                        <div className="latest-date">{stock.importDate}</div>
+                                        {stock.timestamp && (
+                                            <div className="latest-time">
+                                                {new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })} น.
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="latest-asset-id">{stock.assetId || '—'}</td>
+                                    <td className="latest-brand">{stock.brandModel}</td>
+                                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>{stock.serialNumber}</td>
+                                    <td>
+                                        <div className="latest-dept">{stock.department}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>{stock.building}</div>
+                                    </td>
+                                    <td>
+                                        <span className={`latest-status latest-status--${stock.status === 'รับเข้า' ? 'in' : stock.status === 'จำหน่าย' ? 'out' : 'other'}`}>
+                                            {stock.status}
+                                        </span>
+                                    </td>
+                                    <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                         <button
+                                             className="inv-del-btn"
+                                             title="พิมพ์สติกเกอร์"
+                                             style={{ color: '#4caf50', borderColor: 'rgba(76,175,80,0.3)' }}
+                                             onClick={() => generateExcelLabel(stock)}
+                                         >
+                                             <FaPrint />
+                                         </button>
+                                     </td>
+                                     {(isAdmin || isAdmin_2) && (
+                                         <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                                             <button
+                                                 className="inv-del-btn"
+                                                 title="ลบรายการนี้"
+                                                 onClick={(e) => handleDeleteClick(e, stock.id)}
+                                             >
+                                                 <FaTrash />
+                                             </button>
+                                         </td>
+                                     )}
+                                     {isAdmin_2 && (
+                                         <td onClick={(e) => e.stopPropagation()}>
+                                             {stock.status === 'จำหน่าย' && (
+                                                 <button
+                                                     className="inv-del-btn"
+                                                     title="คืนสถานะเป็น รับเข้า"
+                                                     style={{ color: '#4fc3f7', borderColor: 'rgba(79,195,247,0.3)' }}
+                                                     onClick={(e) => handleRevertStatus(e, stock.id)}
+                                                 >
+                                                     <FaUndo />
+                                                 </button>
+                                             )}
+                                         </td>
+                                     )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Footer */}
+                <div className="inv-panel-footer">
+                    แสดงทั้งหมด <strong style={{ color: '#f5a623' }}>{filteredStocks.length}</strong> รายการ
+                </div>
+            </div>
+
+
+            <ItemDetailModal
+                show={showDetailModal}
+                onHide={() => setShowDetailModal(false)}
+                item={selectedItem}
+            />
+
+            {/* Floating Back Button */}
+            <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 999 }}>
+                <Button
+                    variant="warning"
+                    className="logout-btn-custom border-warning text-dark px-4 shadow-lg"
+                    size="md"
+                    onClick={() => navigate('/')}
+                    style={{ borderRadius: '25px', fontWeight: 'bold' }}
+                >
+                    <FaHome className="me-2" /> กลับเมนูหลัก
+                </Button>
+            </div>
+
+            {/* Change Password Modal */}
+            {showChangePasswordModal && (
+                <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-t-3xl"></div>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center mb-4 shadow-inner">
+                                <span className="text-3xl">🔑</span>
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-1">เปลี่ยนรหัสผ่านคลัง</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-['Prompt'] mb-4">สำหรับปลดล็อกและลบข้อมูล</p>
+                            
+                            {changePasswordSuccess ? (
+                                <div className="text-green-500 font-bold mb-4 font-['Prompt']">✅ เปลี่ยนรหัสผ่านสำเร็จ!</div>
+                            ) : (
+                                <>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        placeholder="รหัสผ่านใหม่"
+                                        className="w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-3 focus:border-purple-400"
+                                    />
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="ยืนยันรหัสผ่านใหม่"
+                                        className="w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-2 focus:border-purple-400"
+                                    />
+                                    {changePasswordError && (
+                                        <p className="text-red-500 text-sm font-bold font-['Prompt'] mb-2">{changePasswordError}</p>
+                                    )}
+                                </>
+                            )}
+
+                            <div className="flex gap-3 w-full mt-4">
+                                <button
+                                    onClick={() => setShowChangePasswordModal(false)}
+                                    className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors font-['Prompt']"
+                                >
+                                    ปิด
+                                </button>
+                                {!changePasswordSuccess && (
+                                    <button
+                                        onClick={async () => {
+                                            if (!newPassword || newPassword !== confirmPassword) {
+                                                setChangePasswordError('รหัสผ่านไม่ตรงกัน หรือยังไม่ได้ระบุ');
+                                                return;
+                                            }
+                                            try {
+                                                await set(ref(db, 'settings/adminPassword'), newPassword);
+                                                setChangePasswordSuccess(true);
+                                            } catch (err) {
+                                                setChangePasswordError('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+                                            }
+                                        }}
+                                        className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold shadow-lg shadow-purple-500/30 transition-all active:scale-95 font-['Prompt']"
+                                    >
+                                        บันทึก
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Manage Modal */}
+            <Modal show={showUserManageModal} onHide={() => setShowUserManageModal(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ background: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Modal.Title style={{ color: 'white', fontFamily: 'Prompt, sans-serif' }}>จัดการคำขอปลดล็อก User</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ background: '#f8fafc', padding: '1.5rem' }}>
+                    {usersStatusList.length === 0 ? (
+                        <div className="text-center py-5 text-muted">
+                            <h5>ไม่มีคำขอปลดล็อกในขณะนี้</h5>
+                        </div>
+                    ) : (
+                        <Table responsive hover className="shadow-sm bg-white rounded-3 overflow-hidden">
+                            <thead className="table-light">
+                                <tr>
+                                    <th className="font-['Prompt']">อีเมล/Username</th>
+                                    <th className="font-['Prompt'] text-center">สถานะ</th>
+                                    <th className="font-['Prompt'] text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {usersStatusList.map((user) => (
+                                    <tr key={user.key} className="align-middle">
+                                        <td className="font-mono fw-bold text-primary">{user.email || user.key.replace(',', '.')}</td>
+                                        <td className="text-center">
+                                            {user.locked && <Badge bg="danger" className="me-1">ถูกระงับ</Badge>}
+                                            {user.resetRequested && <Badge bg="warning" text="dark">ขอรีเซ็ตรหัสผ่าน</Badge>}
+                                        </td>
+                                        <td className="text-center">
+                                            <Button 
+                                                variant="success" 
+                                                size="sm" 
+                                                className="rounded-pill px-3 font-['Prompt']"
+                                                onClick={async () => {
+                                                    try {
+                                                        const emailToReset = user.email || user.key.replace(',', '.');
+                                                        await resetPassword(emailToReset);
+                                                        await remove(ref(db, `users_status/${user.key}`));
+                                                        alert('ส่งอีเมลรีเซ็ตรหัสผ่านและปลดล็อกเรียบร้อยแล้ว');
+                                                    } catch (error) {
+                                                        console.error(error);
+                                                        alert('เกิดข้อผิดพลาด หรืออีเมลไม่มีอยู่ในระบบ');
+                                                        // Even if email fails, unlock them so they can try again
+                                                        await remove(ref(db, `users_status/${user.key}`));
+                                                    }
+                                                }}
+                                            >
+                                                ปลดล็อก & ส่งลิงก์รีเซ็ต
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    )}
+                </Modal.Body>
+            </Modal>
+
+            {/* -------------------- Password Lock Modal -------------------- */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div
+                        className="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden"
+                        style={passwordShake ? { animation: 'shake 0.5s ease' } : {}}
+                    >
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-400 via-rose-500 to-pink-500 rounded-t-3xl"></div>
+
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4 shadow-inner">
+                                <span className="text-3xl">🗑️</span>
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white font-['Prompt'] mb-1">ยืนยันการลบ</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-['Prompt'] mb-6">กรุณาใส่รหัสผ่านเพื่อลบข้อมูล</p>
+
+                            <input
+                                type="password"
+                                autoFocus
+                                value={passwordInput}
+                                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                                placeholder="รหัสผ่าน"
+                                className={`w-full px-4 py-3 rounded-2xl text-center text-lg font-bold tracking-[0.3em] border-2 outline-none transition-all duration-300 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white mb-2 ${
+                                    passwordError
+                                        ? 'border-red-400 text-red-600 bg-red-50 dark:bg-red-500/10 placeholder-red-300'
+                                        : 'border-slate-200 dark:border-slate-600 text-slate-800 focus:border-red-400'
+                                }`}
+                            />
+                            {passwordError && (
+                                <p className="text-red-500 text-sm font-bold font-['Prompt'] mb-3">❌ รหัสผ่านไม่ถูกต้อง</p>
+                            )}
+
+                            <div className="flex gap-3 w-full mt-3">
+                                <button
+                                    onClick={() => { setShowPasswordModal(false); setPasswordInput(''); setPasswordError(false); setItemToDelete(null); }}
+                                    className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors font-['Prompt']"
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    onClick={handlePasswordSubmit}
+                                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-red-500/30 transition-all active:scale-95 font-['Prompt']"
+                                >
+                                    ยืนยันลบ
+                                </button>
+                            </div>
+                        </div>
+
+                        <style>{`
+                            @keyframes shake {
+                                0%, 100% { transform: translateX(0); }
+                                20% { transform: translateX(-8px); }
+                                40% { transform: translateX(8px); }
+                                60% { transform: translateX(-6px); }
+                                80% { transform: translateX(6px); }
+                            }
+                        `}</style>
+                    </div>
+                </div>
+            )}
+            <style>{`
+                .btn-glossy-refresh {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 50% 10%, #c4ff4d 0%, #4ade80 40%, #166534 100%);
+                    border: 2.5px solid #ffffff;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.9);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0;
+                    flex-shrink: 0;
+                    filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+                }
+                .btn-glossy-refresh:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 4px 6px rgba(255,255,255,1);
+                    background: radial-gradient(circle at 50% 10%, #d9ff80 0%, #4ade80 45%, #15803d 100%);
+                    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.8));
+                }
+                .btn-glossy-refresh:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5);
+                }
+                .spin-animation {
+                    animation: spin 0.8s linear infinite;
+                }
+                @keyframes spin {
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
+        </div >
+    );
+}
