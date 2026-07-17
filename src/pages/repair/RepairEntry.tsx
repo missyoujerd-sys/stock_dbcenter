@@ -1,0 +1,2325 @@
+<<<<<<< HEAD
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { 
+  Camera, 
+  User, 
+  AlertCircle, 
+  CheckCircle2, 
+  Download,
+  Barcode,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  ShieldX,
+  ClipboardList
+} from 'lucide-react';
+import { RepairService } from '../../services/repairService';
+import { RepairRecord } from '../../types/repair';
+import { useAuth } from '../../contexts/AuthContext';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import SignaturePad from '../../components/SignaturePad';
+
+
+// ---- Shared constants ----
+const HOSPITAL_LOGO = '/โลโก้ ร.พ.png';
+
+// ---- Premium styles injected once ----
+const PREMIUM_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
+
+.repair-page-wrap { font-family: 'Prompt', sans-serif; overflow-x: hidden; }
+
+/* A4 preview */
+.a4-preview {
+  width: 100%;
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Watermark styling - Premium */
+.a4-watermark {
+  position: absolute;
+  top: 30%; /* Align toward the middle of the form details specifically */
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.a4-watermark img {
+  width: 60%;
+  opacity: 0.12; /* Slightly more visible */
+}
+
+.a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
+
+/* Header stripe */
+.a4-header-stripe {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  margin: -14mm -16mm 0;
+  padding: 12mm 16mm 10mm;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8mm;
+  border-bottom: 4px solid #60a5fa;
+}
+.a4-header-stripe .logo-box { background: white; padding: 4px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.a4-header-stripe .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+.a4-header-title h1 { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 4px 0; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.a4-header-title p  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+
+/* Section titles */
+.section-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.section-title.blue { color: #3b82f6; }
+.section-title.red { color: #ef4444; }
+
+/* Grid info cards */
+.a4-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8mm;
+}
+.a4-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0;
+}
+.a4-card-inner { padding: 8px 14px; }
+.a4-card .label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+.a4-input-box {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+.a4-input-box:focus-within { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.a4-input-box input { width: 100%; border: none; background: transparent; outline: none; font-size: 18px; font-weight: 800; color: #1e293b; font-family: 'Prompt', sans-serif; }
+.a4-input-box input::placeholder { color: #cbd5e1; }
+
+.a4-scan-btn { font-size: 11px; color: #3b82f6; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; margin-top: 8px; }
+
+.a4-stock-guaranteed {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #bbf7d0;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
+}
+.a4-stock-guaranteed:hover {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.15);
+}
+.a4-stock-guaranteed svg { color: #22c55e; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(34, 197, 94, 0.2)); }
+.a4-stock-guaranteed .text { 
+  font-size: 18px; 
+  color: #166534; 
+  font-weight: 900; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+}
+.a4-stock-guaranteed .hint {
+  font-size: 12px;
+  color: #15803d;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+.a4-stock-expired {
+  background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+  border: 2px solid #fecdd3;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.08);
+}
+.a4-stock-expired:hover {
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.15);
+}
+.a4-stock-expired svg { color: #e11d48; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(225, 29, 72, 0.2)); }
+.a4-stock-expired .text { 
+  font-size: 18px; 
+  color: #9f1239; 
+  font-weight: 900; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+}
+.a4-stock-expired .hint {
+  font-size: 12px;
+  color: #be123c;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* Problem box */
+.a4-problem {
+  background: linear-gradient(135deg, #fff1f2, #fff5f5);
+  border: 1.5px solid #fecdd3;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 8mm;
+}
+.a4-problem textarea { width: 100%; font-size: 16px; font-weight: 600; color: #4c0519; background: transparent; border: none; outline: none; resize: none; font-family: 'Prompt', sans-serif; line-height: 1.6; }
+.a4-problem textarea::placeholder { color: #fda4af; }
+
+/* Signature grid */
+.a4-sig-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8mm;
+}
+.a4-sig-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+.a4-sig-card.blue  { border-color: #bfdbfe; background: linear-gradient(to bottom, #eff6ff 0%, #fff 40%); }
+.a4-sig-card.green { border-color: #bbf7d0; background: linear-gradient(to bottom, #f0fdf4 0%, #fff 40%); }
+
+.a4-sig-card .sig-header { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1.5px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
+.a4-sig-card.blue  .sig-header { color: #3b82f6; }
+.a4-sig-card.green .sig-header { color: #22c55e; }
+
+.a4-sig-row { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; }
+.a4-sig-row .k { font-size: 13px; color: #64748b; font-weight: 700; width: 60px; flex-shrink: 0; }
+.a4-sig-input { flex: 1; min-width: 0; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: 'Prompt', sans-serif; outline: none; font-weight: 600; color: #1e293b; background: white; transition: 0.2s; width: 100%; box-sizing: border-box; }
+.a4-sig-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.a4-sig-input::placeholder { color: #cbd5e1; font-weight: 500;}
+
+.a4-sig-line { border-bottom: 1.5px dashed #cbd5e1; margin-top: 30px; }
+.a4-sig-line-label { font-size: 10px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 600; word-break: break-all; }
+
+/* Footer */
+.a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; }
+
+/* Responsive adjustments for A4 Preview */
+@media (max-width: 768px) {
+  .a4-preview { min-height: auto; overflow-x: hidden; }
+  .a4-content { padding: 4mm 4mm 6mm; }
+  .a4-header-stripe {
+    margin: -4mm -4mm 0;
+    padding: 4mm;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    margin-bottom: 4mm;
+  }
+  .a4-header-title h1 { font-size: 18px; }
+  .a4-header-title p { font-size: 9px; line-height: 1.4; }
+  .a4-info-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-sig-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-input-box { padding: 8px 10px; }
+  .a4-input-box input { font-size: 15px; }
+  .a4-stock-guaranteed, .a4-stock-expired { min-height: 80px; padding: 12px; }
+  .a4-sig-card { padding: 12px 10px; overflow: hidden; }
+  .a4-sig-row { flex-wrap: nowrap; }
+  .a4-sig-row .k { font-size: 12px; width: 58px; }
+  .a4-sig-input { font-size: 13px; padding: 7px 8px; }
+  .a4-sig-line-label { font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .section-title { font-size: 12px; }
+}
+
+/* -- Export hidden wrapper -- */
+#repair-pdf-root {
+  display: none;
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 794px; /* 210mm at 96dpi */
+  background: transparent;
+}
+`;
+
+export default function RepairEntry() {
+  const [formData, setFormData] = useState<Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt'>>({
+    assetNumber: '',
+    equipmentModel: '',
+    serialNumber: '',
+    problemDescription: '',
+    reporterName: '',
+    reportedDate: new Date().toISOString().split('T')[0],
+    reporterSignature: '',
+    receiverName: sessionStorage.getItem('repair_reporterName') || '',
+    receivedDate: new Date().toISOString().split('T')[0],
+    receiverSignature: '',
+    staffReceiptName: '',
+    staffReceiptDate: '',
+    staffReceiptSignature: '',
+    returnerName: '',
+    returnDate: '',
+    returnerSignature: '',
+    isWarranty: true,
+    status: 'รอดำเนินการ',
+    statusDetail: ''
+  });
+
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isAdmin, isAdmin_2 } = useAuth();
+  const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // OCR specific state
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrResult, setOcrResult] = useState('');
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const receiverNameInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Inject premium CSS once
+  useEffect(() => {
+    const id = 'repair-premium-css';
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = PREMIUM_CSS;
+      document.head.appendChild(style);
+    }
+    return () => {};
+  }, []);
+
+  // Fetch data if editing
+  useEffect(() => {
+    const fetchRepair = async () => {
+      if (id) {
+        setLoading(true);
+        try {
+          const data = await RepairService.getRepairById(id);
+          if (data) {
+            setFormData(data);
+          } else {
+            setMessage({ type: 'error', text: 'ไม่พบข้อมูลที่ต้องการแก้ไข' });
+          }
+        } catch (error) {
+          console.error("Error fetching repair:", error);
+          setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล' });
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchRepair();
+  }, [id]);
+
+  /* ── Photo capture + OCR for Asset matching ── */
+  const rotateToLandscape = (dataUrl: string): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img;
+        if (h > w) {
+          const canvas = document.createElement('canvas');
+          canvas.width = h;
+          canvas.height = w;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(h / 2, w / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.drawImage(img, -w / 2, -h / 2);
+            resolve(canvas.toDataURL('image/jpeg', 0.92));
+            return;
+          }
+        }
+        resolve(dataUrl);
+      };
+      img.src = dataUrl;
+    });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setScanning(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const rawUrl = evt.target?.result as string;
+      const dataUrl = await rotateToLandscape(rawUrl);
+      
+      setOcrLoading(true);
+      setOcrResult('');
+      
+      try {
+        const Tesseract = (await import('tesseract.js')).default;
+        const result = await Tesseract.recognize(dataUrl, 'eng', {
+          logger: () => { },
+        });
+        const text = result.data.text;
+        
+        // ดึงเฉพาะตัวเลข ขีด (-) และสแลช (/) และลบตัวอักษรหรือช่องว่างอื่นๆทิ้งทั้งหมด
+        let extracted = text.replace(/[^\d\-\/]/g, '');
+
+        if (extracted.length > 0) {
+            if (scanning === 'asset') {
+                setFormData((prev) => ({ ...prev, assetNumber: extracted }));
+            } else if (scanning === 'serial') {
+                setFormData((prev) => ({ ...prev, serialNumber: extracted }));
+            }
+            setOcrResult('สำเร็จ');
+            setMessage({ type: 'success', text: `อ่านค่าสำเร็จ: ${extracted}` });
+        } else {
+            setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
+        }
+      } catch (err) {
+        console.error('OCR error:', err);
+        setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการอ่านรูป (OCR)' });
+      } finally {
+        setOcrLoading(false);
+        setScanning(null);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+
+  const handleScanClick = (type: 'asset' | 'serial') => {
+    if (!formData.receiverName || formData.receiverName.trim() === '') {
+      alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
+      receiverNameInputRef.current?.focus();
+      return;
+    }
+    setScanning(type);
+    photoInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAdmin) {
+      setMessage({ type: 'error', text: 'คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขข้อมูล' });
+      return;
+    }
+
+    try {
+      if (id) {
+        await RepairService.updateRepair(id, formData);
+        setMessage({ type: 'success', text: 'อัปเดตข้อมูลสำเร็จแล้ว' });
+      } else {
+        // Generate Document Number when saving a new record
+        setLoading(true);
+        const allRepairs = await RepairService.getRepairs();
+        
+        const now = new Date();
+        const yy = now.getFullYear().toString().slice(-2);
+        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+        const prefix = formData.isWarranty ? `IN-${yy}${mm}-` : `OUT-${yy}${mm}-`;
+        
+        const relatedRepairs = allRepairs.filter((r: any) => r.docNumber && r.docNumber.startsWith(prefix));
+        let maxNum = 0;
+        relatedRepairs.forEach((r: any) => {
+           const parts = r.docNumber.split('-');
+           if (parts.length === 3) {
+               const num = parseInt(parts[2], 10);
+               if (!isNaN(num) && num > maxNum) maxNum = num;
+           }
+        });
+        
+        const nextNum = (maxNum + 1).toString().padStart(4, '0');
+        const generatedDocNumber = `${prefix}${nextNum}`;
+        
+        const finalData = { ...formData, docNumber: generatedDocNumber };
+        
+        await RepairService.saveRepair(finalData);
+        setMessage({ type: 'success', text: `บันทึกข้อมูลสำเร็จ (เลขที่: ${generatedDocNumber})` });
+        
+        setFormData(finalData); // Update form to show generated docNumber immediately before redirect
+        
+        // After saving new, might want to redirect or clear form
+        setTimeout(() => navigate('/repair/dashboard'), 2000);
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+    } finally {
+      if (!id) setLoading(false);
+    }
+  };
+
+  const exportPDF = async () => {
+    const el = document.getElementById('repair-pdf-root');
+    if (!el) return;
+    setExporting(true);
+    el.style.display = 'block';
+    await new Promise(r => setTimeout(r, 300));
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 3,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: 794,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = pdf.internal.pageSize.getWidth();
+      const ph = pdf.internal.pageSize.getHeight();
+      const ratio = canvas.height / canvas.width;
+      let imgW = pw;
+      let imgH = pw * ratio;
+
+      // Force 1 page by scaling down if needed
+      if (imgH > ph) {
+        imgH = ph;
+        imgW = ph / ratio;
+      }
+
+      const marginX = (pw - imgW) / 2;
+      pdf.addImage(imgData, 'PNG', marginX, 0, imgW, imgH);
+      pdf.save(`Repair_${formData.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
+      setMessage({ type: 'success', text: 'สร้างไฟล์ PDF สำเร็จแล้ว' });
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการสร้าง PDF' });
+    } finally {
+      el.style.display = 'none';
+      setExporting(false);
+    }
+  };
+
+  // ─── Input helpers ───
+  const inp = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-[Prompt] text-slate-700 placeholder:text-slate-300';
+  const inpWhite = 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none font-[Prompt] text-slate-700';
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
+
+      {/* ── Page Header ── */}
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2" style={{ fontFamily: 'Prompt, sans-serif' }}>
+            <ShieldCheck className="w-8 h-8 text-blue-600" />
+            ข้อมูลการแจ้งซ่อมบำรุง
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและติดตามการรับคืนเครื่องคอมพิวเตอร์อย่างเป็นระบบ</p>
+        </div>
+        <button
+          onClick={exportPDF}
+          disabled={exporting}
+          className="flex items-center gap-2 bg-gradient-to-br from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-red-200 font-bold text-sm"
+          style={{ fontFamily: 'Prompt, sans-serif' }}
+        >
+          <Download size={18} />
+          {exporting ? 'กำลังประมวลผล...' : 'พิมพ์เอกสารการซ่อม (PDF)'}
+        </button>
+      </div>
+
+      {/* ── Premium Alert Modal ── */}
+      {message && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center" style={{ animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+            {message.type === 'success' ? (
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 size={40} strokeWidth={3} />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+                <AlertCircle size={40} strokeWidth={3} />
+              </div>
+            )}
+            <h3 className={`text-2xl font-bold mb-2 ${message.type === 'success' ? 'text-emerald-700' : 'text-rose-700'}`} style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.type === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด'}
+            </h3>
+            <p className="text-slate-600 font-medium mb-8 text-base" style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.text}
+            </p>
+            <button 
+              onClick={() => setMessage(null)}
+              className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${message.type === 'success' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-200' : 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-rose-200'}`}
+              style={{ fontFamily: 'Prompt, sans-serif' }}
+            >
+              ตกลง
+            </button>
+          </div>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn { 
+              0% { opacity: 0; transform: scale(0.8) translateY(20px); } 
+              100% { opacity: 1; transform: scale(1) translateY(0); } 
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          A4 FORM PREVIEW (also used for PDF export)
+      ══════════════════════════════════════════════ */}
+      <div className="a4-preview">
+        {/* Watermark */}
+        <div className="a4-watermark">
+          <img src={HOSPITAL_LOGO} alt="watermark" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+        </div>
+
+        <div className="a4-content">
+          {/* ── Header stripe ── */}
+          <div className="a4-header-stripe" style={{ position: 'relative' }}>
+            <div className="logo-box">
+              <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+            </div>
+            <div className="a4-header-title" style={{ paddingRight: '100px' }}>
+              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</h1>
+              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</p>
+            </div>
+            {/* QR Code for viewing this form publicly on mobile */}        
+            <div style={{ position: 'absolute', right: '16px', top: '16px', background: 'white', padding: '6px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.15)' }}>
+               {/* Point to the public repair search page with the record ID */}
+               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
+               <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
+            </div>
+          </div>
+
+          {/* ── Intro line ── */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8mm', flexWrap: 'wrap', gap: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
+              วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+            </p>
+            {!formData.docNumber && (
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }} />
+                เลขที่เอกสารจะถูกสร้างอัตโนมัติเมื่อบันทึก
+              </div>
+            )}
+            
+            {/* ── เลขที่เอกสาร badge moved here ── */}
+            {formData.docNumber && (
+              <div style={{
+                display: 'inline-flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: formData.isWarranty
+                  ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                  : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                borderRadius: '10px',
+                padding: '6px 14px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                minWidth: '130px',
+              }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                  {formData.docNumber}
+                </div>
+                <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Section 1: Equipment ── */}
+          <div className="section-title blue">
+            <Barcode size={18} /> ข้อมูลตัวเครื่อง
+          </div>
+
+          <div className="a4-info-grid">
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">หมายเลขครุภัณฑ์ (Asset Number)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.assetNumber}
+                    onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
+                    placeholder="ระบุหมายเลขครุภัณฑ์ เช่น 7440-006-1009/..."
+                  />
+                </div>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('asset')} disabled={ocrLoading || !isAdmin}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
+                </button>
+              </div>
+            </div>
+
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">รุ่น/รูปแบบอุปกรณ์ (Model)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.equipmentModel}
+                    onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
+                    placeholder="ระบุรุ่นอุปกรณ์ เช่น Acer X4690G"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">หมายเลขซีเรียล (Serial Number)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.serialNumber}
+                    onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
+                    placeholder="Serial Number"
+                  />
+                </div>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('serial')} disabled={ocrLoading || !isAdmin}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
+                </button>
+              </div>
+            </div>
+
+            <div className="a4-card" style={{ padding: '4px' }}>
+              <div 
+                className={formData.isWarranty ? "a4-stock-guaranteed" : "a4-stock-expired"}
+                onClick={() => isAdmin && setFormData({ ...formData, isWarranty: !formData.isWarranty })}
+                title={isAdmin ? "คลิกเพื่อสลับสถานะการรับประกัน" : ""}
+              >
+                {formData.isWarranty ? (
+                  <>
+                    <ShieldCheck size={52} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
+                  </>
+                ) : (
+                  <>
+                    <ShieldX size={52} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Section 2: Problem & Status ── */}
+          <div className="a4-info-grid">
+            <div>
+              <div className="section-title red">
+                อาการเสีย / รายละเอียดปัญหา
+              </div>
+              <div className="a4-problem" style={{ marginBottom: 0, height: 'calc(100% - 32px)' }}>
+                <textarea
+                  required
+                  readOnly={!isAdmin}
+                  rows={4}
+                  value={formData.problemDescription}
+                  onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
+                  placeholder="ระบุอาการเสียหรือปัญหาที่พบ..."
+                  style={{ height: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="section-title" style={{ color: '#8b5cf6' }}>
+                <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px', height: 'calc(100% - 32px)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <select
+                    disabled={!isAdmin}
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    style={{ width: '100%', fontSize: '16px', fontWeight: 600, color: '#4c1d95', background: '#fff', border: '1.5px solid #c4b5fd', outline: 'none', borderRadius: '8px', padding: '10px 14px', fontFamily: 'Prompt, sans-serif', cursor: isAdmin ? 'pointer' : 'default', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(139,92,246,0.05)' }}
+                    onFocus={e => e.target.style.borderColor = '#8b5cf6'}
+                    onBlur={e => e.target.style.borderColor = '#c4b5fd'}
+                  >
+                    <option value="รอดำเนินการ">รอดำเนินการ</option>
+                    <option value="การซ่อมแซม">กำลังซ่อมแซม</option>
+                    <option value="ดำเนินการซ่อมแล้ว">ดำเนินการซ่อมแล้ว</option>
+                    <option value="ส่งคืนหมดประกัน">ส่งคืนหมดประกัน</option>
+                    <option value="ส่งคืนค่าซ่อมไม่คุ้ม">ส่งคืนค่าซ่อมไม่คุ้ม</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                  </select>
+                  
+                  {formData.status === 'อื่นๆ' && (
+                    <textarea
+                      readOnly={!isAdmin}
+                      rows={2}
+                      value={formData.statusDetail || ''}
+                      onChange={e => setFormData({ ...formData, statusDetail: e.target.value })}
+                      placeholder="โปรดระบุรายละเอียดสถานะเพิ่มเติม..."
+                      style={{ width: '100%', fontSize: '15px', fontWeight: 500, color: '#4c1d95', background: '#fff', border: '1.5px solid #c4b5fd', outline: 'none', borderRadius: '8px', padding: '10px 14px', fontFamily: 'Prompt, sans-serif', resize: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                      onFocus={e => e.target.style.borderColor = '#8b5cf6'}
+                      onBlur={e => e.target.style.borderColor = '#c4b5fd'}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Section 3: Signatures ── */}
+          <div className="section-title blue" style={{ marginTop: '10mm' }}>
+            <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
+          </div>
+
+          <div className="a4-sig-grid">
+            {/* Reporter */}
+            <div className="a4-sig-card blue">
+              <div className="sig-header">เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้แจ้ง" className="a4-sig-input" readOnly={!isAdmin} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.reporterSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, reporterSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.reporterName ? formData.reporterName : '.............................................................'}</div>
+            </div>
+
+            {/* Receiver */}
+            <div className="a4-sig-card blue">
+              <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input ref={receiverNameInputRef} type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.receiverSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, receiverSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.receiverName ? formData.receiverName : '.............................................................'}</div>
+            </div>
+
+            {/* Staff receipt */}
+            <div className="a4-sig-card green">
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้รับคืน" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.staffReceiptSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, staffReceiptSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.staffReceiptName ? formData.staffReceiptName : '.............................................................'}</div>
+            </div>
+
+            {/* Returner */}
+            <div className="a4-sig-card green">
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้ส่งมอบ" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.returnerSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, returnerSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.returnerName ? formData.returnerName : '.............................................................'}</div>
+            </div>
+          </div>
+
+          <datalist id="officer-names-list">
+            <option value="จันทกานต์ จันทร์ตาใหม่" />
+            <option value="ฉันทวัฒน์ สุทธิพงษ์" />
+            <option value="ณรงค์ รวมสุข" />
+            <option value="ณัฐวุฒิ อินต๊ะผัด" />
+            <option value="ทรงกลด สิงห์สันต์" />
+            <option value="ธนากร ลุงหม่อง" />
+            <option value="บรรเจิด สลักพิศพักตร์" />
+            <option value="พัชชามาศ กาแก้ว" />
+            <option value="ภาณุพงศ์ เชื่อมชิต" />
+            <option value="มนตรี เครือซุย" />
+            <option value="รสริน อุทิศเวทศักดิ์" />
+            <option value="ศิวาพร ยอดเมือง" />
+            <option value="อณุศักดิ์ เวียงนาค" />
+            <option value="อาจารีย์ โสภากร" />
+          </datalist>
+
+          {/* ── Submit ── */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={handleSubmit as any}
+              disabled={!isAdmin}
+              className={`group flex w-full md:w-auto justify-center items-center gap-2 text-white font-bold px-12 py-3.5 rounded-2xl transition-all shadow-xl shadow-emerald-200/50 bg-gradient-to-b from-emerald-400 to-emerald-600 border-b-4 border-emerald-700 hover:brightness-110 active:border-b-0 active:translate-y-1 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{ fontFamily: 'Prompt, sans-serif', fontSize: '16px' }}
+            >
+              บันทึก
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+            </button>
+          </div>
+
+          {/* ── Footer ── */}
+          <div className="a4-footer" style={{ marginTop: '6mm' }}>
+            เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════
+          HIDDEN DIV for PDF Export (cloned from above)
+      ═══════════════════════════════════════════════ */}
+      <div id="repair-pdf-root" style={{ fontFamily: 'Prompt, sans-serif' }}>
+        <div style={{
+          width: '794px',
+          minHeight: '1122px',
+          background: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* PDF Watermark */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none', zIndex: 0
+          }}>
+            <img
+              src={HOSPITAL_LOGO}
+              alt="watermark"
+              style={{ width: '55%', opacity: 0.15, transform: 'rotate(-15deg) scale(1.1)', filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3)' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+            />
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 1, padding: '0' }}>
+            {/* PDF Header stripe */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%)',
+              padding: '24px 40px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              marginBottom: '20px',
+              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.15)',
+              position: 'relative'
+            }}>
+              <div style={{
+                background: '#fff',
+                padding: '4px',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.8), 0 0 0 3px rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '90px',
+                height: '90px',
+                border: '1px solid #e2e8f0',
+                flexShrink: 0
+              }}>
+                <img
+                  src={HOSPITAL_LOGO}
+                  alt="logo"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</div>
+                
+                {/* ── เลขที่เอกสาร badge สำหรับ PDF ── */}
+                {formData.docNumber && (
+                  <div style={{
+                    display: 'inline-block',
+                    marginTop: '12px',
+                    background: formData.isWarranty
+                      ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                      : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                    border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                    borderRadius: '10px',
+                    padding: '6px 14px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    minWidth: '130px',
+                  }}>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                      {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                      {formData.docNumber}
+                    </div>
+                    <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right', paddingRight: '120px' }}>
+                <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
+                <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+              </div>
+
+              {/* QR Code in PDF Layout - points to public repair search */}
+              <div style={{ position: 'absolute', right: '40px', top: '50%', transform: 'translateY(-50%)', background: 'white', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '95px', height: '95px', display: 'block' }} />
+                 <div style={{ fontSize: '11px', textAlign: 'center', marginTop: '4px', fontWeight: 900, color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '0 40px 30px' }}>
+
+              {/* Info grid */}
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Barcode size={18} /> รายละเอียดข้อมูลอุปกรณ์
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>เลขครุภัณฑ์ (Asset Number)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.assetNumber || '-'}</div>
+                </div>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>รุ่นของอุปกรณ์ (Model)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.equipmentModel || '-'}</div>
+                </div>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Serial Number (S/N)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.serialNumber || '-'}</div>
+                </div>
+                <div style={
+                  formData.isWarranty 
+                  ? { background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '2px solid #bbf7d0', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
+                  : { background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)', border: '2px solid #fecdd3', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
+                }>
+                  {formData.isWarranty ? (
+                    <>
+                      <ShieldCheck size={42} color="#22c55e" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '18px', color: '#166534', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์อยู่ในความคุ้มครอง)</div>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldX size={42} color="#e11d48" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '18px', color: '#9f1239', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#be123c', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์สิ้นสุดการรับประกัน)</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Problem & Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+                    รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#fff', border: '1.5px solid #c4b5fd', borderRadius: '8px', padding: '8px 16px', fontSize: '18px', fontWeight: 800, color: '#5b21b6', boxShadow: '0 2px 8px rgba(139,92,246,0.1)' }}>
+                      {formData.status}
+                    </div>
+                    {formData.status === 'อื่นๆ' && formData.statusDetail && (
+                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#4c1d95', lineHeight: '1.6', borderTop: '1px dashed #c4b5fd', marginTop: '12px', paddingTop: '12px' }}>
+                        <span style={{ color: '#8b5cf6', marginRight: '6px' }}>รายละเอียด:</span> {formData.statusDetail}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={18} /> รายละเอียดผู้รับผิดชอบและลงนาม
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                {[
+                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.reporterSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.receiverSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.staffReceiptSignature },
+                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.returnerSignature },
+                ].map((sig, i) => (
+                  <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 700, width: '45px' }}>ชื่อ: </span>
+                      <span style={{ flex: 1, border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', fontWeight: 600, color: '#1e293b', background: 'white' }}>{sig.name || '-'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 700, width: '45px' }}>วันที่: </span>
+                      <span style={{ flex: 1, border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', fontWeight: 600, color: '#1e293b', background: 'white' }}>{sig.date || '-'}</span>
+                    </div>
+                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {sig.signature ? (
+                        <div style={{ marginTop: '10px', marginBottom: '5px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={sig.signature} alt="signature" style={{ maxHeight: '100%', maxWidth: '200px' }} />
+                        </div>
+                      ) : (
+                        <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px', width: '100%' }} />
+                      )}
+                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ) {sig.name ? sig.name : '.............................................................'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* PDF Footer */}
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Native Camera Input ── */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handlePhotoChange}
+      />
+
+      {/* ── Bottom Actions ── */}
+      <div className="mt-8 flex justify-end">
+        <Link to="/repair/dashboard" className="group flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-blue-200/50 font-bold text-base hover:-translate-y-1" style={{ fontFamily: 'Prompt, sans-serif' }}>
+          <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+          <span>ย้อนกลับ</span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+=======
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
+import { 
+  Camera, 
+  User, 
+  AlertCircle, 
+  CheckCircle2, 
+  Download,
+  Barcode,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  ShieldX,
+  ClipboardList
+} from 'lucide-react';
+import { RepairService } from '../../services/repairService';
+import { RepairRecord } from '../../types/repair';
+import { useAuth } from '../../contexts/AuthContext';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import SignaturePad from '../../components/SignaturePad';
+
+
+// ---- Shared constants ----
+const HOSPITAL_LOGO = '/โลโก้ ร.พ.png';
+
+// ---- Premium styles injected once ----
+const PREMIUM_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;800;900&display=swap');
+
+.repair-page-wrap { font-family: 'Prompt', sans-serif; overflow-x: hidden; }
+
+/* A4 preview */
+.a4-preview {
+  width: 100%;
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Watermark styling - Premium */
+.a4-watermark {
+  position: absolute;
+  top: 30%; /* Align toward the middle of the form details specifically */
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.a4-watermark img {
+  width: 60%;
+  opacity: 0.12; /* Slightly more visible */
+}
+
+.a4-content { position: relative; z-index: 1; padding: 14mm 16mm 12mm; }
+
+/* Header stripe */
+.a4-header-stripe {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  margin: -14mm -16mm 0;
+  padding: 12mm 16mm 10mm;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8mm;
+  border-bottom: 4px solid #60a5fa;
+}
+.a4-header-stripe .logo-box { background: white; padding: 4px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.a4-header-stripe .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+.a4-header-title h1 { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 4px 0; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.a4-header-title p  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+
+/* Section titles */
+.section-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.section-title.blue { color: #3b82f6; }
+.section-title.red { color: #ef4444; }
+
+/* Grid info cards */
+.a4-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8mm;
+}
+.a4-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0;
+}
+.a4-card-inner { padding: 8px 14px; }
+.a4-card .label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+.a4-input-box {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+.a4-input-box:focus-within { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.a4-input-box input { width: 100%; border: none; background: transparent; outline: none; font-size: 18px; font-weight: 800; color: #1e293b; font-family: 'Prompt', sans-serif; }
+.a4-input-box input::placeholder { color: #cbd5e1; }
+
+.a4-scan-btn { font-size: 11px; color: #3b82f6; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; margin-top: 8px; }
+
+.a4-stock-guaranteed {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #bbf7d0;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
+}
+.a4-stock-guaranteed:hover {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.15);
+}
+.a4-stock-guaranteed svg { color: #22c55e; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(34, 197, 94, 0.2)); }
+.a4-stock-guaranteed .text { 
+  font-size: 18px; 
+  color: #166534; 
+  font-weight: 900; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+}
+.a4-stock-guaranteed .hint {
+  font-size: 12px;
+  color: #15803d;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+.a4-stock-expired {
+  background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+  border: 2px solid #fecdd3;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.08);
+}
+.a4-stock-expired:hover {
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.15);
+}
+.a4-stock-expired svg { color: #e11d48; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(225, 29, 72, 0.2)); }
+.a4-stock-expired .text { 
+  font-size: 18px; 
+  color: #9f1239; 
+  font-weight: 900; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+}
+.a4-stock-expired .hint {
+  font-size: 12px;
+  color: #be123c;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* Problem box */
+.a4-problem {
+  background: linear-gradient(135deg, #fff1f2, #fff5f5);
+  border: 1.5px solid #fecdd3;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 8mm;
+}
+.a4-problem textarea { width: 100%; font-size: 16px; font-weight: 600; color: #4c0519; background: transparent; border: none; outline: none; resize: none; font-family: 'Prompt', sans-serif; line-height: 1.6; }
+.a4-problem textarea::placeholder { color: #fda4af; }
+
+/* Signature grid */
+.a4-sig-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8mm;
+}
+.a4-sig-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+.a4-sig-card.blue  { border-color: #bfdbfe; background: linear-gradient(to bottom, #eff6ff 0%, #fff 40%); }
+.a4-sig-card.green { border-color: #bbf7d0; background: linear-gradient(to bottom, #f0fdf4 0%, #fff 40%); }
+
+.a4-sig-card .sig-header { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1.5px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
+.a4-sig-card.blue  .sig-header { color: #3b82f6; }
+.a4-sig-card.green .sig-header { color: #22c55e; }
+
+.a4-sig-row { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; }
+.a4-sig-row .k { font-size: 13px; color: #64748b; font-weight: 700; width: 60px; flex-shrink: 0; }
+.a4-sig-input { flex: 1; min-width: 0; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: 'Prompt', sans-serif; outline: none; font-weight: 600; color: #1e293b; background: white; transition: 0.2s; width: 100%; box-sizing: border-box; }
+.a4-sig-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.a4-sig-input::placeholder { color: #cbd5e1; font-weight: 500;}
+
+.a4-sig-line { border-bottom: 1.5px dashed #cbd5e1; margin-top: 30px; }
+.a4-sig-line-label { font-size: 10px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 600; word-break: break-all; }
+
+/* Footer */
+.a4-footer { padding-top: 6mm; text-align: center; font-size: 10px; color: #cbd5e1; font-style: italic; font-weight: 600; }
+
+/* Responsive adjustments for A4 Preview */
+@media (max-width: 768px) {
+  .a4-preview { min-height: auto; overflow-x: hidden; }
+  .a4-content { padding: 4mm 4mm 6mm; }
+  .a4-header-stripe {
+    margin: -4mm -4mm 0;
+    padding: 4mm;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    margin-bottom: 4mm;
+  }
+  .a4-header-title h1 { font-size: 18px; }
+  .a4-header-title p { font-size: 9px; line-height: 1.4; }
+  .a4-info-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-sig-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 4mm; }
+  .a4-input-box { padding: 8px 10px; }
+  .a4-input-box input { font-size: 15px; }
+  .a4-stock-guaranteed, .a4-stock-expired { min-height: 80px; padding: 12px; }
+  .a4-sig-card { padding: 12px 10px; overflow: hidden; }
+  .a4-sig-row { flex-wrap: nowrap; }
+  .a4-sig-row .k { font-size: 12px; width: 58px; }
+  .a4-sig-input { font-size: 13px; padding: 7px 8px; }
+  .a4-sig-line-label { font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .section-title { font-size: 12px; }
+}
+
+/* -- Export hidden wrapper -- */
+#repair-pdf-root {
+  display: none;
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 794px; /* 210mm at 96dpi */
+  background: transparent;
+}
+`;
+
+export default function RepairEntry() {
+  const [formData, setFormData] = useState<Omit<RepairRecord, 'id' | 'createdAt' | 'updatedAt'>>({
+    assetNumber: '',
+    equipmentModel: '',
+    serialNumber: '',
+    problemDescription: '',
+    reporterName: '',
+    reportedDate: new Date().toISOString().split('T')[0],
+    reporterSignature: '',
+    receiverName: sessionStorage.getItem('repair_reporterName') || '',
+    receivedDate: new Date().toISOString().split('T')[0],
+    receiverSignature: '',
+    staffReceiptName: '',
+    staffReceiptDate: '',
+    staffReceiptSignature: '',
+    returnerName: '',
+    returnDate: '',
+    returnerSignature: '',
+    isWarranty: true,
+    status: 'รอดำเนินการ',
+    statusDetail: ''
+  });
+
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const modelFromUrl = searchParams.get('model');
+  const navigate = useNavigate();
+  const { isAdmin, isAdmin_2 } = useAuth();
+  const [scanning, setScanning] = useState<'asset' | 'serial' | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // OCR specific state
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrResult, setOcrResult] = useState('');
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const receiverNameInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Inject premium CSS once
+  useEffect(() => {
+    const id = 'repair-premium-css';
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = PREMIUM_CSS;
+      document.head.appendChild(style);
+    }
+    return () => {};
+  }, []);
+
+  // Pre-fill model from URL if new
+  useEffect(() => {
+    if (modelFromUrl && !id) {
+        setFormData(prev => ({...prev, equipmentModel: modelFromUrl}));
+    }
+  }, [modelFromUrl, id]);
+
+  // Fetch data if editing
+  useEffect(() => {
+    const fetchRepair = async () => {
+      if (id) {
+        setLoading(true);
+        try {
+          const data = await RepairService.getRepairById(id);
+          if (data) {
+            setFormData(data);
+          } else {
+            setMessage({ type: 'error', text: 'ไม่พบข้อมูลที่ต้องการแก้ไข' });
+          }
+        } catch (error) {
+          console.error("Error fetching repair:", error);
+          setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล' });
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchRepair();
+  }, [id]);
+
+  /* ── Photo capture + OCR for Asset matching ── */
+  const rotateToLandscape = (dataUrl: string): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const { naturalWidth: w, naturalHeight: h } = img;
+        if (h > w) {
+          const canvas = document.createElement('canvas');
+          canvas.width = h;
+          canvas.height = w;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(h / 2, w / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.drawImage(img, -w / 2, -h / 2);
+            resolve(canvas.toDataURL('image/jpeg', 0.92));
+            return;
+          }
+        }
+        resolve(dataUrl);
+      };
+      img.src = dataUrl;
+    });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setScanning(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const rawUrl = evt.target?.result as string;
+      const dataUrl = await rotateToLandscape(rawUrl);
+      
+      setOcrLoading(true);
+      setOcrResult('');
+      
+      try {
+        const Tesseract = (await import('tesseract.js')).default;
+        const result = await Tesseract.recognize(dataUrl, 'eng', {
+          logger: () => { },
+        });
+        const text = result.data.text;
+        
+        // ดึงเฉพาะตัวเลข ขีด (-) และสแลช (/) และลบตัวอักษรหรือช่องว่างอื่นๆทิ้งทั้งหมด
+        let extracted = text.replace(/[^\d\-\/]/g, '');
+
+        if (extracted.length > 0) {
+            if (scanning === 'asset') {
+                setFormData((prev) => ({ ...prev, assetNumber: extracted }));
+            } else if (scanning === 'serial') {
+                setFormData((prev) => ({ ...prev, serialNumber: extracted }));
+            }
+            setOcrResult('สำเร็จ');
+            setMessage({ type: 'success', text: `อ่านค่าสำเร็จ: ${extracted}` });
+        } else {
+            setMessage({ type: 'error', text: 'ไม่พบตัวเลขในรูปภาพ' });
+        }
+      } catch (err) {
+        console.error('OCR error:', err);
+        setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการอ่านรูป (OCR)' });
+      } finally {
+        setOcrLoading(false);
+        setScanning(null);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+
+  const handleScanClick = (type: 'asset' | 'serial') => {
+    if (!formData.receiverName || formData.receiverName.trim() === '') {
+      alert('หัวหน้า IT ให้กรอกชื่อหรือบริษัทที่แจ้งซ่อมก่อนครับ!');
+      receiverNameInputRef.current?.focus();
+      return;
+    }
+    setScanning(type);
+    photoInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAdmin) {
+      setMessage({ type: 'error', text: 'คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขข้อมูล' });
+      return;
+    }
+
+    try {
+      if (id) {
+        await RepairService.updateRepair(id, formData);
+        setMessage({ type: 'success', text: 'อัปเดตข้อมูลสำเร็จแล้ว' });
+      } else {
+        // Generate Document Number when saving a new record
+        setLoading(true);
+        const allRepairs = await RepairService.getRepairs();
+        
+        const now = new Date();
+        const yy = now.getFullYear().toString().slice(-2);
+        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+        const prefix = formData.isWarranty ? `IN-${yy}${mm}-` : `OUT-${yy}${mm}-`;
+        
+        const relatedRepairs = allRepairs.filter((r: any) => r.docNumber && r.docNumber.startsWith(prefix));
+        let maxNum = 0;
+        relatedRepairs.forEach((r: any) => {
+           const parts = r.docNumber.split('-');
+           if (parts.length === 3) {
+               const num = parseInt(parts[2], 10);
+               if (!isNaN(num) && num > maxNum) maxNum = num;
+           }
+        });
+        
+        const nextNum = (maxNum + 1).toString().padStart(4, '0');
+        const generatedDocNumber = `${prefix}${nextNum}`;
+        
+        const finalData = { ...formData, docNumber: generatedDocNumber };
+        
+        await RepairService.saveRepair(finalData);
+        setMessage({ type: 'success', text: `บันทึกข้อมูลสำเร็จ (เลขที่: ${generatedDocNumber})` });
+        
+        setFormData(finalData); // Update form to show generated docNumber immediately before redirect
+        
+        // After saving new, might want to redirect or clear form
+        setTimeout(() => navigate('/repair/dashboard'), 2000);
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+    } finally {
+      if (!id) setLoading(false);
+    }
+  };
+
+  const exportPDF = async () => {
+    const el = document.getElementById('repair-pdf-root');
+    if (!el) return;
+    setExporting(true);
+    el.style.display = 'block';
+    await new Promise(r => setTimeout(r, 300));
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 3,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: 794,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = pdf.internal.pageSize.getWidth();
+      const ph = pdf.internal.pageSize.getHeight();
+      const ratio = canvas.height / canvas.width;
+      let imgW = pw;
+      let imgH = pw * ratio;
+
+      // Force 1 page by scaling down if needed
+      if (imgH > ph) {
+        imgH = ph;
+        imgW = ph / ratio;
+      }
+
+      const marginX = (pw - imgW) / 2;
+      pdf.addImage(imgData, 'PNG', marginX, 0, imgW, imgH);
+      pdf.save(`Repair_${formData.assetNumber || 'record'}_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.pdf`);
+      setMessage({ type: 'success', text: 'สร้างไฟล์ PDF สำเร็จแล้ว' });
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการสร้าง PDF' });
+    } finally {
+      el.style.display = 'none';
+      setExporting(false);
+    }
+  };
+
+  // ─── Input helpers ───
+  const inp = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-[Prompt] text-slate-700 placeholder:text-slate-300';
+  const inpWhite = 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none font-[Prompt] text-slate-700';
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="repair-page-wrap max-w-5xl mx-auto px-4 py-8">
+
+      {/* ── Page Header ── */}
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2" style={{ fontFamily: 'Prompt, sans-serif' }}>
+            <ShieldCheck className="w-8 h-8 text-blue-600" />
+            ข้อมูลการแจ้งซ่อมบำรุง
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm" style={{ fontFamily: 'Prompt, sans-serif' }}>บันทึกประวัติการส่งซ่อมและติดตามการรับคืนเครื่องคอมพิวเตอร์อย่างเป็นระบบ</p>
+        </div>
+        <button
+          onClick={exportPDF}
+          disabled={exporting}
+          className="flex items-center gap-2 bg-gradient-to-br from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 disabled:opacity-60 text-white px-5 py-3 rounded-xl transition-all shadow-xl shadow-red-200 font-bold text-sm"
+          style={{ fontFamily: 'Prompt, sans-serif' }}
+        >
+          <Download size={18} />
+          {exporting ? 'กำลังประมวลผล...' : 'พิมพ์เอกสารการซ่อม (PDF)'}
+        </button>
+      </div>
+
+      {/* ── Premium Alert Modal ── */}
+      {message && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center" style={{ animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+            {message.type === 'success' ? (
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 size={40} strokeWidth={3} />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+                <AlertCircle size={40} strokeWidth={3} />
+              </div>
+            )}
+            <h3 className={`text-2xl font-bold mb-2 ${message.type === 'success' ? 'text-emerald-700' : 'text-rose-700'}`} style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.type === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด'}
+            </h3>
+            <p className="text-slate-600 font-medium mb-8 text-base" style={{ fontFamily: 'Prompt, sans-serif' }}>
+              {message.text}
+            </p>
+            <button 
+              onClick={() => setMessage(null)}
+              className={`w-full py-3.5 rounded-xl font-bold text-white transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${message.type === 'success' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-200' : 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-rose-200'}`}
+              style={{ fontFamily: 'Prompt, sans-serif' }}
+            >
+              ตกลง
+            </button>
+          </div>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn { 
+              0% { opacity: 0; transform: scale(0.8) translateY(20px); } 
+              100% { opacity: 1; transform: scale(1) translateY(0); } 
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          A4 FORM PREVIEW (also used for PDF export)
+      ══════════════════════════════════════════════ */}
+      <div className="a4-preview">
+        {/* Watermark */}
+        <div className="a4-watermark">
+          <img src={HOSPITAL_LOGO} alt="watermark" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+        </div>
+
+        <div className="a4-content">
+          {/* ── Header stripe ── */}
+          <div className="a4-header-stripe" style={{ position: 'relative' }}>
+            <div className="logo-box">
+              <img src={HOSPITAL_LOGO} alt="โรงพยาบาลนครพิงค์" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+            </div>
+            <div className="a4-header-title" style={{ paddingRight: '100px' }}>
+              <h1>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม ภายนอก-ภายใน</h1>
+              <p>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</p>
+            </div>
+            {/* QR Code for viewing this form publicly on mobile */}        
+            <div style={{ position: 'absolute', right: '16px', top: '16px', background: 'white', padding: '6px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.15)' }}>
+               {/* Render real QR Code containing the record ID */}
+               <QRCodeSVG value={id ? `REPAIR:${id}` : (formData.docNumber ? `REPAIR:${formData.docNumber}` : 'NEW_RECORD')} size={80} style={{ display: 'block' }} />
+               <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
+            </div>
+          </div>
+
+          {/* ── Intro line ── */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8mm', flexWrap: 'wrap', gap: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>
+              วันที่บันทึกเอกสาร: <strong style={{ color: '#1e293b' }}>{new Date().toLocaleString('th-TH')}</strong>
+            </p>
+            {!formData.docNumber && (
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block' }} />
+                เลขที่เอกสารจะถูกสร้างอัตโนมัติเมื่อบันทึก
+              </div>
+            )}
+            
+            {/* ── เลขที่เอกสาร badge moved here ── */}
+            {formData.docNumber && (
+              <div style={{
+                display: 'inline-flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: formData.isWarranty
+                  ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                  : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                borderRadius: '10px',
+                padding: '6px 14px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                minWidth: '130px',
+              }}>
+                <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                  {formData.docNumber}
+                </div>
+                <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Section 1: Equipment ── */}
+          <div className="section-title blue">
+            <Barcode size={18} /> ข้อมูลตัวเครื่อง
+          </div>
+
+          <div className="a4-info-grid">
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">หมายเลขครุภัณฑ์ (Asset Number)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.assetNumber}
+                    onChange={e => setFormData({ ...formData, assetNumber: e.target.value })}
+                    placeholder="ระบุหมายเลขครุภัณฑ์ เช่น 7440-006-1009/..."
+                  />
+                </div>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('asset')} disabled={ocrLoading || !isAdmin}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'asset' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
+                </button>
+              </div>
+            </div>
+
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">รุ่น/รูปแบบอุปกรณ์ (Model)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.equipmentModel}
+                    onChange={e => setFormData({ ...formData, equipmentModel: e.target.value })}
+                    placeholder="ระบุรุ่นอุปกรณ์ เช่น Acer X4690G"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="a4-card">
+              <div className="a4-card-inner">
+                <div className="label">หมายเลขซีเรียล (Serial Number)</div>
+                <div className="a4-input-box">
+                  <input
+                    type="text"
+                    required
+                    readOnly={!isAdmin}
+                    value={formData.serialNumber}
+                    onChange={e => setFormData({ ...formData, serialNumber: e.target.value })}
+                    placeholder="Serial Number"
+                  />
+                </div>
+                <button type="button" className="a4-scan-btn" onClick={() => handleScanClick('serial')} disabled={ocrLoading || !isAdmin}>
+                  <Camera size={14} /> {ocrLoading && scanning === 'serial' ? 'กำลังอ่าน...' : 'สแกน QR/Barcode'}
+                </button>
+              </div>
+            </div>
+
+            <div className="a4-card" style={{ padding: '4px' }}>
+              <div 
+                className={formData.isWarranty ? "a4-stock-guaranteed" : "a4-stock-expired"}
+                onClick={() => isAdmin && setFormData({ ...formData, isWarranty: !formData.isWarranty })}
+                title={isAdmin ? "คลิกเพื่อสลับสถานะการรับประกัน" : ""}
+              >
+                {formData.isWarranty ? (
+                  <>
+                    <ShieldCheck size={52} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
+                  </>
+                ) : (
+                  <>
+                    <ShieldX size={52} />
+                    <div className="text" style={{ fontFamily: 'Prompt, sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                    <div className="hint" style={{ fontFamily: 'Prompt, sans-serif' }}>(สามารถคลิกเพื่อปรับเปลี่ยนสถานะการรับประกันได้)</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Section 2: Problem & Status ── */}
+          <div className="a4-info-grid">
+            <div>
+              <div className="section-title red">
+                อาการเสีย / รายละเอียดปัญหา
+              </div>
+              <div className="a4-problem" style={{ marginBottom: 0, height: 'calc(100% - 32px)' }}>
+                <textarea
+                  required
+                  readOnly={!isAdmin}
+                  rows={4}
+                  value={formData.problemDescription}
+                  onChange={e => setFormData({ ...formData, problemDescription: e.target.value })}
+                  placeholder="ระบุอาการเสียหรือปัญหาที่พบ..."
+                  style={{ height: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="section-title" style={{ color: '#8b5cf6' }}>
+                <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px', height: 'calc(100% - 32px)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <select
+                    disabled={!isAdmin}
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    style={{ width: '100%', fontSize: '16px', fontWeight: 600, color: '#4c1d95', background: '#fff', border: '1.5px solid #c4b5fd', outline: 'none', borderRadius: '8px', padding: '10px 14px', fontFamily: 'Prompt, sans-serif', cursor: isAdmin ? 'pointer' : 'default', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(139,92,246,0.05)' }}
+                    onFocus={e => e.target.style.borderColor = '#8b5cf6'}
+                    onBlur={e => e.target.style.borderColor = '#c4b5fd'}
+                  >
+                    <option value="รอดำเนินการ">รอดำเนินการ</option>
+                    <option value="การซ่อมแซม">กำลังซ่อมแซม</option>
+                    <option value="ดำเนินการซ่อมแล้ว">ดำเนินการซ่อมแล้ว</option>
+                    <option value="ส่งคืนหมดประกัน">ส่งคืนหมดประกัน</option>
+                    <option value="ส่งคืนค่าซ่อมไม่คุ้ม">ส่งคืนค่าซ่อมไม่คุ้ม</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                  </select>
+                  
+                  {formData.status === 'อื่นๆ' && (
+                    <textarea
+                      readOnly={!isAdmin}
+                      rows={2}
+                      value={formData.statusDetail || ''}
+                      onChange={e => setFormData({ ...formData, statusDetail: e.target.value })}
+                      placeholder="โปรดระบุรายละเอียดสถานะเพิ่มเติม..."
+                      style={{ width: '100%', fontSize: '15px', fontWeight: 500, color: '#4c1d95', background: '#fff', border: '1.5px solid #c4b5fd', outline: 'none', borderRadius: '8px', padding: '10px 14px', fontFamily: 'Prompt, sans-serif', resize: 'none', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                      onFocus={e => e.target.style.borderColor = '#8b5cf6'}
+                      onBlur={e => e.target.style.borderColor = '#c4b5fd'}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Section 3: Signatures ── */}
+          <div className="section-title blue" style={{ marginTop: '10mm' }}>
+            <User size={18} /> ผู้รับผิดชอบและลายมือชื่อ
+          </div>
+
+          <div className="a4-sig-grid">
+            {/* Reporter */}
+            <div className="a4-sig-card blue">
+              <div className="sig-header">เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" required placeholder="ระบุชื่อ-นามสกุลผู้แจ้ง" className="a4-sig-input" readOnly={!isAdmin} value={formData.reporterName} onChange={e => setFormData({ ...formData, reporterName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.reportedDate} onChange={e => setFormData({ ...formData, reportedDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.reporterSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, reporterSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.reporterName ? formData.reporterName : '.............................................................'}</div>
+            </div>
+
+            {/* Receiver */}
+            <div className="a4-sig-card blue">
+              <div className="sig-header">เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input ref={receiverNameInputRef} type="text" required placeholder="ระบุชื่อ-นามสกุลผู้รับ" className="a4-sig-input" readOnly={!isAdmin} value={formData.receiverName} onChange={e => setFormData({ ...formData, receiverName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" required className="a4-sig-input" readOnly={!isAdmin} value={formData.receivedDate} onChange={e => setFormData({ ...formData, receivedDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.receiverSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, receiverSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.receiverName ? formData.receiverName : '.............................................................'}</div>
+            </div>
+
+            {/* Staff receipt */}
+            <div className="a4-sig-card green">
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้รับคืน" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptName} onChange={e => setFormData({ ...formData, staffReceiptName: e.target.value })} list="officer-names-list" />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.staffReceiptDate} onChange={e => setFormData({ ...formData, staffReceiptDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.staffReceiptSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, staffReceiptSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.staffReceiptName ? formData.staffReceiptName : '.............................................................'}</div>
+            </div>
+
+            {/* Returner */}
+            <div className="a4-sig-card green">
+              <div className="sig-header" style={{ color: '#22c55e' }}>เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน</div>
+              <div className="a4-sig-row">
+                <div className="k">ชื่อ-สกุล:</div>
+                <input type="text" placeholder="ระบุชื่อ-นามสกุลผู้ส่งมอบ" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnerName} onChange={e => setFormData({ ...formData, returnerName: e.target.value })} />
+              </div>
+              <div className="a4-sig-row">
+                <div className="k">วันที่:</div>
+                <input type="date" className="a4-sig-input" readOnly={!isAdmin} value={formData.returnDate} onChange={e => setFormData({ ...formData, returnDate: e.target.value })} />
+              </div>
+              <div className="mt-4 mb-2">
+                <SignaturePad 
+                  initialSignature={formData.returnerSignature}
+                  readOnly={!isAdmin}
+                  onEnd={(sig) => setFormData({ ...formData, returnerSignature: sig })}
+                />
+              </div>
+              <div className="a4-sig-line-label mt-0">(ลงชื่อ) {formData.returnerName ? formData.returnerName : '.............................................................'}</div>
+            </div>
+          </div>
+
+          <datalist id="officer-names-list">
+            <option value="จันทกานต์ จันทร์ตาใหม่" />
+            <option value="ฉันทวัฒน์ สุทธิพงษ์" />
+            <option value="ณรงค์ รวมสุข" />
+            <option value="ณัฐวุฒิ อินต๊ะผัด" />
+            <option value="ทรงกลด สิงห์สันต์" />
+            <option value="ธนากร ลุงหม่อง" />
+            <option value="บรรเจิด สลักพิศพักตร์" />
+            <option value="พัชชามาศ กาแก้ว" />
+            <option value="ภาณุพงศ์ เชื่อมชิต" />
+            <option value="มนตรี เครือซุย" />
+            <option value="รสริน อุทิศเวทศักดิ์" />
+            <option value="ศิวาพร ยอดเมือง" />
+            <option value="อณุศักดิ์ เวียงนาค" />
+            <option value="อาจารีย์ โสภากร" />
+          </datalist>
+
+          {/* ── Submit ── */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8mm', paddingTop: '5mm', borderTop: '1px solid #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={handleSubmit as any}
+              disabled={!isAdmin}
+              className={`group flex w-full md:w-auto justify-center items-center gap-2 text-white font-bold px-12 py-3.5 rounded-2xl transition-all shadow-xl shadow-emerald-200/50 bg-gradient-to-b from-emerald-400 to-emerald-600 border-b-4 border-emerald-700 hover:brightness-110 active:border-b-0 active:translate-y-1 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{ fontFamily: 'Prompt, sans-serif', fontSize: '16px' }}
+            >
+              บันทึก
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+            </button>
+          </div>
+
+          {/* ── Footer ── */}
+          <div className="a4-footer" style={{ marginTop: '6mm' }}>
+            เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════
+          HIDDEN DIV for PDF Export (cloned from above)
+      ═══════════════════════════════════════════════ */}
+      <div id="repair-pdf-root" style={{ fontFamily: 'Prompt, sans-serif' }}>
+        <div style={{
+          width: '794px',
+          minHeight: '1122px',
+          background: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* PDF Watermark */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none', zIndex: 0
+          }}>
+            <img
+              src={HOSPITAL_LOGO}
+              alt="watermark"
+              style={{ width: '55%', opacity: 0.15, transform: 'rotate(-15deg) scale(1.1)', filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.2)) saturate(1.3)' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+            />
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 1, padding: '0' }}>
+            {/* PDF Header stripe */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #60a5fa 100%)',
+              padding: '24px 40px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              marginBottom: '20px',
+              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.15)',
+              position: 'relative'
+            }}>
+              <div style={{
+                background: '#fff',
+                padding: '4px',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.8), 0 0 0 3px rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '90px',
+                height: '90px',
+                border: '1px solid #e2e8f0',
+                flexShrink: 0
+              }}>
+                <img
+                  src={HOSPITAL_LOGO}
+                  alt="logo"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>ใบสำคัญบันทึกข้อมูลการแจ้งซ่อม</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '2px', textTransform: 'uppercase' }}>โรงพยาบาลนครพิงค์ · ระบบบริหารจัดการข้อมูลครุภัณฑ์คอมพิวเตอร์ (Repair Management)</div>
+                
+                {/* ── เลขที่เอกสาร badge สำหรับ PDF ── */}
+                {formData.docNumber && (
+                  <div style={{
+                    display: 'inline-block',
+                    marginTop: '12px',
+                    background: formData.isWarranty
+                      ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)'
+                      : 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+                    border: `2px solid ${formData.isWarranty ? '#22c55e' : '#f43f5e'}`,
+                    borderRadius: '10px',
+                    padding: '6px 14px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    minWidth: '130px',
+                  }}>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: formData.isWarranty ? '#166534' : '#9f1239', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                      {formData.isWarranty ? '✓ มีประกัน' : '✗ หมดประกัน'}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 900, color: formData.isWarranty ? '#15803d' : '#be123c', fontFamily: 'Prompt, sans-serif', letterSpacing: '1px' }}>
+                      {formData.docNumber}
+                    </div>
+                    <div style={{ fontSize: '8px', color: formData.isWarranty ? '#4ade80' : '#fb7185', fontWeight: 700 }}>เลขที่เอกสาร</div>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'right', paddingRight: '120px' }}>
+                <div style={{ fontWeight: 700 }}>วันที่บันทึกเอกสาร</div>
+                <div style={{ fontWeight: 400 }}>{new Date().toLocaleString('th-TH')}</div>
+              </div>
+
+              {/* QR Code in PDF Layout - points to public repair search */}
+              <div style={{ position: 'absolute', right: '40px', top: '50%', transform: 'translateY(-50%)', background: 'white', padding: '8px', borderRadius: '8px', border: '1px solid #ccc', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(window.location.origin + '/repair/public/' + (id || ''))}`} alt="QR Code" style={{ width: '95px', height: '95px', display: 'block' }} />
+                 <div style={{ fontSize: '11px', textAlign: 'center', marginTop: '4px', fontWeight: 900, color: '#1e3a8a', fontFamily: 'Prompt, sans-serif' }}>สแกนดูสถานะซ่อม</div>
+              </div>
+            </div>
+
+            <div style={{ padding: '0 40px 30px' }}>
+
+              {/* Info grid */}
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Barcode size={18} /> รายละเอียดข้อมูลอุปกรณ์
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>เลขครุภัณฑ์ (Asset Number)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.assetNumber || '-'}</div>
+                </div>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>รุ่นของอุปกรณ์ (Model)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.equipmentModel || '-'}</div>
+                </div>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '8px 14px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Serial Number (S/N)</div>
+                  <div style={{ border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 14px', background: '#f8fafc', fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{formData.serialNumber || '-'}</div>
+                </div>
+                <div style={
+                  formData.isWarranty 
+                  ? { background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '2px solid #bbf7d0', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
+                  : { background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)', border: '2px solid #fecdd3', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '110px' }
+                }>
+                  {formData.isWarranty ? (
+                    <>
+                      <ShieldCheck size={42} color="#22c55e" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '18px', color: '#166534', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์อยู่ในระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์อยู่ในความคุ้มครอง)</div>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldX size={42} color="#e11d48" style={{ marginBottom: '8px' }} />
+                      <div style={{ fontSize: '18px', color: '#9f1239', fontWeight: 900, textTransform: 'uppercase', fontFamily: '"Prompt", sans-serif' }}>อุปกรณ์พ้นระยะรับประกัน</div>
+                      <div style={{ fontSize: '11px', color: '#be123c', fontWeight: 700, marginTop: '4px', fontFamily: '"Prompt", sans-serif' }}>(อุปกรณ์สิ้นสุดการรับประกัน)</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Problem & Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '30px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+                    รายละเอียดอาการเสีย / ข้อขัดข้องทางเทคนิค
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg,#fff1f2,#fff5f5)', border: '1.5px solid #fecdd3', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#4c0519', lineHeight: '1.6' }}>{formData.problemDescription || '-'}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ClipboardList size={18} /> ผลการดำเนินงาน / สถานะการซ่อม
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #faf5ff)', border: '1.5px solid #ddd6fe', borderRadius: '12px', padding: '16px 20px', height: 'calc(100% - 32px)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#fff', border: '1.5px solid #c4b5fd', borderRadius: '8px', padding: '8px 16px', fontSize: '18px', fontWeight: 800, color: '#5b21b6', boxShadow: '0 2px 8px rgba(139,92,246,0.1)' }}>
+                      {formData.status}
+                    </div>
+                    {formData.status === 'อื่นๆ' && formData.statusDetail && (
+                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#4c1d95', lineHeight: '1.6', borderTop: '1px dashed #c4b5fd', marginTop: '12px', paddingTop: '12px' }}>
+                        <span style={{ color: '#8b5cf6', marginRight: '6px' }}>รายละเอียด:</span> {formData.statusDetail}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={18} /> รายละเอียดผู้รับผิดชอบและลงนาม
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                {[
+                  { label: 'เจ้าหน้าที่ผู้แจ้งซ่อม / ผู้ส่งมอบอุปกรณ์', name: formData.reporterName, date: formData.reportedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.reporterSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์ซ่อม', name: formData.receiverName, date: formData.receivedDate, color: '#3b82f6', border: '#bfdbfe', bg: 'linear-gradient(to bottom, #eff6ff 0%, #fff 40%)', signature: formData.receiverSignature },
+                  { label: 'เจ้าหน้าที่ผู้รับมอบอุปกรณ์คืน', name: formData.staffReceiptName, date: formData.staffReceiptDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.staffReceiptSignature },
+                  { label: 'เจ้าหน้าที่ผู้ส่งมอบอุปกรณ์คืน', name: formData.returnerName, date: formData.returnDate, color: '#22c55e', border: '#bbf7d0', bg: 'linear-gradient(to bottom, #f0fdf4 0%, #fff 40%)', signature: formData.returnerSignature },
+                ].map((sig, i) => (
+                  <div key={i} style={{ background: sig.bg, border: `1.5px solid ${sig.border}`, borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: sig.color, textTransform: 'uppercase', letterSpacing: '1.5px', borderBottom: '1.5px solid rgba(0,0,0,0.05)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>{sig.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 700, width: '45px' }}>ชื่อ: </span>
+                      <span style={{ flex: 1, border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', fontWeight: 600, color: '#1e293b', background: 'white' }}>{sig.name || '-'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 700, width: '45px' }}>วันที่: </span>
+                      <span style={{ flex: 1, border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', fontWeight: 600, color: '#1e293b', background: 'white' }}>{sig.date || '-'}</span>
+                    </div>
+                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {sig.signature ? (
+                        <div style={{ marginTop: '10px', marginBottom: '5px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={sig.signature} alt="signature" style={{ maxHeight: '100%', maxWidth: '200px' }} />
+                        </div>
+                      ) : (
+                        <div style={{ borderBottom: '1.5px dashed #cbd5e1', marginTop: '30px', width: '100%' }} />
+                      )}
+                      <div style={{ fontSize: '10px', textAlign: 'center', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>(ลงชื่อ) {sig.name ? sig.name : '.............................................................'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* PDF Footer */}
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px', textAlign: 'center', fontSize: '9px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                เอกสารนี้จัดทำขึ้นโดยระบบบริหารจัดการงานซ่อมบำรุงอัตโนมัติ &nbsp;·&nbsp; Stock Guaranteed System Google Forms &nbsp;·&nbsp; โรงพยาบาลนครพิงค์ &nbsp;·&nbsp; {new Date().getFullYear()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Native Camera Input ── */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handlePhotoChange}
+      />
+
+      {/* ── Bottom Actions ── */}
+      <div className="mt-8 flex justify-end">
+        <Link to="/repair/dashboard" className="group flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-8 py-3.5 rounded-xl transition-all shadow-xl shadow-blue-200/50 font-bold text-base hover:-translate-y-1" style={{ fontFamily: 'Prompt, sans-serif' }}>
+          <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+          <span>ย้อนกลับ</span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+>>>>>>> 88dcb55bb4f66f823f2e5f88ca273c8d57dca09c
