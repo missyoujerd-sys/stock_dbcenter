@@ -15,6 +15,7 @@ import RepairView from './pages/repair/RepairView';
 import RepairPublicSearch from './pages/repair/RepairPublicSearch';
 import BorrowReturn from './pages/BorrowReturn';
 import ChatRoom from './pages/ChatRoom';
+import ComputerEquipment from './pages/ComputerEquipment';
 import FloatingChat from './components/FloatingChat';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -56,6 +57,11 @@ function App() {
           <Route path="/inventory" element={
             <PrivateRoute>
               <Inventory />
+            </PrivateRoute>
+          } />
+          <Route path="/computer-equipment" element={
+            <PrivateRoute>
+              <ComputerEquipment />
             </PrivateRoute>
           } />
           <Route path="/borrow" element={

@@ -21,7 +21,8 @@ import {
   Calendar,
   Clock,
   ArrowLeftRight,
-  MessageSquare
+  MessageSquare,
+  Monitor
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -156,6 +157,7 @@ export default function Layout({ children }) {
     { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
     { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
     ...(isAdmin_2 ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true }] : []),
+    { name: "อุปกรณ์คอมพิวเตอร์และต่อพ่วง", path: "/computer-equipment", icon: Monitor, imgSrc: "/คลังพัสดุ.png" },
     { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
     { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare },
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
