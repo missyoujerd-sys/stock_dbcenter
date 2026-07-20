@@ -197,10 +197,10 @@ export default function Login() {
                     </div>
                     <div>
                         <div style={{ color: '#1e293b', fontWeight: '800', fontSize: '1.2rem', fontFamily: 'Prompt, sans-serif' }}>
-                            คุณใช้ภาษาไทยนะครับ
+                            ยังไม่ได้เปลี่ยนภาษา
                         </div>
                         <div style={{ color: '#64748b', fontSize: '0.9rem', fontFamily: 'Prompt, sans-serif' }}>
-                            ผมเปลี่ยนเป็นภาษาอังกฤษให้แล้วนะครับ
+                            เปลี่ยนภาษาอังกฤษให้แล้ว
                         </div>
                     </div>
                 </div>
@@ -275,14 +275,14 @@ export default function Login() {
                                 border: '1px solid rgba(226, 188, 63, 0.88)',
                                 color: '#f8f8f5ff',
                                 fontWeight: '200',
-                                fontSize: '1.2rem',
+                                fontSize: '1.1rem',
                                 padding: '1rem',
                                 transition: 'all 0.5s ease',
                                 background: 'rgba(196, 136, 47, 0.7)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                textTransform: 'uppercase',
+                                textTransform: 'none',// หรือ 'capitalize'
                                 letterSpacing: '1px'
                             }}
                             onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(224, 193, 14, 0.74)'; e.currentTarget.style.borderColor = 'rgba(214, 16, 148, 0.71)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -353,11 +353,11 @@ export default function Login() {
                             <h3 style={{
                                 fontSize: '1.25rem', fontWeight: '900', color: '#1e293b',
                                 fontFamily: 'Prompt, sans-serif', marginBottom: '0.25rem'
-                            }}>ลืมรหัสผ่าน / บัญชีถูกล็อก</h3>
+                            }}>บัญชีถูกล็อก/สมัครเข้าใช้งานให้ใส่ ชื่อ-นามสกุล User Password ของท่านส่งมา</h3>
                             <p style={{
-                                fontSize: '0.85rem', color: '#64748b',
-                                fontFamily: 'Prompt, sans-serif', marginBottom: '1.5rem'
-                            }}>สำหรับส่งคำขอให้ Admin ปลดล็อก</p>
+                                fontSize: '0.80rem', color: '#64748b',
+                                fontFamily: 'Prompt, sans-serif', marginBottom: '1.6rem'
+                            }}>สำหรับส่งคำขอให้ Admin ปลดล็อก/เพิ่ม </p>
 
                             {isForgotSuccess ? (
                                 <div style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: '1rem', fontFamily: 'Prompt, sans-serif' }}>
@@ -369,7 +369,7 @@ export default function Login() {
                                         type="text"
                                         value={forgotUser}
                                         onChange={(e) => setForgotUser(e.target.value)}
-                                        placeholder="Username (เช่น somchai)"
+                                        placeholder="(เช่น Bunjerd999)"
                                         required
                                         style={{
                                             width: '100%',
