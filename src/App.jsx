@@ -17,6 +17,7 @@ import BorrowReturn from './pages/BorrowReturn';
 import ChatRoom from './pages/ChatRoom';
 import ComputerEquipment from './pages/ComputerEquipment';
 import FloatingChat from './components/FloatingChat';
+import InternalRepair from './pages/repair/InternalRepair';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -97,6 +98,11 @@ function App() {
           <Route path="/repair/dashboard" element={
             <PrivateRoute>
               <RepairDashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/internal-repair" element={
+            <PrivateRoute>
+              <InternalRepair />
             </PrivateRoute>
           } />
         </Routes>
