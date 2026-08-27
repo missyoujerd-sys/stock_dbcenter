@@ -22,7 +22,8 @@ import {
   Clock,
   ArrowLeftRight,
   MessageSquare,
-  Monitor
+  Monitor,
+  PenTool
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -161,11 +162,12 @@ export default function Layout({ children }) {
     { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
     { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare },
     { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
+    { name: "แจ้งซ่อมภายใน", path: "/internal-repair", icon: PenTool, imgSrc: "/แจ้งซ่อม.png" },
     { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
   ];
 
   const SidebarContent = () => (
-      <div className={`flex flex-col h-full bg-[#050505] dark:bg-[#000000] text-slate-200 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-slate-800 dark:border-slate-800 select-none w-full shadow-[30px_0_70px_rgba(0,0,0,0.8)] dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
+      <div className={`flex flex-col h-full bg-white dark:bg-[#050505] text-slate-800 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-slate-200 dark:border-slate-800 select-none w-full shadow-lg dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent -translate-x-full animate-[shine_4s_infinite] pointer-events-none`}></div>
       
       {/* Elite Atmospheric Lighting */}
