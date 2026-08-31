@@ -276,15 +276,15 @@ export default function Login() {
                                     setShowForgotModal(true);
                                 }}
                                 onMouseOver={(e) => {
-                                    e.currentTarget.style.color = '#fff';
+                                    e.currentTarget.style.color = '#42b127ff';
                                     e.currentTarget.style.textDecoration = 'underline';
                                 }}
                                 onMouseOut={(e) => {
-                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                                    e.currentTarget.style.color = 'rgba(206, 121, 25, 0.7)';
                                     e.currentTarget.style.textDecoration = 'none';
                                 }}
                             >
-                                บัญชีถูกล็อก 
+                                ส่งคำขอ เพื่อขอสิทธิ์เข้าใช้งาน
                             </span>
                         </div>
                     </div>
@@ -350,11 +350,11 @@ export default function Login() {
                             <h3 style={{
                                 fontSize: '1.25rem', fontWeight: '900', color: '#1e293b',
                                 fontFamily: 'Prompt, sans-serif', marginBottom: '0.25rem'
-                            }}>บัญชีถูกล็อก/สมัครเข้าใช้งานให้ใส่ ชื่อ-นามสกุล User Password ของท่านส่งมา</h3>
+                            }}>ส่งชื่อ-สกุล เหตุผล เพื่อแจ้งให้ Admin เพิ่ม/ปลดล็อก</h3>
                             <p style={{
                                 fontSize: '0.80rem', color: '#64748b',
                                 fontFamily: 'Prompt, sans-serif', marginBottom: '1.6rem'
-                            }}>สำหรับส่งคำขอให้ Admin ปลดล็อก/เพิ่ม </p>
+                            }}>Admin จะเป็นผู้เพิ่ม/ปลดล็อก แล้วจะแจ้งให้ทราบ </p>
 
                             {isForgotSuccess ? (
                                 <div style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: '1rem', fontFamily: 'Prompt, sans-serif' }}>
@@ -366,14 +366,14 @@ export default function Login() {
                                         type="text"
                                         value={forgotUser}
                                         onChange={(e) => setForgotUser(e.target.value)}
-                                        placeholder="(เช่น Bunjerd999)"
+                                        placeholder="นายซื่อกินไม่หมด คดกินไม่นาน (ขอสิทธิ์)"
                                         required
                                         style={{
                                             width: '100%',
-                                            padding: '0.875rem 1rem',
+                                            padding: '0.890rem 1rem',
                                             borderRadius: '14px',
                                             textAlign: 'center',
-                                            fontSize: '1rem',
+                                            fontSize: '0.85rem',
                                             fontWeight: '600',
                                             border: '2px solid #e2e8f0',
                                             outline: 'none',
