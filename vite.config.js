@@ -8,4 +8,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    host: true, // เปิดให้ bind กับ IP ทุกตัวในเครื่อง (0.0.0.0)
+    port: 5173, // เปลี่ยน port ได้ตามต้องการ
+  },
 })

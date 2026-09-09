@@ -182,7 +182,7 @@ export default function IncomingStock() {
             "Xprinter (Thermal)",
         ],
  
-        "UPS (เครื่องสำรองไฟ)": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
+        "UPS": ["APC", "Eaton", "Delta", "Cyberpower", "Vertiv", "Chuphotic", "Cleanline", "Leonics", "Syndome", "Zircon"],
 
         "สแกนเนอร์": [
             "Canon PIXMA ",
@@ -757,7 +757,7 @@ export default function IncomingStock() {
                                     <div className="inc-input-group" style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
                                     onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(56, 189, 248, 0.3)'; }}
                                     onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}>
-                                        <GlowingAddon icon={FaBarcode} text="S/N (Serial Number)" />
+                                        <GlowingAddon icon={FaBarcode} text="S/N" />
                                         <Form.Control
                                             type="text"
                                             name="serialNumber"

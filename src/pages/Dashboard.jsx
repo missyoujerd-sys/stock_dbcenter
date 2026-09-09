@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import { Table, Card, Row, Col, Badge, Button, Modal } from 'react-bootstrap';
@@ -17,6 +17,10 @@ import qmDistributionSvg from '../assets/qm-distribution.svg';
 import qmInventorySvg from '../assets/qm-inventory.svg';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+    PieChart, Pie, Cell
+} from 'recharts';
 
 export default function Dashboard() {
     const { isAdmin, isAdmin_2 } = useAuth();
@@ -39,6 +43,7 @@ export default function Dashboard() {
     const [summary, setSummary] = useState({
         total: 0,
         available: 0,
+        pendingSurvey: 0,
         distributed: 0
     });
 
@@ -145,31 +150,34 @@ export default function Dashboard() {
             const loadedStocks = [];
             let total = 0;
             let available = 0;
+            let pendingSurvey = 0;
             let distributed = 0;
 
             if (data) {
                 for (const key in data) {
                     const item = data[key];
                     total++;
-                    if (item.status === 'รับเข้า') available++;
-                    if (item.status === 'จำหน่าย') distributed++;
 
                     const decAssetId = decryptData(item.assetId) || '';
                     
                     let currentHasItem = item.hasItem;
                     let currentPendingSurvey = item.pendingSurvey;
 
-                    if (currentPendingSurvey === undefined || currentPendingSurvey === null) {
-                        currentPendingSurvey = decAssetId.trim() === '-';
+                    if (decAssetId.trim() === '-' || decAssetId.trim() === '') {
+                        currentHasItem = false;
+                        currentPendingSurvey = true;
+                    } else {
+                        currentHasItem = true;
+                        currentPendingSurvey = false;
                     }
 
-                    if (currentHasItem === undefined || currentHasItem === null) {
-                        if (decAssetId.trim() === '-') {
-                            currentHasItem = false;
-                        } else if (decAssetId.trim().startsWith('7440') || decAssetId.trim().startsWith('7430')) {
-                            currentHasItem = true;
+                    if (item.status === 'จำหน่าย') {
+                        distributed++;
+                    } else if (item.status === 'รับเข้า') {
+                        if (currentPendingSurvey) {
+                            pendingSurvey++;
                         } else {
-                            currentHasItem = true; // Original default
+                            available++;
                         }
                     }
 
@@ -208,11 +216,41 @@ export default function Dashboard() {
                 return (b.timestamp || 0) - (a.timestamp || 0);
             });
             setStocks(loadedStocks);
-            setSummary({ total, available, distributed });
+            setSummary({ total, available, pendingSurvey, distributed });
             setLoading(false);
         });
         return unsubscribe;
     }, []);
+
+    const categoryData = useMemo(() => {
+        const dataMap = {};
+        stocks.forEach(stock => {
+            const cat = stock.category || 'อื่นๆ/ไม่ระบุ';
+            if (!dataMap[cat]) {
+                dataMap[cat] = { name: cat, available: 0, pendingSurvey: 0, distributed: 0 };
+            }
+            if (stock.status === 'รับเข้า') {
+                if (stock.pendingSurvey) {
+                    dataMap[cat].pendingSurvey += 1;
+                } else {
+                    dataMap[cat].available += 1;
+                }
+            } else if (stock.status === 'จำหน่าย') {
+                dataMap[cat].distributed += 1;
+            }
+        });
+        return Object.values(dataMap)
+            .sort((a, b) => (b.available + b.pendingSurvey + b.distributed) - (a.available + a.pendingSurvey + a.distributed))
+            .slice(0, 10);
+    }, [stocks]);
+
+    const pieData = useMemo(() => {
+        return [
+            { name: 'พร้อมจำหน่าย', value: summary.available, color: '#4ade80' },
+            { name: 'รอสำรวจ', value: summary.pendingSurvey, color: '#fbbf24' },
+            { name: 'จำหน่ายแล้ว', value: summary.distributed, color: '#f87171' }
+        ];
+    }, [summary]);
 
     const handleRowClick = (item) => {
         setSelectedItem(item);
@@ -470,6 +508,14 @@ export default function Dashboard() {
                         <div className="db-chip-value db-chip-value--available">{loading ? '—' : summary.available}</div>
                         <div className="db-chip-sub">AVAILABLE</div>
                     </div>
+                    <div className="db-chip db-chip--pending">
+                        <div className="db-chip-top">
+                            <div className="db-chip-dot" style={{ backgroundColor: '#fbbf24', boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)' }}></div>
+                            <span className="db-chip-label" style={{ color: '#fcd34d' }}>รอสำรวจ</span>
+                        </div>
+                        <div className="db-chip-value" style={{ color: '#fbbf24' }}>{loading ? '—' : summary.pendingSurvey}</div>
+                        <div className="db-chip-sub">PENDING SURVEY</div>
+                    </div>
                     <div className="db-chip db-chip--distributed">
                         <div className="db-chip-top">
                             <div className="db-chip-dot db-chip-dot--distributed"></div>
@@ -481,69 +527,88 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="section-header-container mt-4">
-                <div className="section-accent"></div>
+
+
+            {/* OVERVIEW CHART SECTION */}
+            <div className="section-header-container mt-4 mb-3">
+                <div className="section-accent" style={{ background: '#8b5cf6' }}></div>
                 <h4 className="section-title-text">
-                    เมนูด่วน
-                    <span className="section-title-badge">QUICK MENU</span>
+                    สรุปข้อมูลพัสดุ
+                    <span className="section-title-badge" style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>OVERVIEW CHART</span>
                 </h4>
             </div>
-            <div className="qm-grid mb-4">
-                <Link to="/incoming" className="text-decoration-none">
-                    <div className="qm-card qm-card--incoming">
-                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'multiply' }}>
-                            <img src="/รับเข้าสต๊อก.png" alt="incoming" className="qm-illu-img" style={{ filter: 'brightness(1.0) contrast(1.0)' }} />
-                        </div>
-                        <div className="qm-card-inner">
-                            <div className="qm-body">
-                                <div className="qm-label"><h4>รับพัสดุรอจำหน่ายเข้าระบบ</h4></div>
-                                <div className="qm-title">รับพัสดุเข้าระบบ</div>
-                                <div className="qm-desc">บันทึกการรับพัสดุครุภัณฑ์เข้าคลัง<br />เพื่อรอดำเนินการจำหน่ายต่อไป</div>
-                            </div>
-                        </div>
-                        <div className="qm-card-footer">
-                            <span className="qm-footer-text">คงเหลือพร้อมจำหน่าย: {summary.available} รายการ</span>
-                            <FaArrowCircleRight />
-                        </div>
-                    </div>
-                </Link>
-                <Link to="/distribution" className="text-decoration-none">
-                    <div className="qm-card qm-card--distribution">
-                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'multiply' }}>
-                            <img src="/เตรียมจำหน่าย.png" alt="distribution" className="qm-illu-img" style={{ filter: 'brightness(1.0) contrast(1.0)' }} />
-                        </div>
-                        <div className="qm-card-inner">
-                            <div className="qm-body">
-                                <div className="qm-label"><h4>รายการพัสดุรอจำหน่าย</h4></div>
-                                <div className="qm-title">จำหน่ายพัสดุออก</div>
-                                <div className="qm-desc">จัดการเอกสารและรายการพัสดุ<br />ที่รอดำเนินการจำหน่ายออกจากระบบ</div>
-                            </div>
-                        </div>
-                        <div className="qm-card-footer">
-                            <span className="qm-footer-text">จำหน่ายแล้ว: {summary.distributed} รายการ</span>
-                            <FaArrowCircleRight />
+            <Row className="g-4 mb-4">
+                <Col lg={8} md={12}>
+                    <div className="latest-panel latest-panel--dark h-100" style={{ padding: '20px', borderRadius: '16px' }}>
+                        <h5 style={{ color: '#f8fafc', marginBottom: '20px', fontSize: '1.1rem', fontWeight: '600' }}>จำนวนพัสดุแยกตามประเภท (Top 10)</h5>
+                        <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer>
+                                <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                    <XAxis dataKey="name" stroke="#cbd5e1" fontSize={12} tick={{ fill: '#cbd5e1' }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                                    <YAxis stroke="#cbd5e1" fontSize={12} tick={{ fill: '#cbd5e1' }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                                    <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: 'rgba(15,23,42,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}
+                                        itemStyle={{ color: '#e2e8f0' }}
+                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    />
+                                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                                    <Bar dataKey="available" name="พร้อมจำหน่าย" stackId="a" fill="#4ade80" radius={[0, 0, 0, 0]} barSize={40} />
+                                    <Bar dataKey="pendingSurvey" name="รอสำรวจ" stackId="a" fill="#fbbf24" radius={[0, 0, 0, 0]} barSize={40} />
+                                    <Bar dataKey="distributed" name="จำหน่ายแล้ว" stackId="a" fill="#f87171" radius={[4, 4, 0, 0]} barSize={40} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
-                </Link>
-                <Link to="/inventory" className="text-decoration-none">
-                    <div className="qm-card qm-card--inventory">
-                        <div className="qm-illu-wrap" style={{ mixBlendMode: 'normal' }}>
-                            <img src="/รายงานทั้งหมด.png" alt="inventory" className="qm-illu-img" style={{ filter: 'brightness(1.0) contrast(1.1)' }} />
-                        </div>
-                        <div className="qm-card-inner">
-                            <div className="qm-body">
-                                <div className="qm-label"><h4>ข้อมูลพัสดุในระบบทั้งหมด</h4></div>
-                                <div className="qm-title">รายงานพัสดุทั้งหมด</div>
-                                <div className="qm-desc">ตรวจสอบและค้นหาข้อมูลพัสดุ<br />ครุภัณฑ์ทั้งหมดในระบบคลัง</div>
+                </Col>
+                <Col lg={4} md={12}>
+                    <div className="latest-panel latest-panel--dark h-100" style={{ padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                         <h5 style={{ color: '#f8fafc', marginBottom: '10px', fontSize: '1.1rem', fontWeight: '600', alignSelf: 'flex-start' }}>สัดส่วนสถานะพัสดุ</h5>
+                         <div style={{ width: '100%', height: 260, position: 'relative' }}>
+                            <ResponsiveContainer>
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={65}
+                                        outerRadius={90}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: 'rgba(15,23,42,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}
+                                        itemStyle={{ color: '#e2e8f0' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f8fafc', lineHeight: '1' }}>{summary.total}</div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>รวมทั้งหมด</div>
                             </div>
-                        </div>
-                        <div className="qm-card-footer">
-                            <span className="qm-footer-text">รายการทั้งหมด: {summary.total} รายการ</span>
-                            <FaArrowCircleRight />
-                        </div>
+                         </div>
+                         <div className="d-flex w-100 justify-content-center gap-4 mt-2">
+                             <div className="d-flex align-items-center gap-2">
+                                 <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#4ade80' }}></div>
+                                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>พร้อมจำหน่าย</span>
+                             </div>
+                             <div className="d-flex align-items-center gap-2">
+                                 <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#fbbf24' }}></div>
+                                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>รอสำรวจ</span>
+                             </div>
+                             <div className="d-flex align-items-center gap-2">
+                                 <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#f87171' }}></div>
+                                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>จำหน่ายแล้ว</span>
+                             </div>
+                         </div>
                     </div>
-                </Link>
-            </div>
+                </Col>
+            </Row>
 
             <Row className="g-4 mt-2">
                 <Col xs={12} className="d-flex flex-column">   
