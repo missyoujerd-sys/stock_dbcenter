@@ -247,7 +247,7 @@ export default function Dashboard() {
     const pieData = useMemo(() => {
         return [
             { name: 'พร้อมจำหน่าย', value: summary.available, color: '#4ade80' },
-            { name: 'รอสำรวจ', value: summary.pendingSurvey, color: '#fbbf24' },
+            { name: 'รอสำรวจเลขครุภัณฑ์', value: summary.pendingSurvey, color: '#fbbf24' },
             { name: 'จำหน่ายแล้ว', value: summary.distributed, color: '#f87171' }
         ];
     }, [summary]);
@@ -317,6 +317,51 @@ export default function Dashboard() {
 
     const handlePrintSelected = () => {
         setShowMultiPrintModal(true);
+    };
+
+    const handleExportExcelAvailable = async () => {
+        const dataToExport = selectedStocks.length > 0 ? selectedStocks : filteredIncoming;
+        if (dataToExport.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
+        
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('รายการพัสดุรอจำหน่าย');
+
+        ws.columns = [
+            { header: 'ลำดับ', key: 'no', width: 10 },
+            { header: 'วันที่', key: 'date', width: 20 },
+            { header: 'หมายเลขครุภัณฑ์', key: 'assetId', width: 25 },
+            { header: 'ยี่ห้อ / รุ่น', key: 'brandModel', width: 30 },
+            { header: 'Serial Number', key: 'serialNumber', width: 25 },
+            { header: 'หน่วยงาน', key: 'department', width: 20 },
+            { header: 'มีครุภัณฑ์', key: 'hasItem', width: 15 },
+            { header: 'รอสำรวจเลขครุภัณฑ์', key: 'pendingSurvey', width: 20 },
+            { header: 'สถานะ', key: 'status', width: 20 },
+        ];
+
+        ws.getRow(1).font = { bold: true };
+        ws.getRow(1).alignment = { horizontal: 'center' };
+
+        dataToExport.forEach((stock, index) => {
+            let dateStr = stock.importDate || '-';
+            if (stock.timestamp) {
+                 dateStr += ' ' + new Date(stock.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' น.';
+            }
+
+            ws.addRow({
+                no: index + 1,
+                date: dateStr,
+                assetId: stock.assetId || '-',
+                brandModel: stock.brandModel || '-',
+                serialNumber: stock.serialNumber || '-',
+                department: stock.department || '-',
+                hasItem: stock.hasItem !== false ? 'มี' : 'ไม่มี',
+                pendingSurvey: stock.pendingSurvey ? 'รอสำรวจ' : '-',
+                status: 'รับเข้า (Available)'
+            });
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `รายการพัสดุรอจำหน่าย_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const generateExcelDistributed = async (selectedStocksList) => {
@@ -511,7 +556,7 @@ export default function Dashboard() {
                     <div className="db-chip db-chip--pending">
                         <div className="db-chip-top">
                             <div className="db-chip-dot" style={{ backgroundColor: '#fbbf24', boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)' }}></div>
-                            <span className="db-chip-label" style={{ color: '#fcd34d' }}>รอสำรวจ</span>
+                            <span className="db-chip-label" style={{ color: '#fcd34d' }}>รอสำรวจเลขครุภัณฑ์</span>
                         </div>
                         <div className="db-chip-value" style={{ color: '#fbbf24' }}>{loading ? '—' : summary.pendingSurvey}</div>
                         <div className="db-chip-sub">PENDING SURVEY</div>
@@ -540,7 +585,7 @@ export default function Dashboard() {
             <Row className="g-4 mb-4">
                 <Col lg={8} md={12}>
                     <div className="latest-panel latest-panel--dark h-100" style={{ padding: '20px', borderRadius: '16px' }}>
-                        <h5 style={{ color: '#f8fafc', marginBottom: '20px', fontSize: '1.1rem', fontWeight: '600' }}>จำนวนพัสดุแยกตามประเภท (Top 10)</h5>
+                        <h5 style={{ color: '#f8fafc', marginBottom: '20px', fontSize: '1.1rem', fontWeight: '600' }}>จำนวนพัสดุแยกตามประเภท </h5>
                         <div style={{ width: '100%', height: 300 }}>
                             <ResponsiveContainer>
                                 <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
@@ -554,7 +599,7 @@ export default function Dashboard() {
                                     />
                                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                     <Bar dataKey="available" name="พร้อมจำหน่าย" stackId="a" fill="#4ade80" radius={[0, 0, 0, 0]} barSize={40} />
-                                    <Bar dataKey="pendingSurvey" name="รอสำรวจ" stackId="a" fill="#fbbf24" radius={[0, 0, 0, 0]} barSize={40} />
+                                    <Bar dataKey="pendingSurvey" name="รอสำรวจเลขครุภัณฑ์" stackId="a" fill="#fbbf24" radius={[0, 0, 0, 0]} barSize={40} />
                                     <Bar dataKey="distributed" name="จำหน่ายแล้ว" stackId="a" fill="#f87171" radius={[4, 4, 0, 0]} barSize={40} />
                                 </BarChart>
                             </ResponsiveContainer>
@@ -599,7 +644,7 @@ export default function Dashboard() {
                              </div>
                              <div className="d-flex align-items-center gap-2">
                                  <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#fbbf24' }}></div>
-                                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>รอสำรวจ</span>
+                                 <span style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>รอสำรวจเลขครุภัณฑ์</span>
                              </div>
                              <div className="d-flex align-items-center gap-2">
                                  <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#f87171' }}></div>
@@ -645,20 +690,23 @@ export default function Dashboard() {
                             <span style={{
                                 fontSize: '0.9rem',
                                 fontWeight: 700,
-                                color: '#5bc216ff',
+                                color: '#439909ff',
                                 fontFamily: 'Prompt, sans-serif',
                                 whiteSpace: 'nowrap',
                                 letterSpacing: '0.02em',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                            }}>📦 ครุภัณฑ์รับเข้า</span>
+                            }}>📦 ครุภัณฑ์รับเข้ารอจำหน่าย</span>
                         </div>
-                        {selectedStocks.length > 0 && (
-                            <div style={{ marginLeft: 'auto' }}>
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                            <Button variant="success" size="sm" onClick={handleExportExcelAvailable} className="d-flex align-items-center gap-2 shadow-sm text-white" style={{ borderRadius: '8px', backgroundColor: '#10b981', borderColor: '#10b981' }}>
+                                <FaFileExcel /> Export Excel {selectedStocks.length > 0 ? `(${selectedStocks.length})` : ''}
+                            </Button>
+                            {selectedStocks.length > 0 && (
                                 <Button variant="primary" size="sm" onClick={handlePrintSelected} className="d-flex align-items-center gap-2 shadow-sm" style={{ borderRadius: '8px' }}>
                                     <FaPrint /> พิมพ์ที่เลือก ({selectedStocks.length})
                                 </Button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', alignSelf: 'flex-end', marginTop: 'auto' }}>
                         <div style={{ position: 'relative' }}>
@@ -700,7 +748,7 @@ export default function Dashboard() {
                                 <th style={{ textAlign: 'center' }}>Serial Number</th>
                                 <th style={{ textAlign: 'center' }}>หน่วยงาน</th>
                                 <th style={{ textAlign: 'center' }}>มีครุภัณฑ์</th>
-                                <th style={{ textAlign: 'center' }}>รอสำรวจ</th>
+                                <th style={{ textAlign: 'center' }}>รอสำรวจเลขครุภัณฑ์</th>
                                 <th style={{ textAlign: 'center' }}>สถานะ / รายละเอียด</th>
                             </tr>
                         </thead>
