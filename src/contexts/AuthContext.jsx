@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import {
+    getStoredPartnerCompany,
+    setStoredPartnerCompany,
+    clearStoredPartnerCompany
+} from '../data/partnerCompanies';
 
 const AuthContext = createContext();
 
@@ -32,7 +37,16 @@ export function AuthProvider({ children }) {
             .then(() => signInWithEmailAndPassword(auth, email, password));
     }
 
+    const [partnerCompany, setPartnerCompany] = useState(() => getStoredPartnerCompany());
+
+    function selectPartnerCompany(company) {
+        setStoredPartnerCompany(company);
+        setPartnerCompany(company);
+    }
+
     function logout() {
+        clearStoredPartnerCompany();
+        setPartnerCompany(null);
         return signOut(auth);
     }
 
@@ -87,6 +101,8 @@ export function AuthProvider({ children }) {
         isAdmin,
         isAdmin_2,
         isUserRole,
+        partnerCompany,
+        selectPartnerCompany,
         login,
         logout,
         resetPassword

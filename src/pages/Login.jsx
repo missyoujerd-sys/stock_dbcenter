@@ -4,18 +4,26 @@ import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { ref, get, update } from 'firebase/database';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation, FaQrcode, FaCheckCircle } from 'react-icons/fa';
-import { decodeAutoLoginToken, isAdmin2Email } from '../utils/autoLoginQr';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation, FaQrcode, FaCheckCircle, FaChevronDown, FaChevronUp, FaUserShield } from 'react-icons/fa';
+import QRCode from 'qrcode';
+import { buildAutoLoginUrl, decodeAutoLoginToken, isAdmin2Email } from '../utils/autoLoginQr';
+import PartnerCompanyModal from '../components/PartnerCompanyModal';
 
 export default function Login() {
     let userRef = useRef();
     const passwordRef = useRef();
-    const { currentUser, login, logout } = useAuth();
+    const { currentUser, login, logout, selectPartnerCompany } = useAuth();
     const [searchParams] = useSearchParams();
     const [error, setError] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [loginQrUrl, setLoginQrUrl] = useState('');
+    const [showPartnerModal, setShowPartnerModal] = useState(false);
+    const [showStaffLogin, setShowStaffLogin] = useState(false);
+    const [pendingQrCreds, setPendingQrCreds] = useState(null);
+    const [selectingCompanyId, setSelectingCompanyId] = useState(null);
+    const [partnerModalError, setPartnerModalError] = useState('');
     const [autoLoginState, setAutoLoginState] = useState({
         active: false,
         username: '',
@@ -64,11 +72,6 @@ export default function Login() {
         }
     };
 
-    // Forgot Password States
-    const [showForgotModal, setShowForgotModal] = useState(false);
-    const [forgotUser, setForgotUser] = useState('');
-    const [forgotMessage, setForgotMessage] = useState('');
-    const [isForgotSuccess, setIsForgotSuccess] = useState(false);
     const navigate = useNavigate();
 
     async function authenticateAccount(rawUsername, rawPassword) {
@@ -116,6 +119,22 @@ export default function Login() {
         }
     }
 
+    // Generate QR Code directly on Login page for partner auto-login (user: itt / itt123456)
+    useEffect(() => {
+        const qrTarget = buildAutoLoginUrl(window.location.origin, 'itt', 'itt123456');
+        QRCode.toDataURL(qrTarget, {
+            width: 560,
+            margin: 1,
+            errorCorrectionLevel: 'H',
+            color: {
+                dark: '#0b2545',
+                light: '#ffffff',
+            },
+        })
+            .then(setLoginQrUrl)
+            .catch((err) => console.error('Login QR error:', err));
+    }, []);
+
     useEffect(() => {
         const qrToken = searchParams.get('qr');
         const legacyAuto = searchParams.get('auto');
@@ -130,34 +149,42 @@ export default function Login() {
         if (!creds || autoLoginStartedRef.current) return;
         autoLoginStartedRef.current = true;
 
-        const runAutoLogin = async () => {
+        // Immediately prompt mandatory Partner Company selection with Hospital Logo when QR is scanned
+        setPendingQrCreds(creds);
+        setPartnerModalError('');
+        setShowPartnerModal(true);
+    }, [searchParams]);
+
+    async function handleSelectPartnerAndLogin(company) {
+        const creds = pendingQrCreds || { username: 'itt', password: 'itt123456' };
+        setSelectingCompanyId(company.id);
+        setPartnerModalError('');
+
+        try {
+            selectPartnerCompany(company);
+            const signedEmail = await authenticateAccount(creds.username, creds.password);
+            setShowPartnerModal(false);
             setAutoLoginState({
                 active: true,
-                username: creds.username,
-                statusText: 'กำลังยืนยันตัวตนและเข้าสู่ระบบอัตโนมัติ...',
-                success: false
+                username: `${creds.username} (${company.name})`,
+                statusText: 'เข้าสู่ระบบสำเร็จ! กำลังเปิดหน้าค้นหา Jop...',
+                success: true
             });
-            try {
-                const signedEmail = await authenticateAccount(creds.username, creds.password);
-                setAutoLoginState({
-                    active: true,
-                    username: creds.username,
-                    statusText: 'เข้าสู่ระบบสำเร็จ! กำลังเปิดหน้าค้นหา Jop...',
-                    success: true
-                });
-                const dest = isAdmin2Email(signedEmail) ? '/' : '/job-search';
-                setTimeout(() => navigate(dest, { replace: true }), 550);
-            } catch (err) {
-                console.error('QR auto-login error:', err);
-                setAutoLoginState({ active: false, username: '', statusText: '', success: false });
-                setError(err.message || 'ไม่สามารถเข้าสู่ระบบอัตโนมัติได้');
-                setShowErrorModal(true);
-            }
-        };
+            const dest = isAdmin2Email(signedEmail) ? '/' : '/job-search';
+            setTimeout(() => navigate(dest, { replace: true }), 450);
+        } catch (err) {
+            console.error('QR partner login error:', err);
+            setPartnerModalError(err.message || 'ไม่สามารถเข้าสู่ระบบอัตโนมัติได้');
+        } finally {
+            setSelectingCompanyId(null);
+        }
+    }
 
-        runAutoLogin();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams]);
+    function handleOpenQrPartnerLogin() {
+        setPendingQrCreds({ username: 'itt', password: 'itt123456' });
+        setPartnerModalError('');
+        setShowPartnerModal(true);
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -174,31 +201,6 @@ export default function Login() {
         }
 
         setLoading(false);
-    }
-
-    async function handleForgotSubmit(e) {
-        e.preventDefault();
-        setForgotMessage('');
-        if (!forgotUser.trim()) {
-            setForgotMessage('กรุณาระบุชื่อผู้ใช้งาน');
-            return;
-        }
-
-        let email = forgotUser;
-        if (!email.includes('@')) { email = email + '@nkp.com'; }
-        const escapedEmail = email.replace(/\./g, ',');
-
-        try {
-            await update(ref(db, `users_status/${escapedEmail}`), {
-                resetRequested: true,
-                email: email,
-                timestamp: Date.now()
-            });
-            setIsForgotSuccess(true);
-            setForgotMessage('ส่งคำขอสำเร็จแล้ว กรุณาแจ้ง/รอแอดมินดำเนินการ');
-        } catch (error) {
-            setForgotMessage('เกิดข้อผิดพลาดในการส่งคำขอ');
-        }
     }
 
     return (
@@ -263,7 +265,7 @@ export default function Login() {
                     </div>
                 </div>
             ) : (
-            <div className="login-card overflow-hidden" style={{ position: 'relative' }}>
+            <div className="login-card overflow-hidden" style={{ position: 'relative', padding: '2.5rem 2.25rem 2rem' }}>
                 {/* Beautiful Thai Warning Toast */}
                 <div style={{
                     position: 'absolute',
@@ -312,90 +314,239 @@ export default function Login() {
                 {/* Mourning Ribbons */}
                 <div className="mourning-ribbon top-left"></div>
                 <div className="mourning-ribbon top-right"></div>
-                <h4 className="login-title">ระบบจัดการ Stock</h4>
-                <h4 className="login-subtitle"> ห้องซ่อมบำรุงคอมพิวเตอร์ </h4>
 
-                <Form onSubmit={handleSubmit}>
-                    <div className="login-input-group">
-                        <FaUser className="login-input-icon" />
-                        <Form.Control
-                            type="text"
-                            ref={userRef}
-                            required
-                            placeholder="User"
-                            className="login-input"
-                            onChange={handleInputChange}
-                        />
+                {/* 2. Large Luxury QR Code Showcase at Top (Primary Entry for Partner Companies) */}
+                <div
+                    onClick={handleOpenQrPartnerLogin}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOpenQrPartnerLogin()}
+                    style={{
+                        position: 'relative',
+                        marginTop: '0.35rem',
+                        padding: '24px 20px 22px',
+                        borderRadius: '28px',
+                        background: 'linear-gradient(155deg, #07162e 0%, #0e2e5c 52%, #0a362a 100%)',
+                        border: '2px solid rgba(251, 191, 36, 0.65)',
+                        boxShadow: '0 24px 50px -12px rgba(7, 22, 46, 0.65), 0 0 32px rgba(251, 191, 36, 0.14), inset 0 1px 0 rgba(255,255,255,0.2)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '16px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        overflow: 'hidden',
+                        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-3px)';
+                        e.currentTarget.style.boxShadow = '0 28px 56px -12px rgba(7, 22, 46, 0.75), 0 0 28px rgba(251,191,36,0.32)';
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 24px 50px -12px rgba(7, 22, 46, 0.65), 0 0 32px rgba(251, 191, 36, 0.14), inset 0 1px 0 rgba(255,255,255,0.2)';
+                    }}
+                >
+                    {/* Subtle Corner Gold Accents */}
+                    <div style={{ position: 'absolute', top: 12, left: 12, width: 16, height: 16, borderTop: '2px solid rgba(253,230,138,0.65)', borderLeft: '2px solid rgba(253,230,138,0.65)', borderTopLeftRadius: 6 }} />
+                    <div style={{ position: 'absolute', top: 12, right: 12, width: 16, height: 16, borderTop: '2px solid rgba(253,230,138,0.65)', borderRight: '2px solid rgba(253,230,138,0.65)', borderTopRightRadius: 6 }} />
+                    <div style={{ position: 'absolute', bottom: 12, left: 12, width: 16, height: 16, borderBottom: '2px solid rgba(253,230,138,0.65)', borderLeft: '2px solid rgba(253,230,138,0.65)', borderBottomLeftRadius: 6 }} />
+                    <div style={{ position: 'absolute', bottom: 12, right: 12, width: 16, height: 16, borderBottom: '2px solid rgba(253,230,138,0.65)', borderRight: '2px solid rgba(253,230,138,0.65)', borderBottomRightRadius: 6 }} />
+
+                    {/* Official Crest Title */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            letterSpacing: '0.18em',
+                            color: '#93c5fd',
+                            textTransform: 'uppercase',
+                        }}>
+                            NAKORNPING HOSPITAL
+                        </span>
+                        <span style={{
+                            fontSize: '1.15rem',
+                            fontWeight: 900,
+                            color: '#ffffff',
+                            letterSpacing: '0.01em',
+                        }}>
+                            โรงพยาบาลนครพิงค์
+                        </span>
                     </div>
 
-                    <div className="login-input-group" style={{ position: 'relative' }}>
-                        <FaLock className="login-input-icon" />
-                        <Form.Control
-                            type={showPassword ? 'text' : 'password'}
-                            ref={passwordRef}
-                            required
-                            placeholder="Password"
-                            className="login-input"
-                            style={{ paddingRight: '40px' }}
-                            onChange={handleInputChange}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            style={{
-                                position: 'absolute',
-                                right: '15px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                background: 'transparent',
-                                border: 'none',
-                                color: 'rgba(226, 205, 18, 0.7)',
-                                cursor: 'pointer',
-                                padding: 0,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            {showPassword ? <FaEyeSlash /> : <FaEye />}
-                        </button>
+                    {/* Large Crystal QR Code Frame */}
+                    <div style={{
+                        position: 'relative',
+                        width: '196px',
+                        height: '196px',
+                        borderRadius: '22px',
+                        background: '#ffffff',
+                        padding: '10px',
+                        border: '3px solid #fbbf24',
+                        boxShadow: '0 14px 32px rgba(0,0,0,0.45), 0 0 0 4px rgba(251, 191, 36, 0.16)',
+                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        {loginQrUrl ? (
+                            <>
+                                <img
+                                    src={loginQrUrl}
+                                    alt="QR Code สำหรับบริษัทคู่ค้า ร.พ.นครพิงค์"
+                                    style={{ width: '100%', height: '100%', display: 'block', borderRadius: '12px' }}
+                                />
+                                <div style={{
+                                    position: 'absolute',
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '10px',
+                                    background: '#ffffff',
+                                    padding: '3px',
+                                    border: '2px solid #0b2545',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.28)',
+                                }}>
+                                    <img src="/โลโก้ ร.พ ข้างขวา.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
+                            </>
+                        ) : (
+                            <FaQrcode size={54} color="#0b2545" />
+                        )}
                     </div>
 
-                    <div className="d-flex flex-column w-100 mt-2">
-                        <Button disabled={loading} className="login-submit-btn w-100" type="submit">
-                            LOGIN
-                        </Button>
-                        <div className="text-center mt-3 mb-1">
-                            <span
-                                style={{
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.90rem',
-                                    textDecoration: 'none',
-                                    transition: 'color 0.3s'
-                                }}
-                                onClick={() => {
-                                    setForgotUser('');
-                                    setForgotMessage('');
-                                    setIsForgotSuccess(false);
-                                    setShowForgotModal(true);
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.color = '#42b127ff';
-                                    e.currentTarget.style.textDecoration = 'underline';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.color = 'rgba(206, 121, 25, 0.7)';
-                                    e.currentTarget.style.textDecoration = 'none';
-                                }}
-                            >
-                                ส่งคำขอ เพื่อขอสิทธิ์เข้าใช้งาน
-                            </span>
-                        </div>
+                    {/* Prominent Label Below QR */}
+                    <div style={{
+                        padding: '8px 20px',
+                        borderRadius: '999px',
+                        background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.12))',
+                        border: '1.5px solid rgba(251, 191, 36, 0.55)',
+                        color: '#fde68a',
+                        fontSize: '0.98rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.02em',
+                        lineHeight: 1.35,
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                    }}>
+                        สำหรับบริษัทคู่ค้า ร.พ.นครพิงค์
                     </div>
-                </Form>
+                </div>
 
-                <div className="login-footer-info">
+                <div className="login-footer-info" style={{ marginTop: '1.25rem' }}>
                     *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
+                </div>
+
+                {/* 1. Hidden Collapsible Staff Login Menu at Bottom */}
+                <div style={{ marginTop: '1rem', borderTop: '1px dashed rgba(148, 163, 184, 0.35)', paddingTop: '0.9rem' }}>
+                    <button
+                        type="button"
+                        onClick={() => setShowStaffLogin((v) => !v)}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '7px 16px',
+                            borderRadius: '999px',
+                            background: showStaffLogin ? '#0f172a' : 'rgba(15, 23, 42, 0.06)',
+                            color: showStaffLogin ? '#fde68a' : '#475569',
+                            border: showStaffLogin ? '1px solid rgba(251, 191, 36, 0.4)' : '1px solid rgba(148, 163, 184, 0.35)',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        <FaUserShield size={13} />
+                        <span>สำหรับเจ้าหน้าที่</span>
+                        {showStaffLogin ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
+                    </button>
+
+                    {showStaffLogin && (
+                        <div style={{
+                            marginTop: '1rem',
+                            padding: '1.25rem 1rem 1rem',
+                            borderRadius: '20px',
+                            background: 'rgba(248, 250, 252, 0.92)',
+                            border: '1px solid rgba(203, 213, 225, 0.75)',
+                            boxShadow: 'inset 0 2px 6px rgba(15, 23, 42, 0.04)',
+                        }}>
+                            <h4 style={{
+                                fontSize: '1.35rem',
+                                fontWeight: 900,
+                                color: '#1e293b',
+                                marginBottom: '0.35rem',
+                            }}>
+                                ระบบจัดการ Stock
+                            </h4>
+                            <div style={{
+                                display: 'inline-block',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                color: '#64748b',
+                                background: 'rgba(15, 23, 42, 0.05)',
+                                padding: '0.3rem 0.9rem',
+                                borderRadius: '999px',
+                                marginBottom: '1.1rem',
+                            }}>
+                                ห้องซ่อมบำรุงคอมพิวเตอร์
+                            </div>
+
+                            <Form onSubmit={handleSubmit}>
+                                <div className="login-input-group" style={{ marginBottom: '0.9rem' }}>
+                                    <FaUser className="login-input-icon" />
+                                    <Form.Control
+                                        type="text"
+                                        ref={userRef}
+                                        required
+                                        autoFocus
+                                        placeholder="User"
+                                        className="login-input"
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                <div className="login-input-group" style={{ position: 'relative', marginBottom: '1rem' }}>
+                                    <FaLock className="login-input-icon" />
+                                    <Form.Control
+                                        type={showPassword ? 'text' : 'password'}
+                                        ref={passwordRef}
+                                        required
+                                        placeholder="Password"
+                                        className="login-input"
+                                        style={{ paddingRight: '40px' }}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '15px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'rgba(226, 205, 18, 0.7)',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
+                                </div>
+
+                                <Button disabled={loading} className="login-submit-btn w-100" type="submit">
+                                    LOGIN
+                                </Button>
+                            </Form>
+                        </div>
+                    )}
                 </div>
             </div>
             )}
@@ -423,126 +574,18 @@ export default function Login() {
                 </Modal.Body>
             </Modal>
 
-            {/* Forgot Password Modal - styled like reference image */}
-            {showForgotModal && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 1050,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)'
-                }}>
-                    <div style={{
-                        background: 'white', borderRadius: '24px', padding: '2rem',
-                        width: '100%', maxWidth: '360px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)',
-                        position: 'relative', overflow: 'hidden'
-                    }}>
-                        {/* Gradient top bar */}
-                        <div style={{
-                            position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
-                            background: 'linear-gradient(to right, #a855f7, #ec4899, #ef4444)',
-                            borderRadius: '24px 24px 0 0'
-                        }} />
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                            {/* Icon */}
-                            <div style={{
-                                width: '64px', height: '64px', borderRadius: '50%',
-                                background: '#f3e8ff', display: 'flex', alignItems: 'center',
-                                justifyContent: 'center', marginBottom: '1rem', marginTop: '0.5rem'
-                            }}>
-                                <span style={{ fontSize: '2rem' }}>🔑</span>
-                            </div>
-
-                            <h3 style={{
-                                fontSize: '1.25rem', fontWeight: '900', color: '#1e293b',
-                                fontFamily: 'Prompt, sans-serif', marginBottom: '0.25rem'
-                            }}>ส่งชื่อ-สกุล เหตุผล เพื่อแจ้งให้ Admin เพิ่ม/ปลดล็อก</h3>
-                            <p style={{
-                                fontSize: '0.80rem', color: '#64748b',
-                                fontFamily: 'Prompt, sans-serif', marginBottom: '1.6rem'
-                            }}>Admin จะเป็นผู้เพิ่ม/ปลดล็อก แล้วจะแจ้งให้ทราบ </p>
-
-                            {isForgotSuccess ? (
-                                <div style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: '1rem', fontFamily: 'Prompt, sans-serif' }}>
-                                    ✅ {forgotMessage}
-                                </div>
-                            ) : (
-                                <form onSubmit={handleForgotSubmit} style={{ width: '100%' }}>
-                                    <input
-                                        type="text"
-                                        value={forgotUser}
-                                        onChange={(e) => setForgotUser(e.target.value)}
-                                        placeholder="นายซื่อกินไม่หมด คดกินไม่นาน (ขอสิทธิ์)"
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.890rem 1rem',
-                                            borderRadius: '14px',
-                                            textAlign: 'center',
-                                            fontSize: '0.85rem',
-                                            fontWeight: '600',
-                                            border: '2px solid #e2e8f0',
-                                            outline: 'none',
-                                            fontFamily: 'Prompt, sans-serif',
-                                            background: '#f8fafc',
-                                            color: '#1e293b',
-                                            marginBottom: '0.75rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => e.target.style.borderColor = '#c084fc'}
-                                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                                    />
-                                    {forgotMessage && (
-                                        <p style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.75rem', fontFamily: 'Prompt, sans-serif' }}>
-                                            {forgotMessage}
-                                        </p>
-                                    )}
-                                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%', marginTop: '0.5rem' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowForgotModal(false)}
-                                            style={{
-                                                flex: 1, padding: '0.8rem', borderRadius: '14px',
-                                                background: '#f1f5f9', color: '#475569',
-                                                fontWeight: 'bold', border: 'none', cursor: 'pointer',
-                                                fontFamily: 'Prompt, sans-serif', fontSize: '1rem'
-                                            }}
-                                        >
-                                            ปิด
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            style={{
-                                                flex: 1, padding: '0.8rem', borderRadius: '14px',
-                                                background: 'linear-gradient(to right, #a855f7, #db2777)',
-                                                color: 'white', fontWeight: 'bold', border: 'none',
-                                                cursor: 'pointer', fontFamily: 'Prompt, sans-serif',
-                                                fontSize: '1rem', boxShadow: '0 4px 15px rgba(168,85,247,0.4)'
-                                            }}
-                                        >
-                                            ส่งคำขอ
-                                        </button>
-                                    </div>
-                                </form>
-                            )}
-
-                            {isForgotSuccess && (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowForgotModal(false)}
-                                    style={{
-                                        width: '100%', padding: '0.8rem', borderRadius: '14px',
-                                        background: '#f1f5f9', color: '#475569',
-                                        fontWeight: 'bold', border: 'none', cursor: 'pointer',
-                                        fontFamily: 'Prompt, sans-serif', fontSize: '1rem', marginTop: '1rem'
-                                    }}
-                                >
-                                    ปิด
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Mandatory Partner Company Selection Popup (Hospital Logo Notification) */}
+            <PartnerCompanyModal
+                isOpen={showPartnerModal}
+                onSelectCompany={handleSelectPartnerAndLogin}
+                onCancel={() => {
+                    setShowPartnerModal(false);
+                    setPendingQrCreds(null);
+                    setPartnerModalError('');
+                }}
+                loadingCompanyId={selectingCompanyId}
+                errorText={partnerModalError}
+            />
         </div>
     );
 }

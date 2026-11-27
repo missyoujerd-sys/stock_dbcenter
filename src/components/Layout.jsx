@@ -29,10 +29,12 @@ import {
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
+import PartnerCompanyModal from "./PartnerCompanyModal";
 
 
 export default function Layout({ children }) {
-  const { currentUser, isAdmin, isAdmin_2, logout } = useAuth();
+  const { currentUser, isAdmin, isAdmin_2, partnerCompany, selectPartnerCompany, logout } = useAuth();
+  const [showPartnerPicker, setShowPartnerPicker] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -250,6 +252,25 @@ export default function Layout({ children }) {
                   <span className="text-[15.5px] font-black tracking-wide">โรงพยาบาลนครพิงค์</span>
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.9)]" />
                 </div>
+                {partnerCompany && (
+                  <div className="mt-4 w-full px-2">
+                    <div className="rounded-2xl p-3 bg-gradient-to-br from-blue-50 to-indigo-50/80 dark:from-slate-800/80 dark:to-indigo-950/50 border border-indigo-200/80 dark:border-indigo-500/30 shadow-xs">
+                      <div className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                        บริษัทคู่ค้าที่เข้าใช้งาน
+                      </div>
+                      <div className="text-[13.5px] font-black text-[#0b2545] dark:text-amber-300 mt-0.5 leading-snug">
+                        {partnerCompany.name}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPartnerPicker(true)}
+                        className="mt-2 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-slate-600 text-[11px] font-bold hover:bg-blue-50 transition-colors cursor-pointer"
+                      >
+                        เปลี่ยนบริษัท
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-5 h-[2px] w-40 bg-gradient-to-r from-transparent via-amber-400/75 to-transparent" />
               </div>
             )}
@@ -815,6 +836,17 @@ export default function Layout({ children }) {
         </div>
       )}
       {/* ----------------------------------------------------------------- */}
+      {/* -------------------- Mandatory Partner Company Selector for User -------------------- */}
+      {currentUser && !isAdmin_2 && (!partnerCompany || showPartnerPicker) && (
+        <PartnerCompanyModal
+          isOpen={true}
+          onSelectCompany={(company) => {
+            selectPartnerCompany(company);
+            setShowPartnerPicker(false);
+          }}
+          onCancel={partnerCompany ? () => setShowPartnerPicker(false) : undefined}
+        />
+      )}
     </div>
   );
 }
