@@ -23,6 +23,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import CompanyEmblem from '../../components/CompanyEmblem';
 import {
   JobSearchService,
   JobRecord,
@@ -295,11 +296,6 @@ export default function JobSearch() {
                   <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-200 border border-amber-300/45 shadow-xs">
                     งานราชการ • คู่ค้า
                   </span>
-                  {partnerCompany && (
-                    <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-400/20 text-emerald-200 border border-emerald-300/45 shadow-xs">
-                      {partnerCompany.name}
-                    </span>
-                  )}
                 </div>
                 <p className="text-sm sm:text-base font-bold text-amber-200/95 mt-1.5 mb-0 tracking-wide drop-shadow-xs">
                   ระบบสืบค้นและตรวจสอบงานซ่อมบริษัทคู่ค้า • โรงพยาบาลนครพิงค์
@@ -307,8 +303,30 @@ export default function JobSearch() {
               </div>
             </div>
 
-            {/* Utility Controls (Refresh + Admin API Config) */}
-            <div className="relative z-10 flex flex-wrap items-center gap-2">
+            {/* Selected Partner Company Logo + Name Showcase & Utility Controls */}
+            <div className="relative z-10 flex flex-wrap items-center gap-3">
+              {partnerCompany && (
+                <div
+                  style={{
+                    background: partnerCompany.gradient,
+                    boxShadow: `0 12px 26px -8px ${partnerCompany.shadow || 'rgba(0,0,0,0.45)'}`,
+                  }}
+                  className="flex items-center gap-3 px-3.5 py-2 rounded-2xl border border-amber-300/65 text-white"
+                >
+                  <div className="w-14 h-14 rounded-xl bg-white p-1 shadow-md border border-amber-200 shrink-0 flex items-center justify-center overflow-hidden">
+                    <CompanyEmblem company={partnerCompany} />
+                  </div>
+                  <div className="flex flex-col leading-tight pr-1">
+                    <span className="text-[10px] font-extrabold text-amber-200 uppercase tracking-wider">
+                      บริษัทคู่ค้าที่เลือก
+                    </span>
+                    <span className="text-sm sm:text-base font-black text-white drop-shadow-xs mt-0.5">
+                      {partnerCompany.name}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => loadJobs(apiConfig, appliedKeyword, filterMode)}
