@@ -63,7 +63,7 @@ function playBeep(type: 'success' | 'error') {
 }
 
 export default function JobSearch() {
-  const { currentUser, isAdmin_2 } = useAuth();
+  const { currentUser, isAdmin_2, partnerCompany } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [filterMode, setFilterMode] = useState<JobFilterMode>('all');
@@ -295,6 +295,11 @@ export default function JobSearch() {
                   <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-200 border border-amber-300/45 shadow-xs">
                     งานราชการ • คู่ค้า
                   </span>
+                  {partnerCompany && (
+                    <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-400/20 text-emerald-200 border border-emerald-300/45 shadow-xs">
+                      {partnerCompany.name}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm sm:text-base font-bold text-amber-200/95 mt-1.5 mb-0 tracking-wide drop-shadow-xs">
                   ระบบสืบค้นและตรวจสอบงานซ่อมบริษัทคู่ค้า • โรงพยาบาลนครพิงค์
