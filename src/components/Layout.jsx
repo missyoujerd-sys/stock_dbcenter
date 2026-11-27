@@ -30,6 +30,7 @@ import {
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
 import PartnerCompanyModal from "./PartnerCompanyModal";
+import CompanyEmblem from "./CompanyEmblem";
 
 
 export default function Layout({ children }) {
@@ -253,18 +254,27 @@ export default function Layout({ children }) {
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.9)]" />
                 </div>
                 {partnerCompany && (
-                  <div className="mt-4 w-full px-2">
-                    <div className="rounded-2xl p-3 bg-gradient-to-br from-blue-50 to-indigo-50/80 dark:from-slate-800/80 dark:to-indigo-950/50 border border-indigo-200/80 dark:border-indigo-500/30 shadow-xs">
-                      <div className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
-                        บริษัทคู่ค้าที่เข้าใช้งาน
+                  <div className="mt-4 w-full px-1">
+                    <div
+                      style={{
+                        background: partnerCompany.gradient,
+                        boxShadow: `0 12px 24px -10px ${partnerCompany.shadow}`,
+                      }}
+                      className="rounded-2xl p-3 text-white border border-amber-300/60 flex flex-col items-center text-center relative overflow-hidden"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-white p-1 shadow-md flex items-center justify-center overflow-hidden border border-white/80">
+                        <CompanyEmblem company={partnerCompany} />
                       </div>
-                      <div className="text-[13.5px] font-black text-[#0b2545] dark:text-amber-300 mt-0.5 leading-snug">
+                      <div className="text-[10px] font-bold text-amber-200 uppercase tracking-wider mt-2">
+                        บริษัทคู่ค้าที่เลือก
+                      </div>
+                      <div className="text-[13.5px] font-black text-white mt-0.5 leading-snug drop-shadow-xs">
                         {partnerCompany.name}
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowPartnerPicker(true)}
-                        className="mt-2 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-slate-600 text-[11px] font-bold hover:bg-blue-50 transition-colors cursor-pointer"
+                        className="mt-2.5 px-3 py-1 rounded-xl bg-white/95 text-[#0b2545] text-[11px] font-extrabold hover:bg-amber-200 transition-colors cursor-pointer border-0 shadow-xs"
                       >
                         เปลี่ยนบริษัท
                       </button>

@@ -25,7 +25,9 @@ function playNotificationSound() {
     gain.gain.setValueAtTime(0.25, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 }
 
 function getNotificationPermissionSafe() {
@@ -34,7 +36,7 @@ function getNotificationPermissionSafe() {
   }
   try {
     return window.Notification.permission || 'default';
-  } catch (_) {
+  } catch {
     return 'unsupported';
   }
 }
@@ -45,7 +47,9 @@ function sendBrowserNotification(title, body, onClick) {
     const n = new window.Notification(title, { body, icon: NOTIF_ICON, tag: 'chat-message', renotify: true, silent: true });
     n.onclick = () => { window.focus(); onClick?.(); n.close(); };
     setTimeout(() => n.close(), 6000);
-  } catch (_) {}
+  } catch {
+    return;
+  }
 }
 
 // Mini sticker picker for floating panel
@@ -172,7 +176,7 @@ export default function FloatingChat() {
       const p = await window.Notification.requestPermission();
       setNotifPermission(p); setShowNotifHint(false);
       if (p === 'granted') sendBrowserNotification('✅ เปิดการแจ้งเตือนแล้ว', 'คุณจะได้รับแจ้งเตือนเมื่อมีข้อความใหม่', null);
-    } catch (_) {
+    } catch {
       setNotifPermission('denied');
     }
   };
