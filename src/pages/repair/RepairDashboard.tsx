@@ -13,6 +13,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { RepairService } from '../../services/repairService';
+import { JobSearchService, JobRecord, getJobBucket } from '../../services/jobSearchService';
 import { RepairRecord, RepairStatus } from '../../types/repair';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,33 +23,62 @@ export default function RepairDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RepairStatus | 'all'>('all');
   const [repairs, setRepairs] = useState<RepairRecord[]>([]);
+  const [liveJobs, setLiveJobs] = useState<JobRecord[]>([]);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const { currentUser, isAdmin, isAdmin_2 } = useAuth();
 
   useEffect(() => {
-    const fetchRepairs = async () => {
-      setLoading(true);
-      try {
-        const data = await RepairService.getRepairs();
-        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setRepairs(data);
-      } catch (error) {
-        console.error("Failed to fetch repairs:", error);
-      } finally {
+    setLoading(true);
+    const unsub = JobSearchService.subscribeFirebaseJobs(
+      (jobs) => {
+        setLiveJobs(jobs);
+        setRealtimeConnected(true);
+        const mapped: RepairRecord[] = jobs.map((j) => ({
+          id: j.id,
+          docNumber: j.jobNumber,
+          assetNumber: j.assetNumber,
+          equipmentModel: j.equipmentModel,
+          serialNumber: j.serialNumber,
+          problemDescription: j.problemDescription,
+          reporterName: j.reporterName,
+          reportedDate: j.reportedDate,
+          reporterSignature: '',
+          receiverName: j.companyName || j.receiverName,
+          receivedDate: j.receivedDate || j.reportedDate,
+          receiverSignature: '',
+          staffReceiptName: j.staffReceiptName,
+          staffReceiptDate: j.staffReceiptDate,
+          staffReceiptSignature: '',
+          returnerName: j.returnerName,
+          returnDate: j.returnDate,
+          returnerSignature: '',
+          isWarranty: j.isWarranty,
+          status: (j.rawStatus || j.status) as RepairStatus,
+          statusDetail: j.statusDetail || '',
+          createdAt: j.createdAt,
+          updatedAt: j.updatedAt,
+        }));
+        setRepairs(mapped);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Failed to subscribe repairs:", error);
+        setRealtimeConnected(false);
         setLoading(false);
       }
-    };
-    fetchRepairs();
+    );
+    return () => unsub();
   }, []);
 
 
   const stats = useMemo(() => {
     return {
-      total: repairs.length,
-      repairing: repairs.filter(r => r.status === 'การซ่อมแซม' || r.status === 'รอดำเนินการ').length,
-      completed: repairs.filter(r => r.status === 'สมบูรณ์' || r.status === 'กลับมาแล้ว').length,
+      total: liveJobs.length,
+      repairing: liveJobs.filter((j) => getJobBucket(j) !== 'completed').length,
+      completed: liveJobs.filter((j) => getJobBucket(j) === 'completed').length,
     };
-  }, [repairs]);
+  }, [liveJobs]);
 
   const filteredRepairs = useMemo(() => {
     return repairs.filter(r => {
@@ -167,10 +197,20 @@ export default function RepairDashboard() {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                ระบบบริหารจัดการ <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">งานซ่อมบำรุง</span>
-              </h1>
-              <p className="text-slate-500 font-medium text-sm mt-1">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                  ระบบบริหารจัดการ <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">งานซ่อมบำรุง</span>
+                </h1>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                  realtimeConnected
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${realtimeConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  {realtimeConnected ? 'Firebase Realtime Sync' : 'กำลังเชื่อมต่อ Firebase...'}
+                </span>
+              </div>
+              <p className="text-slate-500 font-medium text-sm mt-1">ระบบติดตามสถานะและตรวจสอบประวัติการซ่อมบำรุงอุปกรณ์คอมพิวเตอร์อย่างมีประสิทธิภาพ (รวมเคสจากศูนย์ซ่อมคู่ค้า Local)</p>
             </div>
             <Link 
               to="/repair/entry"
@@ -269,16 +309,26 @@ export default function RepairDashboard() {
                     </div>
                   </td>
                 </tr>
-              ) : filteredRepairs.length > 0 ? filteredRepairs.map((repair) => (
+              ) : filteredRepairs.length > 0 ? filteredRepairs.map((repair) => {
+                const liveMeta = liveJobs.find((j) => j.id === repair.id);
+                const isPartnerLocal = liveMeta?.firebaseNode === 'partner_repair_cases';
+                return (
                 <tr key={repair.id} className={`transition-colors group divide-x divide-slate-200 bg-white ${getRowStyle(repair.status)}`}>
                   <td className="px-6 py-4 align-top">
-                    {repair.docNumber && (
-                      <div className="mb-1.5">
+                    <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                      {repair.docNumber && (
                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${repair.docNumber.startsWith('IN') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                           {repair.docNumber}
                         </span>
-                      </div>
-                    )}
+                      )}
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                        isPartnerLocal
+                          ? 'bg-sky-50 text-sky-700 border-sky-200'
+                          : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                      }`}>
+                        {isPartnerLocal ? 'ศูนย์ซ่อมคู่ค้า (Local)' : 'แจ้งซ่อมบริษัท'}
+                      </span>
+                    </div>
                     <div className="font-bold text-slate-800 text-[14px]">{repair.equipmentModel}</div>
                     <div className="text-xs font-semibold text-slate-500 mt-1">ครุภัณฑ์: {repair.assetNumber}</div>
                     <div className="text-[10px] text-slate-400 uppercase">S/N: {repair.serialNumber}</div>
@@ -303,31 +353,38 @@ export default function RepairDashboard() {
                   <td className="px-6 py-4 align-top">
                     {isAdmin && (
                       <div className="flex items-center justify-center gap-2">
-                        <Link to={`/repair/view/${repair.id}`} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 hover:scale-110 rounded-xl transition-all shadow-sm flex items-center justify-center border border-blue-100" title="ตรวจสอบรายละเอียด">
-                          <Eye size={20} />
-                        </Link>
-                        {isAdmin && (
-                          <Link to={`/repair/edit/${repair.id}`} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-amber-100" title="แก้ไขข้อมูลรายการ">
-                            <Pencil size={20} />
+                        {!isPartnerLocal ? (
+                          <>
+                            <Link to={`/repair/view/${repair.id}`} className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 hover:scale-110 rounded-xl transition-all shadow-sm flex items-center justify-center border border-blue-100" title="ตรวจสอบรายละเอียด">
+                              <Eye size={20} />
+                            </Link>
+                            <Link to={`/repair/edit/${repair.id}`} className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-amber-100" title="แก้ไขข้อมูลรายการ">
+                              <Pencil size={20} />
+                            </Link>
+                            {isAdmin_2 && (
+                              <button 
+                                onClick={() => handleDelete(repair.id)}
+                                className="p-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-rose-100"
+                                title="ลบข้อมูลรายการ"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            )}
+                            <Link to={`/repair/view/${repair.id}?action=print`} className="p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-indigo-100" title="พิมพ์/ส่งออกเอกสารราชการ">
+                              <Printer size={20} />
+                            </Link>
+                          </>
+                        ) : (
+                          <Link to="/job-search" className="px-3 py-2 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-xl border border-sky-200 transition-all no-underline">
+                            จัดการใน Job Search
                           </Link>
                         )}
-                        {isAdmin_2 && (
-                          <button 
-                            onClick={() => handleDelete(repair.id)}
-                            className="p-2.5 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-rose-100"
-                            title="ลบข้อมูลรายการ"
-                          >
-                            <Trash2 size={20} />
-                          </button>
-                        )}
-                        <Link to={`/repair/view/${repair.id}?action=print`} className="p-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 hover:scale-110 rounded-xl transition-all shadow-sm border border-indigo-100" title="พิมพ์/ส่งออกเอกสารราชการ">
-                          <Printer size={20} />
-                        </Link>
                       </div>
                     )}
                   </td>
                 </tr>
-              )) : (
+                );
+              }) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-4">

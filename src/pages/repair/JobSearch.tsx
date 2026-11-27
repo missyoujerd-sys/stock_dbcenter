@@ -28,9 +28,13 @@ import {
   JobSearchService,
   JobRecord,
   JobFilterMode,
+  JobStatusTab,
+  JobActionType,
   JobApiConfig,
   DEFAULT_JOB_API_CONFIG,
   matchesJobFilter,
+  matchesPartnerCompany,
+  getJobBucket,
 } from '../../services/jobSearchService';
 
 function playBeep(type: 'success' | 'error') {
@@ -68,11 +72,15 @@ export default function JobSearch() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [filterMode, setFilterMode] = useState<JobFilterMode>('all');
+  const [statusTab, setStatusTab] = useState<JobStatusTab>('all');
+  const [onlyMyCompany, setOnlyMyCompany] = useState<boolean>(() => Boolean(partnerCompany && !isAdmin_2));
   const [inputKeyword, setInputKeyword] = useState('');
   const [appliedKeyword, setAppliedKeyword] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const [allJobs, setAllJobs] = useState<JobRecord[]>([]);
+  const [firebaseJobs, setFirebaseJobs] = useState<JobRecord[]>([]);
+  const [externalJobs, setExternalJobs] = useState<JobRecord[]>([]);
+  const [firebaseConnected, setFirebaseConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiConfig, setApiConfig] = useState<JobApiConfig>(DEFAULT_JOB_API_CONFIG);
@@ -81,11 +89,29 @@ export default function JobSearch() {
 
   // Detail & API config modals
   const [selectedJob, setSelectedJob] = useState<JobRecord | null>(null);
+  const [operatorInput, setOperatorInput] = useState('');
+  const [noteInput, setNoteInput] = useState('');
+  const [actionBanner, setActionBanner] = useState<{ ok: boolean; msg: string } | null>(null);
   const [showApiModal, setShowApiModal] = useState(false);
   const [draftApiConfig, setDraftApiConfig] = useState<JobApiConfig>(DEFAULT_JOB_API_CONFIG);
   const [savingApi, setSavingApi] = useState(false);
   const [apiTestResult, setApiTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [updatingStage, setUpdatingStage] = useState(false);
+
+  const allJobs = useMemo(() => {
+    const merged: JobRecord[] = [];
+    if (apiConfig.mode === 'firebase' || apiConfig.mode === 'hybrid') {
+      merged.push(...firebaseJobs);
+    }
+    if ((apiConfig.mode === 'api' || apiConfig.mode === 'hybrid') && apiConfig.apiUrl.trim()) {
+      merged.push(...externalJobs);
+    }
+    return merged.sort((a, b) => {
+      const ta = new Date(a.updatedAt || a.createdAt || a.receivedDate || a.reportedDate || 0).getTime();
+      const tb = new Date(b.updatedAt || b.createdAt || b.receivedDate || b.reportedDate || 0).getTime();
+      return tb - ta;
+    });
+  }, [apiConfig.mode, apiConfig.apiUrl, firebaseJobs, externalJobs]);
 
   const loadJobs = useCallback(async (cfg?: JobApiConfig, queryText = '', mode: JobFilterMode = 'all') => {
     setLoading(true);
@@ -93,15 +119,28 @@ export default function JobSearch() {
       const activeCfg = cfg || (await JobSearchService.getApiConfig());
       setApiConfig(activeCfg);
       setDraftApiConfig(activeCfg);
-      const result = await JobSearchService.fetchAllJobs(activeCfg, queryText, mode);
-      setAllJobs(result.jobs);
-      setApiError(result.apiError);
-      return result.jobs;
+
+      if ((activeCfg.mode === 'api' || activeCfg.mode === 'hybrid') && activeCfg.apiUrl?.trim()) {
+        try {
+          const ext = await JobSearchService.fetchExternalJobs(activeCfg, queryText, mode);
+          setExternalJobs(ext);
+          setApiError(null);
+        } catch (err: any) {
+          setApiError(err?.message || 'เชื่อมต่อ API ภายนอกไม่สำเร็จ');
+        }
+      } else {
+        setExternalJobs([]);
+        setApiError(null);
+      }
+
+      if (activeCfg.mode === 'api') {
+        setLoading(false);
+      }
+      return [];
     } catch (err: any) {
       setApiError(err?.message || 'ไม่สามารถโหลดข้อมูลได้');
-      return [];
-    } finally {
       setLoading(false);
+      return [];
     }
   }, []);
 
@@ -109,17 +148,82 @@ export default function JobSearch() {
     loadJobs();
   }, [loadJobs]);
 
+  // Live Firebase Realtime subscription for both partner_repair_cases (from Local) and repairs
+  useEffect(() => {
+    const unsub = JobSearchService.subscribeFirebaseJobs(
+      (jobs) => {
+        setFirebaseJobs(jobs);
+        setFirebaseConnected(true);
+        setLoading(false);
+      },
+      (err) => {
+        setFirebaseConnected(false);
+        setApiError(err?.message || 'เชื่อมต่อ Firebase Realtime ไม่สำเร็จ');
+        setLoading(false);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  // Keep selectedJob synced live when Firebase updates
+  useEffect(() => {
+    if (!selectedJob) return;
+    const fresh = allJobs.find((j) => j.id === selectedJob.id && j.source === selectedJob.source);
+    if (fresh && fresh !== selectedJob) {
+      setSelectedJob(fresh);
+    }
+  }, [allJobs, selectedJob]);
+
+  // Pre-fill operator name & note whenever a job modal opens
+  const openJobDetail = useCallback((job: JobRecord) => {
+    setSelectedJob(job);
+    setActionBanner(null);
+    const defaultOp =
+      job.assignedTech ||
+      job.returnerName ||
+      partnerCompany?.name ||
+      currentUser?.displayName ||
+      currentUser?.email?.split('@')[0] ||
+      '';
+    setOperatorInput(defaultOp);
+    setNoteInput(job.solution || job.partnerActivity?.lastNote || job.statusDetail || '');
+  }, [partnerCompany, currentUser]);
+
   useEffect(() => {
     if (!showApiModal && !selectedJob) {
       searchInputRef.current?.focus();
     }
   }, [showApiModal, selectedJob]);
 
+  const companyScopedJobs = useMemo(() => {
+    if (!onlyMyCompany || !partnerCompany || isAdmin_2) return allJobs;
+    return allJobs.filter((job) => matchesPartnerCompany(job, partnerCompany));
+  }, [allJobs, onlyMyCompany, partnerCompany, isAdmin_2]);
+
+  const bucketCounts = useMemo(() => {
+    let waiting = 0;
+    let inProgress = 0;
+    let completed = 0;
+    for (const j of companyScopedJobs) {
+      const b = getJobBucket(j);
+      if (b === 'waiting') waiting += 1;
+      else if (b === 'in_progress') inProgress += 1;
+      else completed += 1;
+    }
+    return {
+      all: companyScopedJobs.length,
+      waiting,
+      in_progress: inProgress,
+      completed,
+    };
+  }, [companyScopedJobs]);
+
   const filteredJobs = useMemo(() => {
-    return allJobs.filter((job) =>
-      matchesJobFilter(job, appliedKeyword, filterMode)
-    );
-  }, [allJobs, appliedKeyword, filterMode]);
+    return companyScopedJobs.filter((job) => {
+      if (statusTab !== 'all' && getJobBucket(job) !== statusTab) return false;
+      return matchesJobFilter(job, appliedKeyword, filterMode);
+    });
+  }, [companyScopedJobs, statusTab, appliedKeyword, filterMode]);
 
   const exactMatchJob = useMemo(() => {
     const term = appliedKeyword.trim().toLowerCase();
@@ -144,12 +248,11 @@ export default function JobSearch() {
       setLastScannedCode(keyword);
     }
 
-    let dataset = allJobs;
     if ((apiConfig.mode === 'api' || apiConfig.mode === 'hybrid') && apiConfig.apiUrl.trim()) {
-      dataset = await loadJobs(apiConfig, keyword, targetMode);
+      await loadJobs(apiConfig, keyword, targetMode);
     }
 
-    const matched = dataset.filter((job) =>
+    const matched = companyScopedJobs.filter((job) =>
       matchesJobFilter(job, keyword, targetMode)
     );
 
@@ -204,15 +307,40 @@ export default function JobSearch() {
     }
   };
 
-  const handleToggleStage = async (job: JobRecord, nextStage: 'receive' | 'complete') => {
-    if (!isAdmin_2 || job.source !== 'firebase') return;
+  const handleJobAction = async (
+    job: JobRecord,
+    action: JobActionType,
+    customOperator?: string,
+    customNote?: string
+  ) => {
+    if (!currentUser || job.source !== 'firebase') return;
     setUpdatingStage(true);
+    setActionBanner(null);
     try {
-      const operator = currentUser?.displayName || currentUser?.email?.split('@')[0] || '';
-      await JobSearchService.updateFirebaseJobStage(job.id, nextStage, operator);
-      const updated = await loadJobs(apiConfig, appliedKeyword, filterMode);
-      const fresh = updated.find((u) => u.id === job.id);
-      if (fresh) setSelectedJob(fresh);
+      const operator =
+        (customOperator ?? operatorInput).trim() ||
+        partnerCompany?.name ||
+        currentUser?.displayName ||
+        currentUser?.email?.split('@')[0] ||
+        'Partner';
+      const note = (customNote ?? noteInput).trim();
+      await JobSearchService.updateFirebaseJobAction(job, action, {
+        operatorName: operator,
+        companyName: partnerCompany?.name || job.companyName || '',
+        note,
+      });
+      playBeep('success');
+      const actionLabelMap: Record<JobActionType, string> = {
+        accept: 'รับเคสซ่อมเรียบร้อยแล้ว (กำลังซิงค์กลับ Local)',
+        waiting_parts: 'อัปเดตสถานะเป็น "รออะไหล่" แล้ว',
+        complete: 'บันทึกซ่อมเสร็จ / ส่งเครื่องจบงานเรียบร้อยแล้ว',
+        unrepairable: 'บันทึกสถานะ "ไม่สามารถซ่อมได้" เรียบร้อยแล้ว',
+        reopen: 'เปิดเคสกลับมาซ่อมอีกครั้งแล้ว',
+      };
+      setActionBanner({ ok: true, msg: actionLabelMap[action] });
+    } catch (err: any) {
+      playBeep('error');
+      setActionBanner({ ok: false, msg: `อัปเดตสถานะไม่สำเร็จ: ${err?.message || 'Error'}` });
     } finally {
       setUpdatingStage(false);
     }
@@ -326,6 +454,15 @@ export default function JobSearch() {
                   </div>
                 </div>
               )}
+
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold border ${
+                firebaseConnected
+                  ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/50'
+                  : 'bg-amber-500/20 text-amber-200 border-amber-400/40'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${firebaseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span>{firebaseConnected ? `Realtime Sync (${allJobs.length})` : 'กำลังเชื่อม Firebase...'}</span>
+              </div>
 
               <button
                 type="button"
@@ -476,197 +613,257 @@ export default function JobSearch() {
         </div>
       )}
 
-      {/* Results appear ONLY after searching AND when External API is connected (default table removed as requested) */}
-      {hasSearched && !apiConfig.apiUrl.trim() && (
-        <div className="rounded-2xl bg-white/95 dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-700/40 px-5 py-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0">
-              <ScanBarcode size={18} />
-            </div>
-            <div>
-              <div className="font-extrabold">
-                รับคำค้นหา: <span className="text-blue-600 dark:text-blue-400">{appliedKeyword || '(ทั้งหมดในหมวด)'}</span> • หมวด:{' '}
-                <span className="text-indigo-600 dark:text-indigo-300">
-                  {filterMode === 'all' ? 'All' : filterMode === 'receive' ? 'รับเครื่องซ่อม' : 'ส่งเครื่องจบงาน'}
-                </span>
-              </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                ระบบพร้อมสำหรับเชื่อมต่อ API บริษัทคู่ค้า (ยังไม่ได้ตั้งค่า API Endpoint)
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isAdmin_2 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setApiTestResult(null);
-                  setDraftApiConfig(apiConfig);
-                  setShowApiModal(true);
-                }}
-                className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-400 text-slate-950 hover:brightness-105 cursor-pointer border-0"
-              >
-                ตั้งค่าเชื่อม API
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer border-0"
-            >
-              ล้างผล
-            </button>
-          </div>
-        </div>
-      )}
-
-      {hasSearched && apiConfig.apiUrl.trim() && (
-        <>
-          {/* Exact Barcode Hit Spotlight Card */}
-          {exactMatchJob && (
-            <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-emerald-950/40 dark:via-slate-900 dark:to-blue-950/30 border-2 border-emerald-400/70 dark:border-emerald-500/40 p-6 shadow-xl">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500 text-white shadow-sm">
-                      <ScanBarcode size={14} />
-                      พบข้อมูลตรงกับบาร์โค้ด {lastScannedCode ? `"${lastScannedCode}"` : ''}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black ${
-                        exactMatchJob.stage === 'complete'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
-                      }`}
-                    >
-                      {exactMatchJob.stage === 'complete' ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
-                      {exactMatchJob.stageLabel} ({exactMatchJob.status})
-                    </span>
-                  </div>
-
-                  <div className="text-xl font-black text-slate-900 dark:text-white">
-                    {exactMatchJob.jobNumber} — {exactMatchJob.equipmentModel}
-                  </div>
-
-                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
-                    <span><strong>ครุภัณฑ์:</strong> {exactMatchJob.assetNumber}</span>
-                    <span><strong>S/N:</strong> <code className="font-mono text-blue-600 dark:text-blue-400">{exactMatchJob.serialNumber}</code></span>
-                    <span><strong>บริษัท/ผู้รับซ่อม:</strong> {exactMatchJob.companyName}</span>
-                    <span><strong>อาการ:</strong> {exactMatchJob.problemDescription}</span>
-                  </div>
+      {/* Live Firebase Realtime Results & Status Board */}
+      <div className="relative z-10 space-y-4">
+        {/* Exact Barcode Hit Spotlight Card */}
+        {hasSearched && exactMatchJob && (
+          <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-emerald-950/40 dark:via-slate-900 dark:to-blue-950/30 border-2 border-emerald-400/70 dark:border-emerald-500/40 p-6 shadow-xl">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500 text-white shadow-sm">
+                    <ScanBarcode size={14} />
+                    พบข้อมูลตรงกับบาร์โค้ด {lastScannedCode ? `"${lastScannedCode}"` : ''}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black ${
+                      exactMatchJob.stage === 'complete'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
+                    }`}
+                  >
+                    {exactMatchJob.stage === 'complete' ? <CheckCircle2 size={14} /> : <Wrench size={14} />}
+                    {exactMatchJob.stageLabel} ({exactMatchJob.status})
+                  </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setSelectedJob(exactMatchJob)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-all cursor-pointer shrink-0 border-0"
-                >
-                  <Eye size={16} />
-                  ดูรายละเอียด Jop
-                </button>
-              </div>
-            </div>
-          )}
+                <div className="text-xl font-black text-slate-900 dark:text-white">
+                  #{exactMatchJob.jobNumber} — {exactMatchJob.equipmentModel}
+                </div>
 
-          {/* Results Table from Connected API */}
-          <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
-            <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <FileText size={18} className="text-blue-600 dark:text-blue-400" />
-                <span className="font-extrabold text-slate-800 dark:text-white text-base">
-                  ผลการค้นหา Jop ({filteredJobs.length} รายการ)
-                </span>
+                <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
+                  <span><strong>ครุภัณฑ์:</strong> {exactMatchJob.assetNumber}</span>
+                  <span><strong>S/N:</strong> <code className="font-mono text-blue-600 dark:text-blue-400">{exactMatchJob.serialNumber}</code></span>
+                  <span><strong>บริษัท/ผู้รับซ่อม:</strong> {exactMatchJob.companyName}</span>
+                  <span><strong>อาการ:</strong> {exactMatchJob.problemDescription}</span>
+                </div>
               </div>
+
               <button
                 type="button"
-                onClick={handleClearSearch}
-                className="text-xs font-bold text-slate-500 hover:text-rose-500 cursor-pointer border-0 bg-transparent"
+                onClick={() => openJobDetail(exactMatchJob)}
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-all cursor-pointer shrink-0 border-0"
               >
-                ปิดผลลัพธ์
+                <Eye size={16} />
+                จัดการ / ดูรายละเอียด Jop
               </button>
             </div>
+          </div>
+        )}
 
-            {loading ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                <div className="w-9 h-9 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                <p className="text-sm font-bold mb-0">กำลังค้นหาข้อมูลจาก API...</p>
+        {/* Live Repair Queue Table */}
+        <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
+          <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <FileText size={18} className="text-blue-600 dark:text-blue-400" />
+                <span className="font-extrabold text-slate-800 dark:text-white text-base">
+                  รายการแจ้งซ่อม Realtime ({filteredJobs.length} รายการ)
+                </span>
+                {appliedKeyword && (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+                    ค้นหา: "{appliedKeyword}"
+                  </span>
+                )}
               </div>
-            ) : filteredJobs.length === 0 ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400 px-4 text-center">
-                <ScanBarcode size={44} className="text-slate-300 dark:text-slate-700" />
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-0">
-                  ไม่พบรายการ Jop ที่ตรงกับเงื่อนไข
-                </p>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {partnerCompany && !isAdmin_2 && (
+                  <button
+                    type="button"
+                    onClick={() => setOnlyMyCompany((v) => !v)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border cursor-pointer transition-all ${
+                      onlyMyCompany
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    {onlyMyCompany ? `เฉพาะ: ${partnerCompany.name}` : 'แสดงทุกบริษัท'}
+                  </button>
+                )}
+                {(hasSearched || appliedKeyword) && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-500 cursor-pointer border-0"
+                  >
+                    ล้างคำค้นหา
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-slate-800 via-indigo-900 to-slate-900 text-white text-xs uppercase tracking-wider">
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap">ประเภทงาน</th>
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap">เลขที่ Jop / อุปกรณ์</th>
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap">เลขครุภัณฑ์ / S/N</th>
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap">อาการเสีย</th>
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap">บริษัท / สถานะ</th>
-                      <th className="px-5 py-3.5 font-bold whitespace-nowrap text-center">ดูข้อมูล</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredJobs.map((job) => (
-                      <tr
-                        key={`${job.source}-${job.id}`}
-                        onClick={() => setSelectedJob(job)}
-                        className="hover:bg-blue-50/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-                      >
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
-                              job.stage === 'complete'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30'
-                                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30'
-                            }`}
-                          >
-                            {job.stage === 'complete' ? <CheckCircle2 size={13} /> : <Wrench size={13} />}
-                            {job.stageLabel}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="text-xs font-black text-indigo-600 dark:text-indigo-300">{job.jobNumber}</div>
-                          <div className="font-bold text-slate-800 dark:text-white text-sm">{job.equipmentModel}</div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{job.assetNumber}</div>
-                          <div className="text-xs font-mono text-blue-600 dark:text-blue-400">{job.serialNumber}</div>
-                        </td>
-                        <td className="px-5 py-3.5 max-w-[220px]">
-                          <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{job.problemDescription}</div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{job.companyName}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">{job.status}</div>
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
+            </div>
+
+            {/* KPI Status Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                { id: 'all', label: 'ทั้งหมด', count: bucketCounts.all, active: 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900', idle: 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
+                { id: 'waiting', label: 'รอรับเคส', count: bucketCounts.waiting, active: 'bg-amber-500 text-white border-amber-500', idle: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30' },
+                { id: 'in_progress', label: 'กำลังซ่อม / รออะไหล่', count: bucketCounts.in_progress, active: 'bg-blue-600 text-white border-blue-600', idle: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30' },
+                { id: 'completed', label: 'ซ่อมเสร็จ / จบงาน', count: bucketCounts.completed, active: 'bg-emerald-600 text-white border-emerald-600', idle: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30' },
+              ] as const).map((tab) => {
+                const isAct = statusTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusTab(tab.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border cursor-pointer transition-all ${
+                      isAct ? `${tab.active} shadow-sm` : tab.idle
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[11px] font-black ${
+                      isAct ? 'bg-white/25 text-white dark:bg-slate-900/20' : 'bg-white/80 dark:bg-slate-900/50'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <div className="w-9 h-9 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+              <p className="text-sm font-bold mb-0">กำลังซิงค์ข้อมูลจาก Firebase Realtime...</p>
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400 px-4 text-center">
+              <ScanBarcode size={44} className="text-slate-300 dark:text-slate-700" />
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-0">
+                ไม่พบรายการ Jop ที่ตรงกับเงื่อนไข
+              </p>
+              {onlyMyCompany && partnerCompany && allJobs.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setOnlyMyCompany(false)}
+                  className="mt-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold border border-indigo-200 dark:border-indigo-500/30 cursor-pointer"
+                >
+                  ลองแสดงเคสจากทุกบริษัท ({allJobs.length} รายการ)
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-slate-800 via-indigo-900 to-slate-900 text-white text-xs uppercase tracking-wider">
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap">สถานะงาน</th>
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap">เลขที่ Jop / อุปกรณ์</th>
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap">เลขครุภัณฑ์ / S/N</th>
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap">อาการเสีย</th>
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap">บริษัท / วันที่แจ้ง</th>
+                    <th className="px-5 py-3.5 font-bold whitespace-nowrap text-center">ดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredJobs.map((job) => {
+                    const bucket = getJobBucket(job);
+                    return (
+                    <tr
+                      key={`${job.source}-${job.firebaseNode || 'ext'}-${job.id}`}
+                      onClick={() => openJobDetail(job)}
+                      className="hover:bg-blue-50/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    >
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
+                            bucket === 'completed'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30'
+                              : bucket === 'waiting'
+                              ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30'
+                              : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30'
+                          }`}
+                        >
+                          {bucket === 'completed' ? (
+                            <CheckCircle2 size={13} />
+                          ) : bucket === 'waiting' ? (
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          ) : (
+                            <Wrench size={13} />
+                          )}
+                          {job.status}
+                        </span>
+                        {job.firebaseNode === 'partner_repair_cases' && (
+                          <div className="text-[10px] font-bold text-sky-600 dark:text-sky-400 mt-1">
+                            ศูนย์ซ่อมคู่ค้า (Local)
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="text-xs font-black text-indigo-600 dark:text-indigo-300">#{job.jobNumber}</div>
+                        <div className="font-bold text-slate-800 dark:text-white text-sm">{job.equipmentModel}</div>
+                        {job.department && (
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{job.department}</div>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{job.assetNumber}</div>
+                        <div className="text-xs font-mono text-blue-600 dark:text-blue-400">{job.serialNumber}</div>
+                      </td>
+                      <td className="px-5 py-3.5 max-w-[220px]">
+                        <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{job.problemDescription}</div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{job.companyName}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {job.reportedDate || job.receivedDate || '-'}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-flex items-center justify-center gap-1.5 flex-wrap">
+                          {currentUser && job.source === 'firebase' && bucket === 'waiting' && (
+                            <button
+                              type="button"
+                              disabled={updatingStage}
+                              onClick={() => handleJobAction(job, 'accept')}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold shadow-xs cursor-pointer border-0"
+                            >
+                              <Wrench size={13} />
+                              รับเคส
+                            </button>
+                          )}
+                          {currentUser && job.source === 'firebase' && bucket === 'in_progress' && (
+                            <button
+                              type="button"
+                              disabled={updatingStage}
+                              onClick={() => handleJobAction(job, 'complete')}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-xs cursor-pointer border-0"
+                            >
+                              <CheckCircle2 size={13} />
+                              ซ่อมเสร็จ
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedJob(job);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 text-xs font-bold border border-blue-200/70 dark:border-blue-500/30 cursor-pointer"
+                            onClick={() => openJobDetail(job)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 text-xs font-bold border border-blue-200/70 dark:border-blue-500/30 cursor-pointer"
                           >
                             <Eye size={14} />
                             รายละเอียด
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+                        </div>
+                      </td>
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Job Detail Modal */}
       {selectedJob && (
@@ -711,47 +908,59 @@ export default function JobSearch() {
 
             {/* Body */}
             <div className="p-6 overflow-y-auto space-y-5">
-              {/* 2-step Stage Timeline */}
+              {/* 3-step Stage Timeline */}
               <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-sm">
-                      <Wrench size={16} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-slate-800 dark:text-white">1. รับเครื่องซ่อม</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {selectedJob.receivedDate || selectedJob.reportedDate || 'รอดำเนินการ'}
+                {(() => {
+                  const bucket = getJobBucket(selectedJob);
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                          <FileText size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-slate-800 dark:text-white">1. แจ้งซ่อมจาก รพ.</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {selectedJob.reportedDate || '-'} {selectedJob.reporterName && selectedJob.reporterName !== '-' ? `• ${selectedJob.reporterName}` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm shrink-0 ${
+                          bucket !== 'waiting'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-amber-400 text-slate-950'
+                        }`}>
+                          <Wrench size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-slate-800 dark:text-white">2. รับเคส / กำลังซ่อม</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {selectedJob.partnerActivity?.acceptedBy || selectedJob.assignedTech || (bucket === 'waiting' ? 'รอคู่ค้ารับเคส' : 'กำลังดำเนินการ')}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm shrink-0 ${
+                          bucket === 'completed'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+                        }`}>
+                          <CheckCircle2 size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-slate-800 dark:text-white">3. ซ่อมเสร็จ / ส่งเครื่องจบงาน</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {selectedJob.returnDate || (bucket === 'completed' ? 'เสร็จสิ้น' : 'รอดำเนินการ')}
+                            {selectedJob.partnerActivity?.completedBy ? ` • ${selectedJob.partnerActivity.completedBy}` : ''}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        selectedJob.stage === 'complete' ? 'w-full bg-emerald-500' : 'w-1/2 bg-amber-400'
-                      }`}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm ${
-                        selectedJob.stage === 'complete'
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
-                      }`}
-                    >
-                      <CheckCircle2 size={16} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-slate-800 dark:text-white">2. ส่งเครื่องจบงาน</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {selectedJob.returnDate || (selectedJob.stage === 'complete' ? 'เสร็จสิ้น' : 'รอดำเนินการ')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Equipment Info Grid */}
@@ -814,33 +1023,96 @@ export default function JobSearch() {
                 </div>
               </div>
 
+              {/* Partner / Admin Action Form & Status Controls */}
+              {currentUser && selectedJob.source === 'firebase' && (
+                <div className="rounded-2xl bg-sky-50/70 dark:bg-sky-950/25 border border-sky-200 dark:border-sky-800/50 p-4 space-y-3">
+                  <div className="text-xs font-black text-sky-900 dark:text-sky-300 flex items-center gap-1.5">
+                    <Wrench size={14} />
+                    บันทึกการรับเคส / อัปเดตสถานะงานซ่อม (ซิงค์กลับระบบ Local ทันที)
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                        ชื่อผู้รับเคส / ช่างผู้ดำเนินการ
+                      </label>
+                      <input
+                        type="text"
+                        value={operatorInput}
+                        onChange={(e) => setOperatorInput(e.target.value)}
+                        placeholder="ระบุชื่อช่างหรือเจ้าหน้าที่คู่ค้า..."
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                        หมายเหตุ / สรุปผลการซ่อม
+                      </label>
+                      <input
+                        type="text"
+                        value={noteInput}
+                        onChange={(e) => setNoteInput(e.target.value)}
+                        placeholder="เช่น เปลี่ยนอะไหล่ / รออะไหล่ / ซ่อมเสร็จพร้อมส่งคืน..."
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  {actionBanner && (
+                    <div className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                      actionBanner.ok
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
+                        : 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300'
+                    }`}>
+                      {actionBanner.ok ? <Check size={14} /> : <AlertCircle size={14} />}
+                      <span>{actionBanner.msg}</span>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={updatingStage}
+                      onClick={() => handleJobAction(selectedJob, 'accept')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-45 cursor-pointer border-0 shadow-xs"
+                    >
+                      <Wrench size={14} />
+                      รับเคสซ่อม
+                    </button>
+                    <button
+                      type="button"
+                      disabled={updatingStage}
+                      onClick={() => handleJobAction(selectedJob, 'waiting_parts')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-45 cursor-pointer border-0 shadow-xs"
+                    >
+                      <Clock size={14} />
+                      รออะไหล่
+                    </button>
+                    <button
+                      type="button"
+                      disabled={updatingStage}
+                      onClick={() => handleJobAction(selectedJob, 'complete')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-45 cursor-pointer border-0 shadow-xs"
+                    >
+                      <CheckCircle2 size={14} />
+                      ซ่อมเสร็จ / ส่งเครื่องจบงาน
+                    </button>
+                    <button
+                      type="button"
+                      disabled={updatingStage}
+                      onClick={() => handleJobAction(selectedJob, 'unrepairable')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-45 cursor-pointer border-0 shadow-xs"
+                    >
+                      <X size={14} />
+                      ไม่สามารถซ่อมได้
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
-                <div className="flex flex-wrap gap-2">
-                  {isAdmin_2 && selectedJob.source === 'firebase' && (
-                    <>
-                      <button
-                        type="button"
-                        disabled={updatingStage || selectedJob.stage === 'receive'}
-                        onClick={() => handleToggleStage(selectedJob, 'receive')}
-                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:opacity-40 cursor-pointer border-0"
-                      >
-                        ตั้งเป็น: รับเครื่องซ่อม
-                      </button>
-                      <button
-                        type="button"
-                        disabled={updatingStage || selectedJob.stage === 'complete'}
-                        onClick={() => handleToggleStage(selectedJob, 'complete')}
-                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-40 cursor-pointer border-0"
-                      >
-                        ตั้งเป็น: ส่งเครื่องจบงาน
-                      </button>
-                    </>
-                  )}
-                </div>
-
                 <div className="flex items-center gap-2 ml-auto">
-                  {selectedJob.source === 'firebase' && (
+                  {selectedJob.source === 'firebase' && selectedJob.firebaseNode !== 'partner_repair_cases' && (
                     <Link
                       to={`/repair/view/${selectedJob.id}`}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold no-underline transition-colors"
