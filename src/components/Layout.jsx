@@ -521,23 +521,25 @@ export default function Layout({ children }) {
         <div className="mt-auto pt-6 border-t border-purple-200/50 dark:border-slate-700/50 space-y-5">
           {currentUser && (
             <div className={`flex flex-col ${isSidebarCollapsed ? 'space-y-4 items-center' : 'space-y-5'}`}>
-              <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-4 px-2'} group/avatar transition-all duration-[600ms]`}>
-                <div className="relative shrink-0">
-                  {/* Luxury Avatar Ring */}
-                  <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
-                  <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden w-11 h-11 group-hover/avatar:scale-105`}>
-                    <div className="absolute inset-0 bg-black"></div>
-                    {/* Sidebar (ล่างซ้าย) */}  
-                    <img src="/cat-3.png" alt="Profile" className="w-full h-full object-cover relative z-10" />
+              {isAdmin_2 && (
+                <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-4 px-2'} group/avatar transition-all duration-[600ms]`}>
+                  <div className="relative shrink-0">
+                    {/* Luxury Avatar Ring */}
+                    <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-[8px] transition duration-[1000ms] opacity-25 group-hover/avatar:opacity-60`}></div>
+                    <div className={`relative rounded-full bg-[#0a0f1d] flex items-center justify-center border border-white/10 shadow-3xl transition-all duration-[600ms] overflow-hidden w-11 h-11 group-hover/avatar:scale-105`}>
+                      <div className="absolute inset-0 bg-black"></div>
+                      {/* Sidebar (ล่างซ้าย) */}  
+                      <img src="/cat-3.png" alt="Profile" className="w-full h-full object-cover relative z-10" />
+                    </div>
+                  </div>
+                  <div className={`flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
+                    <p className="text-[12px] font-black text-indigo-800 dark:text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
+                    <p className="text-[14px] font-bold text-emerald-600 dark:text-emerald-400 truncate tracking-tight group-hover/avatar:text-purple-900 dark:group-hover/avatar:text-purple-300 transition-colors duration-[300ms]">
+                      {currentUser.email.split('@')[0]}
+                    </p>
                   </div>
                 </div>
-                <div className={`flex-1 min-w-0 transition-all duration-[600ms] overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'}`}>
-                  <p className="text-[12px] font-black text-indigo-800 dark:text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1.5 whitespace-nowrap">ยินดีต้อนรับ</p>
-                  <p className="text-[14px] font-bold text-emerald-600 dark:text-emerald-400 truncate tracking-tight group-hover/avatar:text-purple-900 dark:group-hover/avatar:text-purple-300 transition-colors duration-[300ms]">
-                    {currentUser.email.split('@')[0]}
-                  </p>
-                </div>
-              </div>
+              )}
               
               <div className="px-1 w-full">
                 <button
@@ -706,7 +708,7 @@ export default function Layout({ children }) {
             )}
           </div>
           <div className="flex items-center gap-3">
-            {currentUser && (
+            {currentUser && isAdmin_2 && (
                <div className="flex flex-col items-end mr-1">
                  <div className="flex items-center gap-1.5 mb-0.5">
                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,0.8)]"></div>
