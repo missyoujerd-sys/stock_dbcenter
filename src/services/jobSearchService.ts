@@ -1,12 +1,24 @@
 import { db } from '../firebase';
-import { ref, get, update } from 'firebase/database';
+import { ref, get, update, onValue } from 'firebase/database';
 import { RepairService } from './repairService';
 import { RepairRecord } from '../types/repair';
 
 export type JobStage = 'receive' | 'complete';
 export type JobFilterMode = 'all' | 'receive' | 'complete';
+export type JobStatusTab = 'all' | 'waiting' | 'in_progress' | 'completed';
 export type JobSearchField = 'all' | 'jobNumber' | 'assetNumber' | 'serialNumber' | 'companyOrReporter';
 export type JobSourceMode = 'firebase' | 'api' | 'hybrid';
+export type JobActionType = 'accept' | 'waiting_parts' | 'complete' | 'unrepairable' | 'reopen';
+
+export interface PartnerActivity {
+  acceptedAt?: string;
+  acceptedBy?: string;
+  acceptedCompany?: string;
+  completedAt?: string;
+  completedBy?: string;
+  lastNote?: string;
+  lastAction?: string;
+}
 
 export interface JobRecord {
   id: string;
@@ -14,6 +26,7 @@ export interface JobRecord {
   stage: JobStage;
   stageLabel: 'รับเครื่องซ่อม' | 'ส่งเครื่องจบงาน';
   status: string;
+  rawStatus?: string;
   statusDetail?: string;
   assetNumber: string;
   serialNumber: string;
@@ -30,6 +43,15 @@ export interface JobRecord {
   returnDate: string;
   isWarranty: boolean;
   source: 'firebase' | 'api';
+  firebaseNode?: 'partner_repair_cases' | 'repairs';
+  department?: string;
+  solution?: string;
+  assignedTech?: string;
+  serviceType?: string;
+  category?: string;
+  syncSource?: string;
+  syncVersion?: number;
+  partnerActivity?: PartnerActivity;
   createdAt: string;
   updatedAt: string;
   raw?: Record<string, any>;
@@ -65,6 +87,34 @@ export const DEFAULT_JOB_API_CONFIG: JobApiConfig = {
 };
 
 const API_CONFIG_PATH = 'settings/jobApiConfig';
+const PARTNER_CASES_PATH = 'partner_repair_cases';
+const REPAIRS_PATH = 'repairs';
+
+export const PARTNER_STATUS_TH: Record<string, string> = {
+  Received: 'รับแจ้งซ่อมแล้ว (รอรับเคส)',
+  'Waiting for Inspection': 'รอตรวจสอบ',
+  'Under Repair': 'กำลังดำเนินการซ่อม',
+  'Waiting for Parts': 'รออะไหล่',
+  Completed: 'ซ่อมเสร็จสมบูรณ์',
+  Unrepairable: 'ไม่สามารถซ่อมได้',
+};
+
+const PARTNER_MATCH_KEYWORDS: Record<string, string[]> = {
+  chichang: ['ชิชาง', 'chichang', 'chi chang'],
+  canon: ['canon', 'แคนนอน'],
+  medica: ['เมดิกา', 'medica'],
+  others: ['อื่นๆ', 'other'],
+  goodspeed: ['goodspeed', 'กู๊ดสปีด'],
+  northern: ['นอร์ทเทิร์น', 'northern'],
+  simmaster: ['ซิมมาสเตอร์', 'simmaster', 'sim master'],
+  isan: ['isan', 'อีสาน'],
+  atp: ['atp', 'เอทีพี'],
+  supatchar: ['สุพัชร', 'supatchar'],
+  tns: ['tns', 'ทีเอ็นเอส'],
+  gnet: ['จีเน็ต', 'g-net', 'gnet'],
+  denchai: ['เด่นชัย', 'denchai'],
+  gotit: ['ก๊อท อิท', 'ก็อท อิท', 'got it', 'gotit'],
+};
 
 const COMPLETED_STATUSES = new Set([
   'ดำเนินการซ่อมแล้ว',
@@ -74,12 +124,61 @@ const COMPLETED_STATUSES = new Set([
   'ส่งคืนค่าซ่อมไม่คุ้ม',
   'completed',
   'complete',
+  'unrepairable',
+  'ซ่อมเสร็จสมบูรณ์',
+  'ไม่สามารถซ่อมได้',
   'finished',
   'done',
   'closed',
   'ส่งเครื่องจบงาน',
   'จบงาน',
 ]);
+
+export function getJobBucket(job: JobRecord): Exclude<JobStatusTab, 'all'> {
+  const raw = (job.rawStatus || job.status || '').trim();
+  const lower = raw.toLowerCase();
+  if (
+    job.stage === 'complete' ||
+    COMPLETED_STATUSES.has(raw) ||
+    COMPLETED_STATUSES.has(lower)
+  ) {
+    return 'completed';
+  }
+  if (
+    raw === 'Received' ||
+    raw === 'รอดำเนินการ' ||
+    lower === 'pending' ||
+    lower === 'received'
+  ) {
+    return 'waiting';
+  }
+  return 'in_progress';
+}
+
+export function matchesPartnerCompany(
+  job: JobRecord,
+  partnerCompany: { id?: string; name?: string } | null
+): boolean {
+  if (!partnerCompany) return true;
+  const targetText = `${job.companyName || ''} ${job.receiverName || ''} ${job.partnerActivity?.acceptedCompany || ''}`.toLowerCase();
+  if (!targetText.trim() || targetText.trim() === '-') return false;
+
+  const keywords = partnerCompany.id ? PARTNER_MATCH_KEYWORDS[partnerCompany.id] : undefined;
+  if (keywords && keywords.some((kw) => targetText.includes(kw.toLowerCase()))) {
+    return true;
+  }
+
+  const cleanName = String(partnerCompany.name || '')
+    .replace(/^บริษัท\s*/i, '')
+    .replace(/^ร้าน\s*/i, '')
+    .trim()
+    .toLowerCase();
+  if (cleanName && targetText.includes(cleanName)) {
+    return true;
+  }
+
+  return false;
+}
 
 export function classifyJobStage(rawStatus?: string, explicitStage?: string | number, returnDate?: string): JobStage {
   if (explicitStage !== undefined && explicitStage !== null && String(explicitStage).trim() !== '') {
@@ -104,12 +203,14 @@ export function classifyJobStage(rawStatus?: string, explicitStage?: string | nu
 
 export function normalizeFirebaseRepair(r: RepairRecord): JobRecord {
   const stage = classifyJobStage(r.status, undefined, r.returnDate);
+  const rawStatus = r.status === 'pending' ? 'รอดำเนินการ' : (r.status || 'รอดำเนินการ');
   return {
     id: r.id,
     jobNumber: r.docNumber || r.id,
     stage,
     stageLabel: stage === 'complete' ? 'ส่งเครื่องจบงาน' : 'รับเครื่องซ่อม',
-    status: r.status === 'pending' ? 'รอดำเนินการ' : (r.status || 'รอดำเนินการ'),
+    status: rawStatus,
+    rawStatus,
     statusDetail: r.statusDetail || '',
     assetNumber: r.assetNumber || '-',
     serialNumber: r.serialNumber || '-',
@@ -126,8 +227,55 @@ export function normalizeFirebaseRepair(r: RepairRecord): JobRecord {
     returnDate: r.returnDate || '',
     isWarranty: r.isWarranty !== false,
     source: 'firebase',
+    firebaseNode: 'repairs',
+    syncSource: (r as any).syncSource || '',
     createdAt: r.createdAt || '',
     updatedAt: r.updatedAt || '',
+  };
+}
+
+export function normalizePartnerRepairCase(c: Record<string, any>, fallbackKey = ''): JobRecord {
+  const rawStatus = String(c.status || 'Received').trim() || 'Received';
+  const returnDate = String(c.completedDate || '').trim();
+  const stage = classifyJobStage(rawStatus, undefined, returnDate);
+  const techName = String(c.assignedTech || c.signatures?.technician?.name || '').trim();
+  const symptomParts = [String(c.symptom || '').trim(), String(c.symptomDetail || '').trim()].filter(Boolean);
+
+  return {
+    id: String(c.id || fallbackKey),
+    jobNumber: String(c.caseNo || c.id || fallbackKey),
+    stage,
+    stageLabel: stage === 'complete' ? 'ส่งเครื่องจบงาน' : 'รับเครื่องซ่อม',
+    status: PARTNER_STATUS_TH[rawStatus] || rawStatus,
+    rawStatus,
+    statusDetail: String(c.solution || c.qcNote || c.partnerActivity?.lastNote || ''),
+    assetNumber: String(c.equipmentNo || '-'),
+    serialNumber: String(c.serialNumber || '-'),
+    equipmentModel: String(c.model || '-'),
+    problemDescription: symptomParts.join(' • ') || '-',
+    companyName: String(c.company || '-'),
+    reporterName: String(c.customerName || c.createdBy || '-'),
+    reportedDate: String(c.dateReported || ''),
+    receiverName: String(c.signatures?.receiver?.name || c.company || '-'),
+    receivedDate: String(c.receivedDate || c.dateReported || ''),
+    staffReceiptName: String(c.signatures?.approver?.name || ''),
+    staffReceiptDate: returnDate,
+    returnerName: techName,
+    returnDate,
+    isWarranty: String(c.warrantyStatus || '') !== 'Out of Warranty',
+    source: 'firebase',
+    firebaseNode: 'partner_repair_cases',
+    department: String(c.department || ''),
+    solution: String(c.solution || ''),
+    assignedTech: techName,
+    serviceType: String(c.serviceType || 'Repair'),
+    category: String(c.category || ''),
+    syncSource: String(c.syncSource || ''),
+    syncVersion: Number(c.syncVersion || 0),
+    partnerActivity: c.partnerActivity && typeof c.partnerActivity === 'object' ? c.partnerActivity : undefined,
+    createdAt: String(c.createdAt || ''),
+    updatedAt: String(c.updatedAt || c.createdAt || ''),
+    raw: c,
   };
 }
 
@@ -155,6 +303,7 @@ export function normalizeApiJob(item: Record<string, any>, index: number): JobRe
     stage,
     stageLabel: stage === 'complete' ? 'ส่งเครื่องจบงาน' : 'รับเครื่องซ่อม',
     status: statusStr,
+    rawStatus: statusStr,
     statusDetail: String(item.statusDetail ?? item.status_detail ?? item.remark ?? ''),
     assetNumber: String(item.assetNumber ?? item.asset_no ?? item.asset_id ?? item.asset ?? '-'),
     serialNumber: String(item.serialNumber ?? item.serial_no ?? item.serial ?? item.sn ?? '-'),
@@ -189,6 +338,14 @@ function extractApiItems(payload: any): Record<string, any>[] {
   return [];
 }
 
+function sortJobsDesc(jobs: JobRecord[]): JobRecord[] {
+  return [...jobs].sort((a, b) => {
+    const ta = new Date(a.updatedAt || a.createdAt || a.receivedDate || a.reportedDate || 0).getTime();
+    const tb = new Date(b.updatedAt || b.createdAt || b.receivedDate || b.reportedDate || 0).getTime();
+    return tb - ta;
+  });
+}
+
 export function matchesJobFilter(
   job: JobRecord,
   keyword: string,
@@ -208,7 +365,7 @@ export function matchesJobFilter(
     if (advanced.dateTo && (!jobDate || jobDate > advanced.dateTo)) return false;
   }
 
-  const term = keyword.trim().toLowerCase();
+  const term = keyword.trim().replace(/^#/, '').toLowerCase();
   if (!term) return true;
 
   const field = advanced?.field || 'all';
@@ -240,8 +397,16 @@ export function matchesJobFilter(
     job.reporterName,
     job.receiverName,
     job.status,
+    job.rawStatus || '',
+    job.department || '',
     job.stageLabel,
   ].some((val) => (val || '').toLowerCase().includes(term));
+}
+
+function getTodayLocalIso(): string {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
 }
 
 export const JobSearchService = {
@@ -294,6 +459,73 @@ export const JobSearchService = {
     }
   },
 
+  async fetchPartnerRepairCases(): Promise<JobRecord[]> {
+    const snap = await get(ref(db, PARTNER_CASES_PATH));
+    if (!snap.exists()) return [];
+    const data = snap.val() || {};
+    return Object.entries(data)
+      .filter(([, val]) => val && typeof val === 'object')
+      .map(([key, val]) => normalizePartnerRepairCase(val as Record<string, any>, key));
+  },
+
+  subscribeFirebaseJobs(
+    onUpdate: (jobs: JobRecord[]) => void,
+    onError?: (err: Error) => void
+  ): () => void {
+    let partnerCases: JobRecord[] = [];
+    let repairCases: JobRecord[] = [];
+    let partnerReady = false;
+    let repairsReady = false;
+
+    const emitMerged = () => {
+      if (!partnerReady && !repairsReady) return;
+      onUpdate(sortJobsDesc([...partnerCases, ...repairCases]));
+    };
+
+    const unsubPartner = onValue(
+      ref(db, PARTNER_CASES_PATH),
+      (snap) => {
+        partnerReady = true;
+        if (snap.exists()) {
+          const val = snap.val() || {};
+          partnerCases = Object.entries(val)
+            .filter(([, item]) => item && typeof item === 'object')
+            .map(([key, item]) => normalizePartnerRepairCase(item as Record<string, any>, key));
+        } else {
+          partnerCases = [];
+        }
+        emitMerged();
+      },
+      (err) => {
+        onError?.(err);
+      }
+    );
+
+    const unsubRepairs = onValue(
+      ref(db, REPAIRS_PATH),
+      (snap) => {
+        repairsReady = true;
+        if (snap.exists()) {
+          const val = snap.val() || {};
+          repairCases = Object.values(val)
+            .filter((item) => item && typeof item === 'object')
+            .map((item) => normalizeFirebaseRepair(item as RepairRecord));
+        } else {
+          repairCases = [];
+        }
+        emitMerged();
+      },
+      (err) => {
+        onError?.(err);
+      }
+    );
+
+    return () => {
+      unsubPartner();
+      unsubRepairs();
+    };
+  },
+
   async fetchAllJobs(config?: JobApiConfig, queryText = '', mode: JobFilterMode = 'all'): Promise<{
     jobs: JobRecord[];
     apiError: string | null;
@@ -305,8 +537,11 @@ export const JobSearchService = {
     let apiError: string | null = null;
 
     if (activeConfig.mode === 'firebase' || activeConfig.mode === 'hybrid') {
-      const repairs = await RepairService.getRepairs();
-      jobs.push(...repairs.map(normalizeFirebaseRepair));
+      const [partnerJobs, repairs] = await Promise.all([
+        this.fetchPartnerRepairCases().catch(() => []),
+        RepairService.getRepairs().catch(() => []),
+      ]);
+      jobs.push(...partnerJobs, ...repairs.map(normalizeFirebaseRepair));
       sourcesUsed.push('firebase');
     }
 
@@ -320,28 +555,147 @@ export const JobSearchService = {
       }
     }
 
-    jobs.sort((a, b) => {
-      const ta = new Date(a.updatedAt || a.createdAt || a.receivedDate || 0).getTime();
-      const tb = new Date(b.updatedAt || b.createdAt || b.receivedDate || 0).getTime();
-      return tb - ta;
-    });
+    return { jobs: sortJobsDesc(jobs), apiError, sourcesUsed };
+  },
 
-    return { jobs, apiError, sourcesUsed };
+  async updateFirebaseJobAction(
+    job: JobRecord,
+    action: JobActionType,
+    opts?: { operatorName?: string; companyName?: string; note?: string }
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const today = getTodayLocalIso();
+    const operatorName = (opts?.operatorName || '').trim();
+    const companyName = (opts?.companyName || '').trim();
+    const note = (opts?.note || '').trim();
+
+    if (job.firebaseNode === 'partner_repair_cases') {
+      const prevAct = job.partnerActivity || {};
+      const nextVersion = (job.syncVersion || 0) + 1;
+      const updates: Record<string, any> = {
+        syncSource: 'vercel',
+        syncVersion: nextVersion,
+        updatedAt: now,
+        updatedBy: operatorName || companyName || 'vercel',
+      };
+
+      if (action === 'accept') {
+        updates.status = 'Under Repair';
+        updates.receivedDate = job.receivedDate || today;
+        if (operatorName) updates.assignedTech = operatorName;
+        updates.partnerActivity = {
+          ...prevAct,
+          acceptedAt: prevAct.acceptedAt || now,
+          acceptedBy: operatorName || prevAct.acceptedBy || companyName || 'Partner',
+          acceptedCompany: companyName || prevAct.acceptedCompany || job.companyName || '',
+          lastAction: 'accept',
+          ...(note ? { lastNote: note } : {}),
+        };
+      } else if (action === 'waiting_parts') {
+        updates.status = 'Waiting for Parts';
+        if (operatorName) updates.assignedTech = operatorName;
+        updates.partnerActivity = {
+          ...prevAct,
+          acceptedAt: prevAct.acceptedAt || now,
+          acceptedBy: prevAct.acceptedBy || operatorName || companyName || 'Partner',
+          acceptedCompany: companyName || prevAct.acceptedCompany || job.companyName || '',
+          lastAction: 'waiting_parts',
+          ...(note ? { lastNote: note } : {}),
+        };
+      } else if (action === 'complete') {
+        updates.status = 'Completed';
+        updates.completedDate = today;
+        if (operatorName) {
+          updates.assignedTech = operatorName;
+          updates['signatures/technician/name'] = operatorName;
+        }
+        if (note) updates.solution = note;
+        updates.partnerActivity = {
+          ...prevAct,
+          acceptedAt: prevAct.acceptedAt || now,
+          acceptedBy: prevAct.acceptedBy || operatorName || companyName || 'Partner',
+          acceptedCompany: companyName || prevAct.acceptedCompany || job.companyName || '',
+          completedAt: now,
+          completedBy: operatorName || companyName || prevAct.acceptedBy || 'Partner',
+          lastAction: 'complete',
+          ...(note ? { lastNote: note } : {}),
+        };
+      } else if (action === 'unrepairable') {
+        updates.status = 'Unrepairable';
+        updates.completedDate = today;
+        if (operatorName) updates.assignedTech = operatorName;
+        if (note) updates.solution = note;
+        updates.partnerActivity = {
+          ...prevAct,
+          acceptedAt: prevAct.acceptedAt || now,
+          acceptedBy: prevAct.acceptedBy || operatorName || companyName || 'Partner',
+          acceptedCompany: companyName || prevAct.acceptedCompany || job.companyName || '',
+          completedAt: now,
+          completedBy: operatorName || companyName || prevAct.acceptedBy || 'Partner',
+          lastAction: 'unrepairable',
+          ...(note ? { lastNote: note } : {}),
+        };
+      } else if (action === 'reopen') {
+        updates.status = 'Under Repair';
+        updates.completedDate = '';
+        updates.partnerActivity = {
+          ...prevAct,
+          completedAt: '',
+          completedBy: '',
+          lastAction: 'reopen',
+          ...(note ? { lastNote: note } : {}),
+        };
+      }
+
+      await update(ref(db, `${PARTNER_CASES_PATH}/${job.id}`), updates);
+      return;
+    }
+
+    // Standard repairs node
+    const repairUpdates: Record<string, any> = {
+      syncSource: 'vercel',
+      updatedAt: now,
+    };
+
+    if (action === 'accept' || action === 'reopen') {
+      repairUpdates.status = 'การซ่อมแซม';
+      repairUpdates.receivedDate = job.receivedDate || today;
+      repairUpdates.returnDate = '';
+      if (operatorName) repairUpdates.receiverName = operatorName;
+      if (note) repairUpdates.statusDetail = note;
+    } else if (action === 'waiting_parts') {
+      repairUpdates.status = 'การซ่อมแซม';
+      if (note) repairUpdates.statusDetail = `รออะไหล่: ${note}`;
+    } else if (action === 'complete') {
+      repairUpdates.status = 'ดำเนินการซ่อมแล้ว';
+      repairUpdates.returnDate = today;
+      if (operatorName) repairUpdates.returnerName = operatorName;
+      if (note) repairUpdates.statusDetail = note;
+    } else if (action === 'unrepairable') {
+      repairUpdates.status = 'ส่งคืนค่าซ่อมไม่คุ้ม';
+      repairUpdates.returnDate = today;
+      if (operatorName) repairUpdates.returnerName = operatorName;
+      if (note) repairUpdates.statusDetail = note;
+    }
+
+    await RepairService.updateRepair(job.id, repairUpdates as Partial<RepairRecord>);
   },
 
   async updateFirebaseJobStage(jobId: string, nextStage: JobStage, operatorName?: string): Promise<void> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalIso();
     if (nextStage === 'complete') {
       await RepairService.updateRepair(jobId, {
         status: 'ดำเนินการซ่อมแล้ว',
         returnDate: today,
+        syncSource: 'vercel',
         ...(operatorName ? { returnerName: operatorName } : {}),
-      });
+      } as Partial<RepairRecord>);
     } else {
       await RepairService.updateRepair(jobId, {
         status: 'การซ่อมแซม',
         returnDate: '',
-      });
+        syncSource: 'vercel',
+      } as Partial<RepairRecord>);
     }
   },
 };
