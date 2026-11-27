@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
             
             if (user) {
                 const env = import.meta.env;
-                const email = user.email;
+                const lowerEmail = (user.email || '').toLowerCase();
                 const admin1 = env.VITE_ADMIN_EMAIL1;
                 const admin2 = env.VITE_ADMIN_EMAIL2;
                 const admin3 = env.VITE_ADMIN_EMAIL3;
@@ -61,9 +61,11 @@ export function AuthProvider({ children }) {
                 const admin9 = env.VITE_ADMIN_EMAIL9;
                 const admin10 = env.VITE_ADMIN_EMAIL10;
 
-                const isAdm2 = email === admin1 || email === admin2;
+                const isAdm2 =
+                    (Boolean(admin1) && lowerEmail === admin1.toLowerCase()) ||
+                    (Boolean(admin2) && lowerEmail === admin2.toLowerCase());
                 const adminEmails = [admin1, admin2, admin3, admin4, admin5, admin6, admin7, admin8, admin9, admin10];
-                const isAdm = adminEmails.some(adm => adm && email === adm);
+                const isAdm = adminEmails.some(adm => adm && lowerEmail === adm.toLowerCase());
 
                 setIsAdmin(isAdm);
                 setIsAdmin_2(isAdm2);
@@ -78,10 +80,13 @@ export function AuthProvider({ children }) {
         return unsubscribe;
     }, []);
 
+    const isUserRole = Boolean(currentUser && !isAdmin_2);
+
     const value = {
         currentUser,
         isAdmin,
         isAdmin_2,
+        isUserRole,
         login,
         logout,
         resetPassword

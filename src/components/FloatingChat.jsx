@@ -71,7 +71,7 @@ function MiniStickerPicker({ onSelect, onClose }) {
 }
 
 export default function FloatingChat() {
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin_2 } = useAuth();
   const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +106,7 @@ export default function FloatingChat() {
 
   // โหลดข้อความ + แจ้งเตือน (hooks ต้องอยู่ก่อน early return เสมอ)
   useEffect(() => {
-    if (!currentUser) return; // guard ภายใน hook
+    if (!currentUser || !isAdmin_2) return; // guard ภายใน hook
     const q = query(ref(db, CHAT_REF), orderByChild('timestamp'), limitToLast(50));
     const handler = snap => {
       const data = snap.val();
@@ -138,7 +138,7 @@ export default function FloatingChat() {
     };
     onValue(q, handler);
     return () => off(q, 'value', handler);
-  }, [currentUser?.uid]);
+  }, [currentUser, isAdmin_2]);
 
   useEffect(() => {
     if (isOpen && !isMinimized) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
@@ -150,7 +150,7 @@ export default function FloatingChat() {
   }, [isOpen]);
 
   // Early return หลัง hooks ทั้งหมด (ถูกต้องตาม Rules of Hooks)
-  if (location.pathname === '/chat' || !currentUser) return null;
+  if (location.pathname === '/chat' || !currentUser || !isAdmin_2) return null;
 
   const requestNotifPermission = async () => {
     const p = await Notification.requestPermission();

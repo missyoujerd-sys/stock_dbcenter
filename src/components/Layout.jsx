@@ -23,7 +23,9 @@ import {
   ArrowLeftRight,
   MessageSquare,
   Monitor,
-  PenTool
+  PenTool,
+  ScanBarcode,
+  QrCode
 } from "lucide-react";
 import emblemSvg from "../assets/emblem.svg";
 import ThemeToggle from "./ThemeToggle";
@@ -153,18 +155,22 @@ export default function Layout({ children }) {
   }, [resetTimer]);
   // -----------------------------------------------------------------
 
-  const navItems = [
-    { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/หน้าหลัก.png" },
-    { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
-    { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
-    ...(isAdmin_2 ? [{ name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true }] : []),
-    { name: "อุปกรณ์ไอที", path: "/computer-equipment", icon: Monitor, imgSrc: "/คลังพัสดุ.png" },
-    { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
-    { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare },
-    { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
-    { name: "แจ้งซ่อมภายใน", path: "/internal-repair", icon: PenTool, imgSrc: "/แจ้งซ่อม.png" },
-    { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
-  ];
+  const navItems = isAdmin_2
+    ? [
+        { name: "หน้าหลัก", path: "/", icon: LayoutDashboard, imgSrc: "/หน้าหลัก.png" },
+        { name: "รับเข้า Stock", path: "/incoming", icon: Package, imgSrc: "/รับเข้าสต๊อก.png" },
+        { name: "จำหน่ายสินค้า", path: "/distribution", icon: Truck, imgSrc: "/เตรียมจำหน่าย.png" },
+        { name: "คลังพัสดุ (Admin)", path: "/inventory", icon: Box, imgSrc: "/คลังพัสดุ.png", locked: true },
+        { name: "อุปกรณ์ไอที", path: "/computer-equipment", icon: Monitor, imgSrc: "/คลังพัสดุ.png" },
+        { name: "ทะเบียน ยืม-คืน", path: "/borrow", icon: ArrowLeftRight, imgSrc: "/ทะเบียนยืนคืน.png" },
+        { name: "ห้องพูดคุย", path: "/chat", icon: MessageSquare },
+        { name: "แจ้งซ่อมบริษัท", path: "/repair/entry", icon: Wrench, imgSrc: "/แจ้งซ่อม.png" },
+        { name: "แจ้งซ่อมภายใน", path: "/internal-repair", icon: PenTool, imgSrc: "/แจ้งซ่อม.png" },
+        { name: "งานซ่อมทั้งหมด", path: "/repair/dashboard", icon: ClipboardList, imgSrc: "/รายงานสรุปแจ้งซ่อม.png" },
+        { name: "ค้นหา Jop", path: "/job-search", icon: ScanBarcode },
+        { name: "QR Login (User)", path: "/qr-login", icon: QrCode },
+      ]
+    : [];
 
   const SidebarContent = () => (
       <div className={`flex flex-col h-full bg-white dark:bg-[#050505] text-slate-800 dark:text-slate-200 transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] relative overflow-hidden border-r border-slate-200 dark:border-slate-800 select-none w-full shadow-lg dark:shadow-[30px_0_70px_rgba(0,0,0,0.8)]`}>
@@ -191,40 +197,63 @@ export default function Layout({ children }) {
           }
         </button>
         {/* Elite Branding Section */}
-        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
-          <div className="relative shrink-0">
-            {/* Pulsing Core Glow */}
-            <div className={`relative bg-white p-[-1px] rounded-full shadow-sm border border-purple-200/50 transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105 flex items-center justify-center`}>
-              <img src="/โลโก้ ร.พ ข้างขวา.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain rounded-full drop-shadow-sm" style={{ filter: 'brightness(1.1)' }} />
-            </div>
-          </div>
-          <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-[16px] font-bold text-slate-700 dark:text-slate-200 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
-                
-                {/* IT NKP Logo in place of Status Pill */}
-                <img 
-                  src="/it nkp-transparent.png" 
-                  alt="IT NKP" 
-                  className="h-[28px] object-contain opacity-90 block" 
-                  style={{ clipPath: 'inset(2px)' }}
-                />
-              </div>
-              <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 dark:text-white font-['Prompt'] -mt-1 mb-1.5">
-                จัดการ
-              </h1>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-blue-400 dark:text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
-                <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
+        {isAdmin_2 ? (
+          <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center mb-8' : 'gap-4 mb-10 px-1'} group transition-all duration-[600ms]`}>
+            <div className="relative shrink-0">
+              {/* Pulsing Core Glow */}
+              <div className={`relative bg-white p-[-1px] rounded-full shadow-sm border border-purple-200/50 transform transition-all duration-[600ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 group-hover:scale-105 flex items-center justify-center`}>
+                <img src="/โลโก้ ร.พ ข้างขวา.png" alt="Hospital Logo" className="relative z-10 w-11 h-11 object-contain rounded-full drop-shadow-sm" style={{ filter: 'brightness(1.1)' }} />
               </div>
             </div>
-            <p className="text-[11px] text-purple-600/90 dark:text-purple-400/80 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+            <div className={`overflow-hidden whitespace-nowrap flex flex-col justify-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-[200px] opacity-100'}`}>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-[16px] font-bold text-slate-700 dark:text-slate-200 font-['Prompt'] leading-tight tracking-wide drop-shadow-sm">ระบบ</span>
+                  <img 
+                    src="/it nkp-transparent.png" 
+                    alt="IT NKP" 
+                    className="h-[28px] object-contain opacity-90 block" 
+                    style={{ clipPath: 'inset(2px)' }}
+                  />
+                </div>
+                <h1 className="text-[26px] font-[900] tracking-[-0.04em] leading-none text-slate-900 dark:text-white font-['Prompt'] -mt-1 mb-1.5">
+                  จัดการ
+                </h1>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-blue-400 dark:text-blue-400 tracking-[0.25em] uppercase">STOCK-แจ้งซ่อมบริษัท</span>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-blue-400/30 to-transparent"></div>
+                </div>
+              </div>
+              <p className="text-[11px] text-purple-600/90 dark:text-purple-400/80 font-black tracking-widest uppercase leading-none mt-3 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-[900ms] drop-shadow-sm">ห้องซ่อมบำรุงคอมพิวเตอร์</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={`flex flex-col items-center text-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'mt-10 mb-6' : 'pt-4 pb-5 px-2'}`}>
+            <div className="relative group/crest">
+              <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-blue-500/20 via-indigo-500/20 to-purple-500/20 blur-md opacity-75 group-hover/crest:opacity-100 transition-opacity" />
+              <div className={`relative bg-white rounded-full shadow-md border-2 border-indigo-100 dark:border-slate-700 flex items-center justify-center transition-all duration-300 ${isSidebarCollapsed ? 'w-11 h-11 p-1' : 'w-16 h-16 p-1.5'}`}>
+                <img src="/โลโก้ ร.พ ข้างขวา.png" alt="Hospital Logo" className="w-full h-full object-contain rounded-full" />
+              </div>
+            </div>
 
-        {/* View Toggle Button - Grid / List */}
-        {!isSidebarCollapsed && (
+            {!isSidebarCollapsed && (
+              <div className="mt-3.5 w-full flex flex-col items-center">
+                <h1 className="text-[21px] font-[900] tracking-tight leading-tight text-slate-900 dark:text-white font-['Prompt'] m-0 whitespace-nowrap">
+                  ระบบค้นหา Jop
+                </h1>
+                <p className="text-[14px] font-bold text-blue-600 dark:text-blue-400 font-['Prompt'] mt-1 mb-0">
+                  ของบริษัทคู่ค้า
+                </p>
+                <span className="mt-2.5 inline-flex items-center px-4 py-1 rounded-full text-[12px] font-extrabold bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-500/30 shadow-sm">
+                  ร.พ.นครพิงค์
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* View Toggle Button - Grid / List (Admin Only) */}
+        {!isSidebarCollapsed && isAdmin_2 && (
           <div className="flex items-center justify-between mb-3 px-1">
             <span className="text-[10px] font-black text-purple-400 dark:text-purple-500 uppercase tracking-[0.25em]">
               {isGridMode ? 'เมนูหลัก' : 'เมนูหลัก'}
@@ -256,7 +285,44 @@ export default function Layout({ children }) {
           </div>
         )}
 
+        {/* Balanced Partner Guide Panel when menus are hidden for User role */}
+        {!isAdmin_2 && !isSidebarCollapsed && (
+          <div className="flex-1 flex flex-col justify-center px-1 py-2">
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-indigo-200/80 dark:via-slate-700 to-transparent mb-5" />
+            <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-50/80 dark:from-slate-900 dark:via-indigo-950/35 dark:to-slate-900 border border-indigo-200/70 dark:border-indigo-500/20 shadow-sm space-y-3.5">
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25">
+                  <ScanBarcode size={20} />
+                </div>
+                <div>
+                  <div className="text-[13px] font-black text-slate-800 dark:text-white leading-tight">คู่มือค้นหาด่วน</div>
+                  <div className="text-[11px] text-indigo-600 dark:text-indigo-300 font-semibold mt-0.5">
+                    รองรับเครื่องยิงบาร์โค้ด &amp; กล้อง
+                  </div>
+                </div>
+              </div>
+              <div className="h-[1px] bg-indigo-200/60 dark:bg-slate-700/70" />
+              <div className="space-y-2 text-[11.5px] text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0" />
+                  <span><strong className="text-slate-800 dark:text-white">All</strong> : แสดงงานทั้งหมด</span>
+                </div>
+                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+                  <span><strong className="text-slate-800 dark:text-white">รับเครื่องซ่อม</strong> : กำลังดำเนินการ</span>
+                </div>
+                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span><strong className="text-slate-800 dark:text-white">ส่งเครื่องจบงาน</strong> : เสร็จสิ้นแล้ว</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-indigo-200/80 dark:via-slate-700 to-transparent mt-5" />
+          </div>
+        )}
+
         {/* Elite Glass Navigation */}
+        {navItems.length > 0 && (
         <nav className={`flex-1 overflow-y-auto sidebar-scrollbar py-2 pr-1 mr-[-4px] ${isGridMode && !isSidebarCollapsed ? '' : 'space-y-2.5'}`}>
           {/* GRID MODE */}
           {isGridMode && !isSidebarCollapsed ? (
@@ -450,6 +516,7 @@ export default function Layout({ children }) {
             })
           )}
         </nav>
+        )}
 
         {/* Elite Footer Section */}
         <div className="mt-auto pt-6 border-t border-purple-200/50 dark:border-slate-700/50 space-y-5">
@@ -584,6 +651,16 @@ export default function Layout({ children }) {
                   <LogOut size={18} className="transition-transform duration-300 group-hover/logout:scale-110 group-hover/logout:-translate-x-0.5" />
                 </button>
               </div>
+            )}
+            {isAdmin_2 && (
+              <Link
+                to="/qr-login"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 text-amber-700 dark:text-amber-300 border border-amber-400/35 text-xs font-extrabold no-underline transition-all shadow-sm"
+                title="QR Code สำหรับ Auto-Login (User)"
+              >
+                <QrCode size={16} />
+                <span>QR User</span>
+              </Link>
             )}
             <ThemeToggle />
           </div>
