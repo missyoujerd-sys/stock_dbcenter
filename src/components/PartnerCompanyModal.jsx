@@ -178,7 +178,7 @@ export default function PartnerCompanyModal({
 
   return (
     <div
-      className="fixed inset-0 z-[2000] flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md font-['Prompt']"
+      className="fixed inset-0 z-[2000] flex items-start sm:items-center justify-center p-2.5 sm:p-5 bg-slate-950/85 backdrop-blur-md font-['Prompt']"
       style={{ overflowY: 'auto' }}
     >
       <div className="relative w-full max-w-6xl rounded-[30px] p-[2px] bg-gradient-to-br from-amber-300 via-blue-500/60 to-emerald-400 shadow-[0_35px_90px_-15px_rgba(0,0,0,0.85)] my-auto">
@@ -238,7 +238,7 @@ export default function PartnerCompanyModal({
           )}
 
           {/* 14 Partner Companies Luxury Grid */}
-          <div className="p-4 sm:p-6 overflow-y-auto flex-1 relative">
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 relative">
             {/* Subtle Hospital Watermark */}
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.04] select-none">
               <img src="/โลโก้ ร.พ ข้างขวา.png" alt="" className="w-[320px] object-contain" />
