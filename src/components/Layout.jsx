@@ -228,25 +228,29 @@ export default function Layout({ children }) {
             </div>
           </div>
         ) : (
-          <div className={`flex flex-col items-center text-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'mt-10 mb-6' : 'pt-4 pb-5 px-2'}`}>
+          <div className={`flex-1 flex flex-col items-center justify-center text-center transition-all duration-[600ms] ${isSidebarCollapsed ? 'mt-12 mb-6' : 'py-4 px-2'}`}>
             <div className="relative group/crest">
-              <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-blue-500/20 via-indigo-500/20 to-purple-500/20 blur-md opacity-75 group-hover/crest:opacity-100 transition-opacity" />
-              <div className={`relative bg-white rounded-full shadow-md border-2 border-indigo-100 dark:border-slate-700 flex items-center justify-center transition-all duration-300 ${isSidebarCollapsed ? 'w-11 h-11 p-1' : 'w-16 h-16 p-1.5'}`}>
-                <img src="/โลโก้ ร.พ ข้างขวา.png" alt="Hospital Logo" className="w-full h-full object-contain rounded-full" />
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-emerald-500/25 via-amber-400/25 to-blue-600/25 blur-xl opacity-85 group-hover/crest:opacity-100 transition-opacity" />
+              <div className={`relative bg-white rounded-full overflow-hidden shadow-[0_14px_35px_-6px_rgba(11,37,69,0.28)] border-[3px] border-amber-400/80 flex items-center justify-center transition-all duration-300 ${isSidebarCollapsed ? 'w-12 h-12 p-0' : 'w-36 h-36 p-0'}`}>
+                <img
+                  src="/โลโก้ ร.พ ข้างขวา.png"
+                  alt="Ministry of Public Health Logo"
+                  className="w-full h-full object-cover rounded-full scale-[1.06]"
+                />
               </div>
             </div>
 
             {!isSidebarCollapsed && (
-              <div className="mt-3.5 w-full flex flex-col items-center">
-                <h1 className="text-[21px] font-[900] tracking-tight leading-tight text-slate-900 dark:text-white font-['Prompt'] m-0 whitespace-nowrap">
-                  ระบบค้นหา Jop
-                </h1>
-                <p className="text-[14px] font-bold text-blue-600 dark:text-blue-400 font-['Prompt'] mt-1 mb-0">
-                  ของบริษัทคู่ค้า
-                </p>
-                <span className="mt-2.5 inline-flex items-center px-4 py-1 rounded-full text-[12px] font-extrabold bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-500/30 shadow-sm">
-                  ร.พ.นครพิงค์
+              <div className="mt-5 w-full flex flex-col items-center">
+                <span className="text-[14px] font-extrabold text-emerald-700 dark:text-emerald-400 tracking-[0.2em] uppercase">
+                  กระทรวงสาธารณสุข
                 </span>
+                <div className="mt-3.5 inline-flex items-center gap-2.5 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#0b2545] via-[#133b6b] to-[#0b2545] text-amber-300 border border-amber-400/65 shadow-lg shadow-slate-900/20">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.9)]" />
+                  <span className="text-[15.5px] font-black tracking-wide">โรงพยาบาลนครพิงค์</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.9)]" />
+                </div>
+                <div className="mt-5 h-[2px] w-40 bg-gradient-to-r from-transparent via-amber-400/75 to-transparent" />
               </div>
             )}
           </div>
@@ -282,42 +286,6 @@ export default function Layout({ children }) {
               )}
               {isGridMode ? 'List' : 'Grid'}
             </button>
-          </div>
-        )}
-
-        {/* Balanced Partner Guide Panel when menus are hidden for User role */}
-        {!isAdmin_2 && !isSidebarCollapsed && (
-          <div className="flex-1 flex flex-col justify-center px-1 py-2">
-            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-indigo-200/80 dark:via-slate-700 to-transparent mb-5" />
-            <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-50/80 dark:from-slate-900 dark:via-indigo-950/35 dark:to-slate-900 border border-indigo-200/70 dark:border-indigo-500/20 shadow-sm space-y-3.5">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25">
-                  <ScanBarcode size={20} />
-                </div>
-                <div>
-                  <div className="text-[13px] font-black text-slate-800 dark:text-white leading-tight">คู่มือค้นหาด่วน</div>
-                  <div className="text-[11px] text-indigo-600 dark:text-indigo-300 font-semibold mt-0.5">
-                    รองรับเครื่องยิงบาร์โค้ด &amp; กล้อง
-                  </div>
-                </div>
-              </div>
-              <div className="h-[1px] bg-indigo-200/60 dark:bg-slate-700/70" />
-              <div className="space-y-2 text-[11.5px] text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0" />
-                  <span><strong className="text-slate-800 dark:text-white">All</strong> : แสดงงานทั้งหมด</span>
-                </div>
-                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-                  <span><strong className="text-slate-800 dark:text-white">รับเครื่องซ่อม</strong> : กำลังดำเนินการ</span>
-                </div>
-                <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span><strong className="text-slate-800 dark:text-white">ส่งเครื่องจบงาน</strong> : เสร็จสิ้นแล้ว</span>
-                </div>
-              </div>
-            </div>
-            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-indigo-200/80 dark:via-slate-700 to-transparent mt-5" />
           </div>
         )}
 
@@ -579,9 +547,14 @@ export default function Layout({ children }) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto main-scrollbar scroll-smooth bg-slate-50 dark:bg-[#0a0f1d] transition-colors duration-500">
+      <div className={`flex-1 flex flex-col min-w-0 h-full overflow-y-auto main-scrollbar scroll-smooth transition-colors duration-500 relative ${
+        isAdmin_2
+          ? 'bg-slate-50 dark:bg-[#0a0f1d]'
+          : 'bg-gradient-to-br from-[#e7eff9] via-[#f4f7fb] to-[#e4f1ec] dark:from-[#060b16] dark:via-[#0b162a] dark:to-[#071816]'
+      }`}>
         
-        {/* Desktop Quick Header */}
+        {/* Desktop Quick Header (Admin Only - Hidden for User role per design) */}
+        {isAdmin_2 ? (
         <div className="hidden lg:flex h-20 items-center justify-between pl-8 pr-6 sticky top-0 z-40 bg-slate-200/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.3)]">
           
           {/* Left Branding */}
@@ -665,28 +638,41 @@ export default function Layout({ children }) {
             <ThemeToggle />
           </div>
         </div>
+        ) : (
+          <div className="hidden lg:flex fixed top-4 right-5 z-40 items-center gap-2">
+            <ThemeToggle />
+          </div>
+        )}
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-slate-200/90 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col">
             <img src="/cnkp-logo-horizontal.png" alt="Nakornping Hospital Logo" className="h-7 object-contain drop-shadow-sm mb-0.5" />
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-black bg-gradient-to-r from-rose-500 via-rose-700 to-rose-900 dark:from-rose-400 dark:via-rose-300 dark:to-rose-500 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none whitespace-nowrap">
-                ห้องซ่อมบำรุงคอมพิวเตอร์
+            {isAdmin_2 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-black bg-gradient-to-r from-rose-500 via-rose-700 to-rose-900 dark:from-rose-400 dark:via-rose-300 dark:to-rose-500 bg-clip-text text-transparent font-['Prompt'] tracking-wider leading-none whitespace-nowrap">
+                    ห้องซ่อมบำรุงคอมพิวเตอร์
+                  </span>
+                  <svg fill="#111111" viewBox="0 0 330 330" className="w-3.5 h-3.5 drop-shadow-sm">
+                    <path d="M228.665,99.967c0-35.034-28.503-63.537-63.537-63.537s-63.537,28.503-63.537,63.537c0,27.148,22.868,54.89,68.032,82.531L75.529,322.253l25.864,15.111l63.734-109.079l64.129,109.756l25.864-15.111l-94.489-161.761C205.805,134.786,228.665,116.592,228.665,99.967z M165.127,159.263c-30.82-20.732-33.537-41.979-33.537-59.295c0-18.492,15.045-33.537,33.537-33.537s33.537,15.045,33.537,33.537C198.665,116.653,195.962,138.455,165.127,159.263z"/>
+                  </svg>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm transition-all active:scale-95">
+                    <Eye size={10} className="text-blue-500" />
+                    <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">1.2K</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                    <span className="text-[9px] font-black text-green-600 dark:text-green-400 font-['Prompt'] tracking-wider">ONLINE</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <span className="text-[11px] font-bold text-blue-700 dark:text-blue-400 font-['Prompt'] tracking-wide leading-none whitespace-nowrap">
+                ระบบค้นหา Jop ของบริษัทคู่ค้า
               </span>
-              <svg fill="#111111" viewBox="0 0 330 330" className="w-3.5 h-3.5 drop-shadow-sm">
-                <path d="M228.665,99.967c0-35.034-28.503-63.537-63.537-63.537s-63.537,28.503-63.537,63.537c0,27.148,22.868,54.89,68.032,82.531L75.529,322.253l25.864,15.111l63.734-109.079l64.129,109.756l25.864-15.111l-94.489-161.761C205.805,134.786,228.665,116.592,228.665,99.967z M165.127,159.263c-30.82-20.732-33.537-41.979-33.537-59.295c0-18.492,15.045-33.537,33.537-33.537s33.537,15.045,33.537,33.537C198.665,116.653,195.962,138.455,165.127,159.263z"/>
-              </svg>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-sm transition-all active:scale-95">
-                <Eye size={10} className="text-blue-500" />
-                <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">1.2K</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
-                <span className="text-[9px] font-black text-green-600 dark:text-green-400 font-['Prompt'] tracking-wider">ONLINE</span>
-              </div>
-            </div>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {currentUser && (
@@ -708,17 +694,21 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        <main className="flex-grow p-2 sm:p-4 lg:p-10 w-full max-w-[1720px] mx-auto transition-all duration-500">
+        <main className={`flex-grow p-3 sm:p-5 lg:p-10 w-full max-w-[1720px] mx-auto transition-all duration-500 ${!isAdmin_2 ? 'flex items-center justify-center' : ''}`}>
 
-          <div className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 opacity-100`}>
+          <div className={`w-full transition-all duration-[1000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] scale-100 opacity-100`}>
             {children}
           </div>
         </main>
 
-        <footer className="py-4 px-4 sm:px-10 border-t border-slate-200 dark:border-slate-800/50 text-slate-400 dark:text-slate-500 text-sm flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/30 dark:bg-[#0f172a]/30 backdrop-blur-sm transition-colors duration-500">
-          <p className="font-medium">&copy; {new Date().getFullYear()} ระบบจัดการ Stock พัสดุครุภัณฑ์</p>
-          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600">
-            <span>Dashboard ห้องซ่อมบำรุงคอมพิวเตอร์</span>
+        <footer className="py-3.5 px-4 sm:px-10 border-t border-slate-200/70 dark:border-slate-800/50 text-slate-400 dark:text-slate-500 text-xs sm:text-sm flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/40 dark:bg-[#0f172a]/30 backdrop-blur-sm transition-colors duration-500">
+          <p className="font-medium m-0">
+            {isAdmin_2
+              ? `© ${new Date().getFullYear()} ระบบจัดการ Stock พัสดุครุภัณฑ์`
+              : `© ${new Date().getFullYear()} โรงพยาบาลนครพิงค์ • ระบบค้นหา Jop ของบริษัทคู่ค้า`}
+          </p>
+          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+            <span>{isAdmin_2 ? 'Dashboard ห้องซ่อมบำรุงคอมพิวเตอร์' : 'MINISTRY OF PUBLIC HEALTH • NAKORNPING HOSPITAL'}</span>
           </div>
         </footer>
       </div>
