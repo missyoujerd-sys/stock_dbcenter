@@ -2,18 +2,12 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom';
 import {
   Search,
-  SlidersHorizontal,
   ScanBarcode,
-  Camera,
   X,
   CheckCircle2,
   Wrench,
   Layers,
   RefreshCw,
-  Volume2,
-  VolumeX,
-  Lock,
-  Unlock,
   Settings,
   Eye,
   ExternalLink,
@@ -34,17 +28,9 @@ import {
   JobRecord,
   JobFilterMode,
   JobApiConfig,
-  JobAdvancedFilters,
   DEFAULT_JOB_API_CONFIG,
   matchesJobFilter,
 } from '../../services/jobSearchService';
-
-const DEFAULT_ADVANCED: JobAdvancedFilters = {
-  field: 'all',
-  warranty: 'all',
-  dateFrom: '',
-  dateTo: '',
-};
 
 function playBeep(type: 'success' | 'error') {
   try {
@@ -79,25 +65,17 @@ function playBeep(type: 'success' | 'error') {
 export default function JobSearch() {
   const { currentUser, isAdmin_2 } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const scannerRef = useRef<any>(null);
 
   const [filterMode, setFilterMode] = useState<JobFilterMode>('all');
   const [inputKeyword, setInputKeyword] = useState('');
   const [appliedKeyword, setAppliedKeyword] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState<JobAdvancedFilters>(DEFAULT_ADVANCED);
 
   const [allJobs, setAllJobs] = useState<JobRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiConfig, setApiConfig] = useState<JobApiConfig>(DEFAULT_JOB_API_CONFIG);
 
-  // Barcode scanner UX helpers
-  const [autoFocusScan, setAutoFocusScan] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showCameraScanner, setShowCameraScanner] = useState(false);
-  const [cameraError, setCameraError] = useState('');
   const [lastScannedCode, setLastScannedCode] = useState('');
 
   // Detail & API config modals
@@ -131,63 +109,16 @@ export default function JobSearch() {
   }, [loadJobs]);
 
   useEffect(() => {
-    if (autoFocusScan && !showCameraScanner && !showApiModal && !selectedJob) {
+    if (!showApiModal && !selectedJob) {
       searchInputRef.current?.focus();
     }
-  }, [autoFocusScan, showCameraScanner, showApiModal, selectedJob]);
-
-  // Manage html5-qrcode camera scanner lifecycle cleanly
-  useEffect(() => {
-    if (!showCameraScanner) return;
-    let isCancelled = false;
-
-    const startScanner = async () => {
-      setCameraError('');
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode');
-        if (isCancelled) return;
-        const scanner = new Html5Qrcode('jop-barcode-reader');
-        scannerRef.current = scanner;
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 12, qrbox: { width: 260, height: 140 } },
-          (decodedText: string) => {
-            if (isCancelled) return;
-            const code = decodedText.trim();
-            setInputKeyword(code);
-            setShowCameraScanner(false);
-            executeSearch(code, filterMode);
-          },
-          () => {}
-        );
-      } catch (err: any) {
-        if (!isCancelled) {
-          setCameraError(err?.message || 'ไม่สามารถเปิดกล้องสแกนได้ กรุณาตรวจสอบสิทธิ์กล้อง');
-        }
-      }
-    };
-
-    startScanner();
-
-    return () => {
-      isCancelled = true;
-      const activeScanner = scannerRef.current;
-      scannerRef.current = null;
-      if (activeScanner) {
-        activeScanner
-          .stop()
-          .then(() => activeScanner.clear())
-          .catch(() => {});
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCameraScanner]);
+  }, [showApiModal, selectedJob]);
 
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) =>
-      matchesJobFilter(job, appliedKeyword, filterMode, showAdvanced ? advancedFilters : undefined)
+      matchesJobFilter(job, appliedKeyword, filterMode)
     );
-  }, [allJobs, appliedKeyword, filterMode, showAdvanced, advancedFilters]);
+  }, [allJobs, appliedKeyword, filterMode]);
 
   const exactMatchJob = useMemo(() => {
     const term = appliedKeyword.trim().toLowerCase();
@@ -218,19 +149,17 @@ export default function JobSearch() {
     }
 
     const matched = dataset.filter((job) =>
-      matchesJobFilter(job, keyword, targetMode, showAdvanced ? advancedFilters : undefined)
+      matchesJobFilter(job, keyword, targetMode)
     );
 
-    if (keyword && soundEnabled) {
+    if (keyword) {
       playBeep(matched.length > 0 ? 'success' : 'error');
     }
 
-    if (autoFocusScan) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
-      }, 40);
-    }
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }, 40);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -243,13 +172,7 @@ export default function JobSearch() {
     setAppliedKeyword('');
     setHasSearched(false);
     setLastScannedCode('');
-    if (autoFocusScan) {
-      searchInputRef.current?.focus();
-    }
-  };
-
-  const handleResetAdvanced = () => {
-    setAdvancedFilters(DEFAULT_ADVANCED);
+    searchInputRef.current?.focus();
   };
 
   const handleTestApi = async () => {
@@ -329,265 +252,195 @@ export default function JobSearch() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-10 font-['Prompt']">
-      {/* Image 2 Inspired Luxury Search Fieldset Panel (Clean, No Hero Banner) */}
-      <div className="relative pt-2">
-        {/* Top Row: Floating "🔍 ค้นหา Jop" Legend + Subtle Utility Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 relative z-20 -mb-5">
-          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white shadow-lg shadow-blue-500/30 border border-white/25">
-            <Search size={18} />
-            <span className="text-base font-extrabold tracking-wide">ค้นหา Jop</span>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white/95">
-              บริษัทคู่ค้า ร.พ.นครพิงค์
-            </span>
-          </div>
+    <div className="max-w-5xl mx-auto space-y-6 pb-8 font-['Prompt'] relative">
+      {/* Dimensional Government Ambient Glows */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div className="absolute top-[10%] left-[20%] w-[420px] h-[420px] rounded-full bg-blue-400/12 dark:bg-blue-500/10 blur-[110px]" />
+        <div className="absolute bottom-[5%] right-[12%] w-[380px] h-[380px] rounded-full bg-emerald-400/12 dark:bg-emerald-500/10 blur-[110px]" />
+      </div>
 
-          <div className="flex flex-wrap items-center gap-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-md">
-            <button
-              type="button"
-              onClick={() => setAutoFocusScan((v) => !v)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border ${
-                autoFocusScan
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30'
-                  : 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
-              }`}
-              title="ล็อกโฟกัสช่องยิงบาร์โค้ดอัตโนมัติ"
-            >
-              {autoFocusScan ? <Lock size={13} /> : <Unlock size={13} />}
-              <span className="hidden md:inline">{autoFocusScan ? 'พร้อมยิงบาร์โค้ด' : 'โฟกัสอิสระ'}</span>
-            </button>
+      {/* Section 2: Official Thai Government 3D Dimensional Search Card */}
+      <div className="relative z-10 rounded-[30px] p-[1.5px] bg-gradient-to-br from-amber-300/60 via-blue-300/50 to-emerald-400/60 dark:from-amber-400/35 dark:via-blue-500/35 dark:to-emerald-500/35 shadow-[0_28px_70px_-15px_rgba(11,37,69,0.24)] dark:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.75)]">
+        <div className="rounded-[29px] overflow-hidden bg-gradient-to-b from-white via-[#f9fbff] to-[#f2f7f5] dark:from-[#0e1729] dark:via-[#111c33] dark:to-[#0c1a1e] relative">
 
-            <button
-              type="button"
-              onClick={() => setSoundEnabled((v) => !v)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer border-0"
-              title="เปิด/ปิดเสียงแจ้งเตือน"
-            >
-              {soundEnabled ? <Volume2 size={14} className="text-blue-600 dark:text-sky-400" /> : <VolumeX size={14} className="text-slate-400" />}
-            </button>
+          {/* Official Government Header Bar (Royal Navy + Ministry Emerald + Gold Rim) */}
+          <div className="relative bg-gradient-to-r from-[#0a2240] via-[#123868] to-[#0b3d2e] px-6 sm:px-8 py-5 sm:py-6 border-b-[3px] border-amber-400 flex flex-wrap items-center justify-between gap-4 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_55%)] pointer-events-none" />
 
-            <button
-              type="button"
-              onClick={() => loadJobs(apiConfig, appliedKeyword, filterMode)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer border-0"
-              title="รีเฟรชข้อมูล"
-            >
-              <RefreshCw size={14} className={loading ? 'animate-spin text-blue-600' : ''} />
-            </button>
+            <div className="relative z-10 flex items-center gap-4 sm:gap-5">
+              {/* Official Ministry + Hospital Seal */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white p-1 shadow-[0_8px_24px_rgba(0,0,0,0.32)] border-2 border-amber-300/85 shrink-0 flex items-center justify-center">
+                <img
+                  src="/โลโก้ ร.พ.png"
+                  alt="ตราโรงพยาบาลนครพิงค์ กระทรวงสาธารณสุข"
+                  className="w-full h-full object-contain"
+                />
+              </div>
 
-            {isAdmin_2 && (
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="inline-flex items-center gap-2 text-2xl sm:text-[30px] font-black tracking-wide leading-tight">
+                    <Search
+                      size={25}
+                      className="text-yellow-300 shrink-0"
+                      style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.65)) drop-shadow(0 0 10px rgba(250,204,21,0.45))' }}
+                    />
+                    <span
+                      className="bg-gradient-to-b from-[#fef9c3] via-[#facc15] to-[#d97706] bg-clip-text text-transparent"
+                      style={{ filter: 'drop-shadow(0 2px 0 rgba(120,53,15,0.9)) drop-shadow(0 5px 12px rgba(0,0,0,0.5))' }}
+                    >
+                      ค้นหา Jop
+                    </span>
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-200 border border-amber-300/45 shadow-xs">
+                    งานราชการ • คู่ค้า
+                  </span>
+                </div>
+                <p className="text-sm sm:text-base font-bold text-amber-200/95 mt-1.5 mb-0 tracking-wide drop-shadow-xs">
+                  ระบบสืบค้นและตรวจสอบงานซ่อมบริษัทคู่ค้า • โรงพยาบาลนครพิงค์
+                </p>
+              </div>
+            </div>
+
+            {/* Utility Controls (Refresh + Admin API Config) */}
+            <div className="relative z-10 flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setApiTestResult(null);
-                  setDraftApiConfig(apiConfig);
-                  setShowApiModal(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-sm hover:brightness-105 transition-all cursor-pointer border-0"
+                onClick={() => loadJobs(apiConfig, appliedKeyword, filterMode)}
+                className="flex items-center justify-center p-2.5 rounded-xl text-xs font-bold bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer border border-white/20"
+                title="รีเฟรชข้อมูล"
               >
-                <Settings size={13} />
-                <span>ตั้งค่า API</span>
+                <RefreshCw size={16} className={loading ? 'animate-spin text-amber-300' : ''} />
               </button>
-            )}
-          </div>
-        </div>
 
-        <form
-          onSubmit={handleFormSubmit}
-          className="relative z-10 rounded-3xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl border-2 border-slate-200/90 dark:border-slate-700/80 shadow-[0_20px_50px_-15px_rgba(15,23,42,0.10)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.6)] p-6 sm:p-10 pt-11 overflow-hidden"
-        >
-          {/* Subtle top decorative gradient glow */}
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-85" />
-
-          {/* Row 1: Symmetrical Single-Line Radio Pills (All | รับเครื่องซ่อม | ส่งเครื่องจบงาน) */}
-          <div className="max-w-3xl mx-auto mb-7">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              {radioOptions.map((opt) => {
-                const Icon = opt.icon;
-                const isSelected = filterMode === opt.value;
-                return (
-                  <label
-                    key={opt.value}
-                    className={`relative flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 select-none ${
-                      isSelected
-                        ? `${opt.activeBorder} ${opt.activeBg} shadow-md`
-                        : 'border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="jobStageFilter"
-                      value={opt.value}
-                      checked={isSelected}
-                      onChange={() => {
-                        setFilterMode(opt.value);
-                        if (autoFocusScan) {
-                          setTimeout(() => searchInputRef.current?.focus(), 20);
-                        }
-                      }}
-                      className="w-4 h-4 accent-blue-600 cursor-pointer shrink-0"
-                    />
-                    <Icon
-                      size={17}
-                      className={`shrink-0 ${isSelected ? opt.activeText : 'text-slate-400'}`}
-                    />
-                    <span className={`text-sm sm:text-[15px] font-extrabold whitespace-nowrap ${isSelected ? opt.activeText : 'text-slate-700 dark:text-slate-200'}`}>
-                      {opt.label}
-                    </span>
-                  </label>
-                );
-              })}
+              {isAdmin_2 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApiTestResult(null);
+                    setDraftApiConfig(apiConfig);
+                    setShowApiModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-300 to-amber-500 text-slate-950 shadow-md hover:brightness-105 transition-all cursor-pointer border-0"
+                >
+                  <Settings size={14} />
+                  <span>ตั้งค่า API</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Row 2: "คำค้นหา:" + Barcode Input */}
-          <div className="max-w-3xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <label
-                htmlFor="jop-search-input"
-                className="text-base font-extrabold text-slate-700 dark:text-slate-200 sm:w-28 sm:text-right shrink-0 mb-0"
-              >
-                คำค้นหา:
-              </label>
+          {/* Card Form Body with Official Watermark & 3D Depth */}
+          <form onSubmit={handleFormSubmit} className="relative p-6 sm:p-10 overflow-hidden">
+            {/* Subtle Official Ministry Crest Watermark */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.045] dark:opacity-[0.06] select-none">
+              <img src="/โลโก้ ร.พ ข้างขวา.png" alt="" className="w-[290px] sm:w-[340px] object-contain" />
+            </div>
 
-              <div className="relative flex-1 flex items-center">
-                <ScanBarcode
-                  size={20}
-                  className="absolute left-4 text-blue-500 dark:text-blue-400 pointer-events-none"
-                />
-                <input
-                  id="jop-search-input"
-                  ref={searchInputRef}
-                  type="text"
-                  value={inputKeyword}
-                  onChange={(e) => setInputKeyword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') handleClearSearch();
-                  }}
-                  placeholder="ยิงบาร์โค้ด / เลขที่ Jop / เลขครุภัณฑ์ / Serial Number..."
-                  autoFocus
-                  className="w-full pl-12 pr-28 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white font-semibold text-base outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-500/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
+            <div className="relative z-10 max-w-3xl mx-auto">
+              {/* Row 1: Symmetrical Single-Line Radio Pills (All | รับเครื่องซ่อม | ส่งเครื่องจบงาน) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+                {radioOptions.map((opt) => {
+                  const Icon = opt.icon;
+                  const isSelected = filterMode === opt.value;
+                  return (
+                    <label
+                      key={opt.value}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      className={`relative gap-2.5 px-4 py-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 select-none ${
+                        isSelected
+                          ? `${opt.activeBorder} ${opt.activeBg} shadow-[0_10px_24px_-6px_rgba(19,59,107,0.22)] -translate-y-0.5`
+                          : 'border-slate-200/90 dark:border-slate-700 bg-white/90 dark:bg-slate-800/80 shadow-[0_4px_12px_rgba(15,23,42,0.05)] hover:border-blue-300 dark:hover:border-slate-600'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="jobStageFilter"
+                        value={opt.value}
+                        checked={isSelected}
+                        onChange={() => {
+                          setFilterMode(opt.value);
+                          setTimeout(() => searchInputRef.current?.focus(), 20);
+                        }}
+                        className="w-4 h-4 accent-[#123868] cursor-pointer shrink-0 m-0"
+                      />
+                      <Icon
+                        size={18}
+                        className={`shrink-0 ${isSelected ? opt.activeText : 'text-slate-400'}`}
+                      />
+                      <span className={`text-[15px] font-extrabold whitespace-nowrap ${isSelected ? opt.activeText : 'text-slate-700 dark:text-slate-200'}`}>
+                        {opt.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
 
-                <div className="absolute right-2 flex items-center gap-1">
+              {/* Row 2: "คำค้นหา:" + Recessed 3D Barcode Input */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <span className="text-base font-extrabold text-slate-700 dark:text-slate-200 sm:w-24 sm:text-right shrink-0">
+                  คำค้นหา:
+                </span>
+
+                <div className="relative flex-1 flex items-center">
+                  <ScanBarcode
+                    size={20}
+                    className="absolute left-4 text-[#123868] dark:text-blue-400 pointer-events-none"
+                  />
+                  <input
+                    id="jop-search-input"
+                    ref={searchInputRef}
+                    type="text"
+                    value={inputKeyword}
+                    onChange={(e) => setInputKeyword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') handleClearSearch();
+                    }}
+                    placeholder="ยิงบาร์โค้ด / เลขที่ Jop / เลขครุภัณฑ์ / Serial Number..."
+                    autoFocus
+                    className="w-full pl-12 pr-12 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-slate-900 dark:text-white font-semibold text-base shadow-[inset_0_2px_6px_rgba(15,23,42,0.06)] outline-none focus:border-[#123868] dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  />
+
                   {inputKeyword && (
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      className="absolute right-2.5 p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
                       title="ล้างคำค้นหา"
                     >
                       <X size={17} />
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setShowCameraScanner(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/25 text-xs font-bold transition-colors cursor-pointer border border-blue-200/70 dark:border-blue-500/30"
-                    title="เปิดกล้องสแกนบาร์โค้ด / QR"
-                  >
-                    <Camera size={15} />
-                    <span className="hidden sm:inline">สแกน</span>
-                  </button>
                 </div>
               </div>
-            </div>
 
-            {/* Row 3: Action Buttons ("ค้นหา" & "ค้นหาขั้นสูง") */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-              <button
-                type="submit"
-                className="flex items-center justify-center gap-2.5 min-w-[160px] px-7 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:brightness-110 text-white font-extrabold text-base shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all cursor-pointer border-0"
-              >
-                <Search size={18} />
-                ค้นหา
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowAdvanced((v) => !v)}
-                className={`flex items-center justify-center gap-2 min-w-[160px] px-6 py-3 rounded-2xl font-bold text-base border-2 transition-all cursor-pointer ${
-                  showAdvanced
-                    ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-400 shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700'
-                }`}
-              >
-                <SlidersHorizontal size={17} />
-                ค้นหาขั้นสูง
-              </button>
-            </div>
-
-            {/* Advanced Search Drawer */}
-            {showAdvanced && (
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in duration-200">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
-                    ค้นหาเฉพาะฟิลด์
-                  </label>
-                  <select
-                    value={advancedFilters.field}
-                    onChange={(e) => setAdvancedFilters((p) => ({ ...p, field: e.target.value as any }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-semibold outline-none focus:border-blue-500"
-                  >
-                    <option value="all">ทุกฟิลด์ (แนะนำ)</option>
-                    <option value="jobNumber">เลขที่ Jop / เอกสาร</option>
-                    <option value="assetNumber">หมายเลขครุภัณฑ์</option>
-                    <option value="serialNumber">Serial Number (S/N)</option>
-                    <option value="companyOrReporter">บริษัท / ผู้แจ้งซ่อม</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
-                    สถานะรับประกัน
-                  </label>
-                  <select
-                    value={advancedFilters.warranty}
-                    onChange={(e) => setAdvancedFilters((p) => ({ ...p, warranty: e.target.value as any }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-semibold outline-none focus:border-blue-500"
-                  >
-                    <option value="all">ทั้งหมด</option>
-                    <option value="in_warranty">อยู่ในระยะรับประกัน</option>
-                    <option value="out_warranty">หมดประกัน</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
-                    ตั้งแต่วันที่
-                  </label>
-                  <input
-                    type="date"
-                    value={advancedFilters.dateFrom}
-                    onChange={(e) => setAdvancedFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-semibold outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
-                    ถึงวันที่
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={advancedFilters.dateTo}
-                      onChange={(e) => setAdvancedFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-semibold outline-none focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleResetAdvanced}
-                      className="px-3 py-2 rounded-xl bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer shrink-0"
-                    >
-                      ล้าง
-                    </button>
-                  </div>
-                </div>
+              {/* Row 3: Action Button ("ค้นหา") */}
+              <div className="flex items-center justify-center mt-7">
+                <button
+                  type="submit"
+                  className="flex items-center justify-center gap-2.5 min-w-[200px] px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#0b2545] via-[#134074] to-[#0b3d2e] hover:brightness-110 text-white font-extrabold text-base shadow-[0_10px_25px_-5px_rgba(11,37,69,0.45)] border border-amber-300/40 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <Search size={19} className="text-amber-300" />
+                  ค้นหา
+                </button>
               </div>
-            )}
+            </div>
+          </form>
+
+          {/* Official Government Footer Strip inside Card */}
+          <div className="px-6 sm:px-8 py-3.5 bg-gradient-to-r from-slate-50 via-blue-50/40 to-emerald-50/40 dark:from-slate-900/90 dark:via-slate-900 dark:to-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img
+                src="/cnkp-logo-horizontal.png"
+                alt="โรงพยาบาลนครพิงค์"
+                className="h-7 object-contain opacity-90"
+              />
+            </div>
+            <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wide text-center sm:text-right">
+              กระทรวงสาธารณสุข • โรงพยาบาลนครพิงค์ จังหวัดเชียงใหม่
+            </div>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* API Error Notice */}
@@ -790,37 +643,6 @@ export default function JobSearch() {
             )}
           </div>
         </>
-      )}
-
-      {/* Camera Barcode Scanner Modal */}
-      {showCameraScanner && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 font-black text-slate-800 dark:text-white">
-                <Camera size={20} className="text-blue-600" />
-                สแกนบาร์โค้ด / QR Code
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCameraScanner(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div
-              id="jop-barcode-reader"
-              className="w-full rounded-2xl overflow-hidden bg-slate-950 min-h-[260px]"
-            />
-            {cameraError && (
-              <p className="text-rose-500 text-xs font-bold mt-3 text-center mb-0">{cameraError}</p>
-            )}
-            <p className="text-xs text-slate-500 dark:text-slate-400 text-center mt-3 mb-0">
-              นำกล้องส่องไปที่บาร์โค้ดหรือ QR Code บนตัวเครื่อง / ใบแจ้งซ่อม
-            </p>
-          </div>
-        </div>
       )}
 
       {/* Job Detail Modal */}
