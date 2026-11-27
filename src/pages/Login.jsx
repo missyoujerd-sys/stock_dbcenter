@@ -1,19 +1,28 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form, Button, Modal } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
 import { ref, get, update } from 'firebase/database';
-import { useNavigate } from 'react-router-dom';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation } from 'react-icons/fa';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaExclamation, FaQrcode, FaCheckCircle } from 'react-icons/fa';
+import { decodeAutoLoginToken, isAdmin2Email } from '../utils/autoLoginQr';
 
 export default function Login() {
     let userRef = useRef();
     const passwordRef = useRef();
-    const { login } = useAuth();
+    const { currentUser, login, logout } = useAuth();
+    const [searchParams] = useSearchParams();
     const [error, setError] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [autoLoginState, setAutoLoginState] = useState({
+        active: false,
+        username: '',
+        statusText: 'กำลังตรวจสอบสิทธิ์เข้าใช้งาน...',
+        success: false
+    });
+    const autoLoginStartedRef = useRef(false);
 
     // Thai Keyboard Detection States
     const [showThaiWarning, setShowThaiWarning] = useState(false);
@@ -62,64 +71,105 @@ export default function Login() {
     const [isForgotSuccess, setIsForgotSuccess] = useState(false);
     const navigate = useNavigate();
 
+    async function authenticateAccount(rawUsername, rawPassword) {
+        let email = (rawUsername || '').trim();
+        if (!email.includes('@')) {
+            email = email + '@nkp.com';
+        }
+
+        const escapedEmail = email.replace(/\./g, ',');
+        const userStatusRef = ref(db, `users_status/${escapedEmail}`);
+        const snapshot = await get(userStatusRef);
+        const userStatus = snapshot.val() || { failedAttempts: 0, locked: false };
+
+        if (userStatus.locked) {
+            const lockedErr = new Error('บัญชีของคุณถูกระงับเนื่องจากใส่รหัสผ่านผิดเกิน 3 ครั้ง กรุณากด "ลืมรหัสผ่าน"');
+            lockedErr.isLocked = true;
+            throw lockedErr;
+        }
+
+        try {
+            if (currentUser && currentUser.email?.toLowerCase() !== email.toLowerCase()) {
+                await logout();
+            }
+            if (!currentUser || currentUser.email?.toLowerCase() !== email.toLowerCase()) {
+                await login(email, rawPassword);
+            }
+            if (userStatus.failedAttempts > 0) {
+                await update(userStatusRef, { failedAttempts: 0 });
+            }
+            return email;
+        } catch (err) {
+            if (err.message === 'ท่านไม่มีชื่อในระบบ') {
+                throw err;
+            }
+            const latestSnap = await get(userStatusRef);
+            const latestStatus = latestSnap.val() || { failedAttempts: 0 };
+            const newAttempts = (latestStatus.failedAttempts || 0) + 1;
+
+            if (newAttempts >= 3) {
+                await update(userStatusRef, { failedAttempts: newAttempts, locked: true });
+                throw new Error('คุณใส่รหัสผ่านผิดเกิน 3 ครั้ง บัญชีถูกระงับแล้ว กรุณากด "ลืมรหัสผ่าน"');
+            }
+            await update(userStatusRef, { failedAttempts: newAttempts });
+            throw new Error(`ชื่อล็อกอินหรือรหัสผ่านไม่ถูกต้อง (ผิด ${newAttempts}/3 ครั้ง)`);
+        }
+    }
+
+    useEffect(() => {
+        const qrToken = searchParams.get('qr');
+        const legacyAuto = searchParams.get('auto');
+        let creds = qrToken ? decodeAutoLoginToken(qrToken) : null;
+
+        if (!creds && legacyAuto === '1') {
+            const u = searchParams.get('u');
+            const p = searchParams.get('p');
+            if (u && p) creds = { username: u, password: p };
+        }
+
+        if (!creds || autoLoginStartedRef.current) return;
+        autoLoginStartedRef.current = true;
+
+        const runAutoLogin = async () => {
+            setAutoLoginState({
+                active: true,
+                username: creds.username,
+                statusText: 'กำลังยืนยันตัวตนและเข้าสู่ระบบอัตโนมัติ...',
+                success: false
+            });
+            try {
+                const signedEmail = await authenticateAccount(creds.username, creds.password);
+                setAutoLoginState({
+                    active: true,
+                    username: creds.username,
+                    statusText: 'เข้าสู่ระบบสำเร็จ! กำลังเปิดหน้าค้นหา Jop...',
+                    success: true
+                });
+                const dest = isAdmin2Email(signedEmail) ? '/' : '/job-search';
+                setTimeout(() => navigate(dest, { replace: true }), 550);
+            } catch (err) {
+                console.error('QR auto-login error:', err);
+                setAutoLoginState({ active: false, username: '', statusText: '', success: false });
+                setError(err.message || 'ไม่สามารถเข้าสู่ระบบอัตโนมัติได้');
+                setShowErrorModal(true);
+            }
+        };
+
+        runAutoLogin();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
+
     async function handleSubmit(e) {
         e.preventDefault();
 
         try {
             setError('');
             setLoading(true);
-
-            let email = userRef.current.value;
-            if (!email.includes('@')) {
-                email = email + '@nkp.com';
-            }
-
-            const escapedEmail = email.replace(/\./g, ',');
-            const userStatusRef = ref(db, `users_status/${escapedEmail}`);
-            const snapshot = await get(userStatusRef);
-            const userStatus = snapshot.val() || { failedAttempts: 0, locked: false };
-
-            if (userStatus.locked) {
-                setError('บัญชีของคุณถูกระงับเนื่องจากใส่รหัสผ่านผิดเกิน 3 ครั้ง กรุณากด "ลืมรหัสผ่าน"');
-                setShowErrorModal(true);
-                setLoading(false);
-                return;
-            }
-
-            await login(email, passwordRef.current.value);
-
-            if (userStatus.failedAttempts > 0) {
-                await update(userStatusRef, { failedAttempts: 0 });
-            }
-
-            navigate('/');
+            const signedEmail = await authenticateAccount(userRef.current.value, passwordRef.current.value);
+            navigate(isAdmin2Email(signedEmail) ? '/' : '/job-search');
         } catch (err) {
             console.error(err);
-
-            if (err.message === 'ท่านไม่มีชื่อในระบบ') {
-                setError(err.message);
-                setShowErrorModal(true);
-                setLoading(false);
-                return;
-            }
-
-            let email = userRef.current.value;
-            if (!email.includes('@')) { email = email + '@nkp.com'; }
-            const escapedEmail = email.replace(/\./g, ',');
-            const userStatusRef = ref(db, `users_status/${escapedEmail}`);
-
-            const snapshot = await get(userStatusRef);
-            const userStatus = snapshot.val() || { failedAttempts: 0 };
-            const newAttempts = (userStatus.failedAttempts || 0) + 1;
-
-            if (newAttempts >= 3) {
-                await update(userStatusRef, { failedAttempts: newAttempts, locked: true });
-                setError('คุณใส่รหัสผ่านผิดเกิน 3 ครั้ง บัญชีถูกระงับแล้ว กรุณากด "ลืมรหัสผ่าน"');
-            } else {
-                await update(userStatusRef, { failedAttempts: newAttempts });
-                setError(`ชื่อล็อกอินหรือรหัสผ่านไม่ถูกต้อง (ผิด ${newAttempts}/3 ครั้ง)`);
-            }
-
+            setError(err.message || 'ไม่สามารถเข้าสู่ระบบได้');
             setShowErrorModal(true);
         }
 
@@ -159,6 +209,60 @@ export default function Login() {
                 <span className="login-bg-word login-bg-word--2">NKP</span>
            </div>
 
+            {autoLoginState.active ? (
+                <div
+                    className="login-card overflow-hidden"
+                    style={{
+                        position: 'relative',
+                        background: 'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(30,41,59,0.95))',
+                        border: '1px solid rgba(251, 191, 36, 0.35)',
+                        boxShadow: '0 30px 70px -15px rgba(15,23,42,0.7), 0 0 40px rgba(59,130,246,0.2)',
+                        color: '#f8fafc',
+                        padding: '3rem 2.25rem'
+                    }}
+                >
+                    <div style={{
+                        width: '84px',
+                        height: '84px',
+                        margin: '0 auto 1.25rem',
+                        borderRadius: '24px',
+                        background: autoLoginState.success
+                            ? 'linear-gradient(135deg, #10b981, #059669)'
+                            : 'linear-gradient(135deg, #f59e0b, #2563eb)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 12px 30px rgba(37,99,235,0.35)'
+                    }}>
+                        {autoLoginState.success ? (
+                            <FaCheckCircle size={38} color="#ffffff" />
+                        ) : (
+                            <FaQrcode size={38} color="#ffffff" className="animate-pulse" />
+                        )}
+                    </div>
+                    <h4 style={{ fontWeight: 900, fontSize: '1.5rem', marginBottom: '0.4rem', color: '#ffffff' }}>
+                        QR Auto-Login
+                    </h4>
+                    <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.25rem' }}>
+                        {autoLoginState.statusText}
+                    </p>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 18px',
+                        borderRadius: '999px',
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                        color: '#fde68a'
+                    }}>
+                        <FaUser size={13} />
+                        <span>บัญชี: {autoLoginState.username}</span>
+                    </div>
+                </div>
+            ) : (
             <div className="login-card overflow-hidden" style={{ position: 'relative' }}>
                 {/* Beautiful Thai Warning Toast */}
                 <div style={{
@@ -294,6 +398,7 @@ export default function Login() {
                     *มีปัญหาในการใช้งานโทร 2299 ต่อ 1117*
                 </div>
             </div>
+            )}
 
             {/* Error Popup Modal */}
             <Modal

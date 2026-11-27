@@ -18,12 +18,27 @@ import ChatRoom from './pages/ChatRoom';
 import ComputerEquipment from './pages/ComputerEquipment';
 import FloatingChat from './components/FloatingChat';
 import InternalRepair from './pages/repair/InternalRepair';
+import JobSearch from './pages/repair/JobSearch';
+import QrAutoLogin from './pages/QrAutoLogin';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
   return currentUser ? <Layout>{children}</Layout> : <Navigate to="/login" />;
+}
+
+function AdminRoute({ children }) {
+  const { currentUser, isAdmin_2 } = useAuth();
+  if (!currentUser) return <Navigate to="/login" />;
+  if (!isAdmin_2) return <Navigate to="/job-search" replace />;
+  return <Layout>{children}</Layout>;
+}
+
+function DefaultFallbackRoute() {
+  const { currentUser, isAdmin_2 } = useAuth();
+  if (!currentUser) return <Navigate to="/login" replace />;
+  return <Navigate to={isAdmin_2 ? '/' : '/job-search'} replace />;
 }
 
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -39,51 +54,51 @@ function App() {
           <Route path="/repair/public" element={<RepairPublicSearch />} />
           <Route path="/repair/public/:id" element={<RepairPublicSearch />} />
           <Route path="/" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Dashboard />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/incoming" element={
-            <PrivateRoute>
+            <AdminRoute>
               <ErrorBoundary>
                 <IncomingStock />
               </ErrorBoundary>
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/distribution" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Distribution />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/inventory" element={
-            <PrivateRoute>
+            <AdminRoute>
               <Inventory />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/computer-equipment" element={
-            <PrivateRoute>
+            <AdminRoute>
               <ComputerEquipment />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/borrow" element={
-            <PrivateRoute>
+            <AdminRoute>
               <BorrowReturn />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/chat" element={
-            <PrivateRoute>
+            <AdminRoute>
               <ChatRoom />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/repair" element={
-            <PrivateRoute>
+            <AdminRoute>
               <RepairDashboard />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/repair/entry" element={
-            <PrivateRoute>
+            <AdminRoute>
               <RepairEntry />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/repair/view/:id" element={
             <PrivateRoute>
@@ -91,20 +106,31 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="/repair/edit/:id" element={
-            <PrivateRoute>
+            <AdminRoute>
               <RepairEntry />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/repair/dashboard" element={
-            <PrivateRoute>
+            <AdminRoute>
               <RepairDashboard />
-            </PrivateRoute>
+            </AdminRoute>
           } />
           <Route path="/internal-repair" element={
-            <PrivateRoute>
+            <AdminRoute>
               <InternalRepair />
+            </AdminRoute>
+          } />
+          <Route path="/job-search" element={
+            <PrivateRoute>
+              <JobSearch />
             </PrivateRoute>
           } />
+          <Route path="/qr-login" element={
+            <AdminRoute>
+              <QrAutoLogin />
+            </AdminRoute>
+          } />
+          <Route path="*" element={<DefaultFallbackRoute />} />
         </Routes>
         {/* Floating Chat Bubble - available on all authenticated pages */}
         <FloatingChat />
