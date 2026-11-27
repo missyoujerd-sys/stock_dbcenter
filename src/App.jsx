@@ -45,9 +45,10 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider>
-        <AuthProvider>
+    <ErrorBoundary>
+      <Router>
+        <ThemeProvider>
+          <AuthProvider>
           <Routes>
           <Route path="/login" element={<Login />} />
           {/* Public route - no login required */}
@@ -134,9 +135,10 @@ function App() {
         </Routes>
         {/* Floating Chat Bubble - available on all authenticated pages */}
         <FloatingChat />
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
+          </AuthProvider>
+        </ThemeProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

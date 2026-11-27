@@ -28,10 +28,21 @@ function playNotificationSound() {
   } catch (_) {}
 }
 
-function sendBrowserNotification(title, body, onClick) {
-  if (Notification.permission !== 'granted') return;
+function getNotificationPermissionSafe() {
+  if (typeof window === 'undefined' || typeof window.Notification === 'undefined') {
+    return 'unsupported';
+  }
   try {
-    const n = new Notification(title, { body, icon: NOTIF_ICON, tag: 'chat-message', renotify: true, silent: true });
+    return window.Notification.permission || 'default';
+  } catch (_) {
+    return 'unsupported';
+  }
+}
+
+function sendBrowserNotification(title, body, onClick) {
+  if (getNotificationPermissionSafe() !== 'granted') return;
+  try {
+    const n = new window.Notification(title, { body, icon: NOTIF_ICON, tag: 'chat-message', renotify: true, silent: true });
     n.onclick = () => { window.focus(); onClick?.(); n.close(); };
     setTimeout(() => n.close(), 6000);
   } catch (_) {}
@@ -86,7 +97,7 @@ export default function FloatingChat() {
   const [pendingPreview, setPendingPreview] = useState(null);
   const [lightboxUrl, setLightboxUrl] = useState(null);
 
-  const [notifPermission, setNotifPermission] = useState(Notification.permission);
+  const [notifPermission, setNotifPermission] = useState(getNotificationPermissionSafe);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showNotifHint, setShowNotifHint] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -153,9 +164,17 @@ export default function FloatingChat() {
   if (location.pathname === '/chat' || !currentUser || !isAdmin_2) return null;
 
   const requestNotifPermission = async () => {
-    const p = await Notification.requestPermission();
-    setNotifPermission(p); setShowNotifHint(false);
-    if (p === 'granted') sendBrowserNotification('✅ เปิดการแจ้งเตือนแล้ว', 'คุณจะได้รับแจ้งเตือนเมื่อมีข้อความใหม่', null);
+    if (typeof window === 'undefined' || typeof window.Notification === 'undefined') {
+      setNotifPermission('unsupported');
+      return;
+    }
+    try {
+      const p = await window.Notification.requestPermission();
+      setNotifPermission(p); setShowNotifHint(false);
+      if (p === 'granted') sendBrowserNotification('✅ เปิดการแจ้งเตือนแล้ว', 'คุณจะได้รับแจ้งเตือนเมื่อมีข้อความใหม่', null);
+    } catch (_) {
+      setNotifPermission('denied');
+    }
   };
 
   const clearPendingImage = () => {
